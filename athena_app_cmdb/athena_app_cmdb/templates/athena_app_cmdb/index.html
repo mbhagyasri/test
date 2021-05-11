@@ -1,0 +1,28 @@
+{% extends "athena_app_cmdb/layout.html" %}
+
+
+{% load static %}
+
+{% block content %}
+
+{% csrf_token %}
+ <main class="pt-5 mx-lg-5">
+    <div class="container-fluid mt-5">
+      <!--Grid row-->
+      <div class="row wow fadeIn">
+        <div class="jumbotron text-center">
+            <div class="container">
+            {% if user.is_authenticated %}
+              {% if user.is_active  %}
+            <h2 class="display-4">Hello, {{ user.get_username }}!</h2>
+              {% endif %}
+            <p>MultiCloud Container Platform App Registry.  This site is in contruction.  Comments are welcome</p>
+            {% endif %}
+            </div>
+        </div>
+          <!-- Example row of columns -->
+    </div>
+      </div>
+    </div>
+ </main>
+{% endblock %}

@@ -1,0 +1,72 @@
+{
+    "pods": [
+        {
+            "name": "us_plano_1",
+            "properties": {
+                "cas": {
+                    "tag": {
+                        "pod": "us_plano_1"
+                    }
+                }
+            }
+        },
+        {
+            "name": "us_plano_2",
+            "properties": {
+                "cas": {
+                    "tag": {
+                        "pod": "us_plano_2"
+                    }
+                }
+            }
+        },
+        {
+            "name": "us_plano_3",
+            "properties": {
+                "cas": {
+                    "tag": {
+                        "pod": "us_plano_1"
+                    }
+                }
+            }
+        },
+        {
+            "name": "us_plano_4",
+            "properties": {
+                "cas": {
+                    "tag": {
+                        "pod": "us_plano_4"
+                    }
+                }
+            }
+        },
+        {
+            "name": "us_plano_6",
+            "properties": {
+                "jumpservers": {
+                    "linux": {
+                        "ip_adress": "20.2.21.121"
+                    },
+                    "windows": {
+                        "hostname": "ng1-mgt-wjump01",
+                        "ip_address": "20.4.2.1."
+                    }
+                }
+            }
+        },
+        {
+            "name": "us_plano_7",
+            "properties": {
+                "jumpservers": {
+                    "linux": {
+                        "ip_adress": "20.2.21.121"
+                    },
+                    "windows": {
+                        "hostname": "ng1-mgt-wjump01",
+                        "ip_address": "20.4.2.1."
+                    }
+                }
+            }
+        }
+    ]
+}

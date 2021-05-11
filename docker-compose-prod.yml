@@ -1,0 +1,65 @@
+version: '3.5'
+services:
+  athena_app_cmdb:
+    container_name: "athena_app_cmdb"
+    image: athena_app_cmdb
+    hostname: athena_app_cmdb
+    command: gunicorn --config /opt/athena_app_cmdb/gunicorn_cfg.py app_registry.wsgi:application
+    volumes:
+      - ./athena_app_cmdb/:/opt/athena_app_cmdb
+      - /docker/gfs_data/athena_app_cmdb/static_files:/opt/athena_app_cmdb/static
+    env_file:
+      - /docker/gfs_data/athena_app_cmdb/config/athena_app_cmdb.env
+    networks:
+      - public
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8000:8000"
+
+  redis:
+    container_name: "redis"
+    hostname: redis
+    image: redis:6.2-alpine
+    networks:
+      - public
+    ports:
+      - "6380:6379"
+
+  postgres:
+    container_name: "postgres"
+    hostname: postgres
+    image: postgres
+    command: postgres -c 'config_file=/etc/postgresql.conf'
+    restart: always
+    ports:
+      - "5430:5432"
+    volumes:
+      - /docker/gfs_data/athena_app_cmdb/postgresql:/var/lib/postgresql/data
+      - /docker/gfs_data/athena_app_cmdb/config/postgresql.conf:/etc/postgresql.conf
+      - /docker/gfs_data/backuputil/home/athena_app_cmdb-postgres:/var/backup
+    env_file:
+      - /docker/gfs_data/athena_app_cmdb/config/athena_app_cmdb.env
+    networks:
+      - public
+
+  nginx:
+    container_name: "nginx"
+    hostname: nginx
+    image: nginx:1.19.10-alpine
+    volumes:
+      - /docker/gfs_data/athena_app_cmdb/static_files:/usr/src/athena_app_cmdb/static
+      - ./nginx/config/nginx/conf.d/nginx.conf:/etc/nginx/nginx.conf
+      - /docker/data/athena_app_cmdb/logs/nginx:/var/log/nginx
+    ports:
+      - "8080:80"
+      - "8443:443"
+    networks:
+      - public
+    depends_on:
+      - athena_app_cmdb
+
+networks:
+  public:
+    name: pcp-container-networks

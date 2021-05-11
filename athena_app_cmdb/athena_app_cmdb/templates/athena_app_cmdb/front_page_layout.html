@@ -1,0 +1,107 @@
+{% extends "athena_app_cmdb/layout.html" %}
+
+
+{% load static %}
+
+{% block style %}
+
+  <style>
+
+    .map-container{
+overflow:hidden;
+padding-bottom:56.25%;
+position:relative;
+height:0;
+}
+
+.map-container iframe{
+left:0;
+top:20;
+height:100%;
+width:100%;
+position:absolute;
+}
+
+
+html,body,
+
+    .view {
+      height: 100%;
+    }
+
+
+    body {
+    padding-top: 80px;
+}
+
+ </style>
+
+{% endblock %}
+
+{% block content %}
+
+
+  <!-- Full Page Intro -->
+  <div class="ng-scope" style="background-size: initial; background-position: center center;">
+
+    <!-- Mask & flexbox options-->
+    <div class="mask rgba-black-light d-flex justify-content-center align-items-center">
+
+      <!-- Content -->
+      <div class="container">
+
+        <!--Grid row-->
+        <div class="row wow fadeIn">
+
+          <!--Grid column-->
+          <div class="col-md-6 mb-4 white-text text-center text-md-left align-self-center">
+
+            <h1 class="display-4 font-weight-bold">App Registry</h1>
+
+            <hr class="hr-light">
+
+            <p>
+              <strong></strong>
+            </p>
+
+            <p class="mb-4 d-none d-md-block">
+              <strong></strong>
+            </p>
+
+
+          </div>
+          <!--Grid column-->
+
+          <!--Grid column-->
+          <div class="col-md-6 col-xl-5 mb-4" style="padding-top: 10px; padding-bottom: 10px; margin-top:1.5rem;">
+
+            <!--Card-->
+            <div class="card">
+
+              <!--Card content-->
+              <div class="card-body">
+
+                <!-- Form -->
+                {% block form_content %}{% endblock %}
+              </div>
+
+            </div>
+            <!--/.Card-->
+
+          </div>
+          <!--Grid column-->
+
+        </div>
+        <!--Grid row-->
+
+      </div>
+      <!-- Content -->
+
+    </div>
+    <!-- Mask & flexbox options-->
+
+  </div>
+  <!-- Full Page Intro -->
+{% endblock %}
+
+

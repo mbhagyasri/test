@@ -1,0 +1,37 @@
+{% extends "athena_app_cmdb/layout.html" %}
+
+{% block style %}
+<style>
+.map-container iframe{
+   left:0;
+   top:0;
+   height:100%;
+   width:100%;
+   position:absolute;
+}
+
+html, body, {
+   min-width: 320px;
+   height: 100%;
+}
+
+@media (max-width: 740px) {
+   html, body, header, .view {
+      height: 2000px;
+   }
+}
+
+.fixed-top-2 {
+   margin-top: 80px;
+}
+
+body {
+    padding-top: 150px;
+}
+</style>
+{% endblock %}
+{% block content %}
+
+<h2>{{ title }}</h2>
+<p>athena_app_cmdb {{ version }}</p>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "athena_app_cmdb/front_page_layout.html" %}
+
+
+{% load static %}
+
+{% block form_content %}
+                <p class="font-weight-bold">{{ message }}</p>
+                <!-- Form -->
+                <form action="{% url 'app-registry:login' %}" method="post" class="form-signin">
+                  <!-- Heading -->
+                  <h3 class="dark-grey-text text-center">
+                    <strong>LOG IN:</strong>
+                  </h3>
+                  <hr>
+                        {% csrf_token %}
+                        <div class="md-form">
+                            {{ form.username }}
+
+                        </div>
+                        <div class="md-form">
+                            {{ form.password }}
+
+                        </div>
+                        <input type="hidden" name="next" value="{{ next }}" />
+                        <button class="btn btn-cdk btn-lg btn btn-block my-4 font-weight-bold" type="submit">LOG IN</button>
+
+
+                </p>
+                {% if form.errors %}
+                <p class="validation-summary-errors">Please enter a correct user name and password.</p>
+                {% endif %}
+                    </form>
+
+{% endblock %}
+
+

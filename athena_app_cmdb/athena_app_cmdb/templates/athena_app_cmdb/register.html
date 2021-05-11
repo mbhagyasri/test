@@ -1,0 +1,70 @@
+{% extends "athena_app_cmdb/front_page_layout.html" %}
+
+
+{% load static %}
+
+{% block form_content %}
+
+
+                <!-- Form -->
+                <form action="{% url 'app-registry:register' %}" method="post" class="text-critical"
+                      oninput='confirm_password.setCustomValidity(confirm_password.value != password.value ? "Passwords do not match." : "")'>
+                  <!-- Heading -->
+                  <h3 class="dark-grey-text text-center">
+                    <strong>Register:</strong>
+                  </h3>
+                  <hr>
+                    {% if form.errors %}
+                    <p class="note note-danger"><strong>ERROR:</strong>
+                                    {{ form.errors }}
+                        {% endif %}
+                        {% csrf_token %}
+                        <div class="md-form">
+                            {{ form.first_name }}
+
+                        </div>
+                        <div class="md-form">
+                            {{ form.last_name }}
+
+                        </div>
+                        <div class="md-form">
+                            {{ form.email }}
+
+                        </div>
+                        <div class="md-form">
+                            {{ form.username }}
+
+                        </div>
+                        <div class="md-form">
+                            {{ form.password }}
+                        <i id="pass-status" class="fa fa-eye" aria-hidden="true" onClick="viewPassword()"></i>
+                        </div>
+                        <div id="message">
+                             <h5>Password must contain the following:</h5>
+                            <p id="letter" class="invalid">A <b>lowercase</b> letter</p>
+                            <p id="capital" class="invalid">A <b>capital (uppercase)</b> letter</p>
+                            <p id="number" class="invalid">A <b>number</b></p>
+                            <p id="symbol" class="invalid">A <b>symbol</b></p>
+                            <p id="space" class="invalid">No <b>spaces</b></p>
+                            <p id="repeating" class="invalid">No <b>repeating characters</b></p>
+                            <p id="length" class="invalid">Minimum <b>15 characters</b></p>
+                        </div>
+                        <div class="md-form">
+                            {{ form.confirm_password }}
+
+                        </div>
+                        <input type="hidden" name="next" value="{{ next }}" />
+                        <button class="btn btn-yellow btn-lg btn btn-block my-4" type="submit">Register</button>
+                <p>Already have an account?
+                    <a href="{% url 'app-registry:login' %}?next={{ next }}">Sign In</a>
+                </p>
+
+                    </form>
+
+{% endblock %}
+
+
+{% block scripts %}
+ <script type="text/javascript" src="{% static 'js/validate_pwd.js' %}"></script>
+
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "athena_app_cmdb/layout.html" %}
+
+{% load static %}
+
+{% block style %}
+  <link href="{% static 'css/swagger-ui-3.48.0.css' %}" type="text/css" rel="stylesheet">
+  <style>
+.map-container iframe{
+   left:0;
+   top:0;
+   height:100%;
+   width:100%;
+   position:absolute;
+}
+
+html, body, {
+   min-width: 320px;
+   height: 100%;
+}
+
+@media (max-width: 740px) {
+   html, body, header, .view {
+      height: 2000px;
+   }
+}
+
+.fixed-top-2 {
+   margin-top: 80px;
+}
+
+body {
+    padding-top: 50px;
+}
+  </style>
+{% endblock %}
+
+{% block content %}
+
+{% if errorMessage %}
+    <div class="panel panel-danger">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                Warning
+            </h3>
+        </div>
+        <div class="panel-body">
+            {{ errorMessage }}
+        </div>
+    </div>
+{% endif %}
+<div id="swagger-ui"></div>
+{% endblock %}
+{% block scripts %}
+ <script type="text/javascript" src="{% static 'js/swagger-ui-bundle-3.48.0.js' %}"></script>
+ <script type="text/javascript" src="{% static 'js/swagger-ui-standalone-preset-3.48.0.js' %}"></script>
+<script>
+
+window.onload = function() {
+
+  var spec = {{ swagger_content|safe }};
+const DisableTryItOutPlugin = function() {
+  return {
+    statePlugins: {
+      spec: {
+        wrapSelectors: {
+          allowTryItOutFor: () => () => false
+        }
+      }
+    }
+  }
+}
+  // Build a system
+  const ui = SwaggerUIBundle({
+    spec: spec,
+    dom_id: '#swagger-ui',
+    deepLinking: true,
+    presets: [
+      SwaggerUIBundle.presets.apis
+    ],
+    plugins: [
+      SwaggerUIBundle.plugins.DownloadUrl,
+      DisableTryItOutPlugin
+    ],
+  })
+
+  window.ui = ui
+}
+</script>
+{% endblock %}

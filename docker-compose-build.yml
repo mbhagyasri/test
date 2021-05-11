@@ -1,0 +1,69 @@
+version: '3.5'
+services:
+  athena_app_cmdb:
+    build:
+      context: ./
+      args:
+        requirements: requirements/dev.txt
+    hostname: athena_app_cmdb
+    command: gunicorn --config /opt/athena_app_cmdb/gunicorn_cfg.py app_registry.wsgi:application
+    volumes:
+      - ./athena_app_cmdb/:/opt/athena_app_cmdb
+      - /docker/data/athena_app_cmdb/logs:/data/athena_app_cmdb/logs
+      - /docker/gfs_data/athena_app_cmdb/migrations:/opt/athena_app_cmdb/athena_app_cmdb/migrations
+      - /docker/gfs_data/athena_app_cmdb/static_files:/opt/athena_app_cmdb/static
+    env_file:
+      - /docker/gfs_data/athena_app_cmdb/config/athena_app_cmdb.env
+    networks:
+      - public
+    depends_on:
+      - athena_app_cmdb-postgres
+      - athena_app_cmdb-redis
+    ports:
+      - "8000:8000"
+
+  athena_app_cmdb-redis:
+    container_name: "athena_app_cmdb-redis"
+    hostname: redis
+    image: redis:4.0.10-alpine
+    networks:
+      - public
+    ports:
+      - "6379:6379"
+
+  athena_app_cmdb-postgres:
+    container_name: "athena_app_cmdb-postgres"
+    hostname: athena_app_cmdb-postgres
+    image: postgres
+    restart: always
+    ports:
+      - "5430:5430"
+    volumes:
+      - /docker/gfs_data/athena_app_cmdb/postgresql:/var/lib/postgresql/data
+      - /docker/gfs_data/athena_app_cmdb/config/postgresql.conf:/etc/postgresql.conf
+      - /docker/gfs_data/backuputil/home/athena_app_cmdb-postgres:/var/backup
+    env_file:
+      - /docker/gfs_data/athena_app_cmdb/config/athena_app_cmdb.env
+    networks:
+      - public
+
+  athena_app_cmdb-nginx:
+    container_name: "athena_app_cmdb-nginx"
+    hostname: athena_app_cmdb-nginx
+    image: nginx:1.17.4-alpine
+    volumes:
+      - /docker/gfs_data/athena_app_cmdb/static_files:/usr/src/athena_app_cmdb/static
+      - ./nginx/config/nginx/conf.d/nginx.conf:/etc/nginx/nginx.conf
+      - /docker/gfs_data/athena_app_cmdb/config/ssl:/etc/ssl/certs
+      - /docker/data/athena_app_cmdb/logs/nginx:/var/log/nginx
+    ports:
+      - "8080:80"
+      - "8443:443"
+    networks:
+      - public
+    depends_on:
+      - athena_app_cmdb
+
+networks:
+  public:
+    name: pcp-container-networks

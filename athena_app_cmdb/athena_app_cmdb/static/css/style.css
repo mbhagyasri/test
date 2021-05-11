@@ -1,0 +1,239 @@
+@charset "UTF-8";
+@font-face {
+  font-family: "GTWalsheimPro";
+  src: url("./fonts/GTWalsheimProRegular.ttf") format("truetype"), url("./fonts/GTWalsheimProRegular.woff") format("woff");
+}
+@font-face {
+  font-family: "GTWalsheimPro";
+  src: url("./fonts/GTWalsheimProBold.ttf") format("truetype"), url("./fonts/GTWalsheimProBold.woff") format("woff");
+  font-weight: bold;
+}
+body {
+  margin: 0;
+  font-family: "GTWalsheimPro", "Open Sans", Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  text-align: left;
+  background-color: #fff;
+}
+
+:root {
+  --blue: #007bff;
+  --indigo: #6610f2;
+  --purple: #6f42c1;
+  --pink: #e83e8c;
+  --red: #dc3545;
+  --orange: #fd7e14;
+  --yellow: #ffc107;
+  --green: #28a745;
+  --teal: #20c997;
+  --cyan: #17a2b8;
+  --white: #fff;
+  --gray: #6c757d;
+  --gray-dark: #343a40;
+  --primary: #0E79CC;
+  --secondary: #646569;
+  --success: #64dd11;
+  --info: #00c9ff;
+  --warning: #ffa701;
+  --danger: #D0011B;
+  --light: #f8f9fa;
+  --dark: #343a40;
+  --unknown: #C3C5C8;
+  --disabled: #C3C5C8;
+  --breakpoint-xs: 0;
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1200px;
+  --font-family-sans-serif: "GTWalsheimPro", "Open Sans", Arial, sans-serif;
+  --font-family-monospace: "GTWalsheimPro", "Open Sans", Arial, sans-serif;
+  --accent: #f5dd5d;
+  --primary-fg: #fff;
+  --body-fg: #333;
+  --body-bg: #fff;
+  --body-quiet-color: #666;
+  --body-loud-color: #000;
+}
+
+.btn-yellow-cdk {
+  background-color: #ffed00 !important;
+  color: #ffed00; }
+  .btn-yellow:hover {
+    background-color: #fbc846;
+    color: #fff; }
+  .btn-yellow:focus, .btn-yellow.focus {
+    box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15); }
+  .btn-yellow:focus, .btn-yellow:active, .btn-yellow.active {
+    background-color: #be8904; }
+  .btn-yellow.dropdown-toggle {
+    background-color: #fbc02d !important; }
+    .btn-yellow.dropdown-toggle:hover, .btn-yellow.dropdown-toggle:focus {
+      background-color: #fbc846 !important; }
+  .btn-yellow:not([disabled]):not(.disabled):active, .btn-yellow:not([disabled]):not(.disabled).active,
+  .show > .btn-yellow.dropdown-toggle {
+    box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
+    background-color: #be8904 !important; }
+  .btn-yellow:not([disabled]):not(.disabled):active:focus, .btn-yellow:not([disabled]):not(.disabled).active:focus,
+  .show > .btn-yellow.dropdown-toggle:focus {
+    box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15); }
+
+.btn-cdk {
+  color: white;
+  background-color: #82C600;
+  padding: 6px 12px;
+}
+.btn-cdk:focus,
+.btn-cdk.focus {
+  color: black;
+  background-color: var(--white);
+  border-color: #82C600;
+}
+.btn-cdk:hover {
+  color: black;
+  background-color: #e6e6e6;
+  border-color: #adadad;
+}
+.btn-cdk:active,
+.btn-cdk.active,
+.open > .dropdown-toggle.btn-cdk {
+  color: black;
+  background-color: #e6e6e6;
+  background-image: none;
+  border-color: #adadad;
+}
+.btn-cdk:active:hover,
+.btn-cdk.active:hover,
+.open > .dropdown-toggle.btn-cdk:hover,
+.btn-cdk:active:focus,
+.btn-cdk.active:focus,
+.open > .dropdown-toggle.btn-cdk:focus,
+.btn-cdk:active.focus,
+.btn-cdk.active.focus,
+.open > .dropdown-toggle.btn-cdk.focus {
+  color: black;
+  background-color: #d4d4d4;
+  border-color: #8c8c8c;
+}
+
+.invalid {
+   color: #D0011B;
+}
+
+.invalid:before {
+  position: relative;
+  left: -35px;
+  content: "✖";
+}
+
+.valid {
+  color: #64dd11;
+}
+
+.valid:before {
+  position: relative;
+  left: -35px;
+  content: "✔";
+}
+
+/* The message box is shown when the user clicks on the password field */
+#message {
+  display:none;
+  position: relative;
+
+}
+
+#message p {
+  padding: 1px 35px;
+  font-size: 12px;
+}
+
+.page section.page > main.body, .page section.page > section.body {
+   flex-grow: 1;
+   flex-shrink: 0;
+   -ms-flex-positive: 1;
+}
+
+.page section.flex-grow.page.sp-scroll {
+   over-flow-x: inherit;
+   over-flow-y: auto;
+}
+
+.page section.page, .page main.body {
+   padding-top: 0px !important;
+}
+
+.page .background-image-blur {
+   background-image: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, .6));
+}
+
+.ng-scope {
+    background: url('../img/cdk_back.png') top center;
+    background-size: cover !important;
+    background-repeat: no-repeat;
+}
+
+section.page {
+   position: relative;
+   overflow-x: auto;
+   overflow-y: auto;
+}
+
+div.page, section.page {
+   height: 100%;
+   wideth: 100%;
+}
+
+a {
+    color: #428bca;
+}
+
+.errorlist {
+   color: #d0011b;
+}
+
+
+
+table.table a {
+    color: #428bca;
+}
+
+resource-title-row {
+   display: flex;
+   flex-direction: row;
+   align-items: center;
+}
+
+
+card.card-c view.view-c {
+   box-shadow: 0 5px 11px 0 rgba(0,0,0,.18),0 4px 15px 0 rgba(0,0,0,.15);
+   border-radius: .25rem;
+   
+}
+
+card.card-c.narrower view.view-c {
+   margin-left: 4%;
+   margin-right: 4%;
+   margin-top: -1.25rem;
+   
+}
+
+card.card-c view.view-c.gradient-card-header {
+    padding: 1.6rem 1rem;
+    text-align: center;
+}
+
+.view.full-page-intro {
+      height: 800px;
+   min-width: 300px;
+}
+
+.page .panel-cdk {
+   border-color: black;
+}
+
+#table-custom td:hover {
+    cursor: pointer;
+    }

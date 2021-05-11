@@ -1,0 +1,143 @@
+openapi: 3.0.0
+info:
+  description: |
+    App Registry Authentication.  Use the authentication methods to retrieve a JWT token to be used for the rest of the API methods. 
+  version: 1.0.62
+  title: App Registry
+  contact:
+    name: PCP Platform Developers
+    email: athenaplatformdevelopers@cdk.com
+servers:
+  - url: https://app-registry/api/token
+
+paths:
+
+  /create:
+    post:
+      tags:
+        - Login using credentials
+      summary: login to generate token
+      description: Generate the token pair from set of credentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/create'
+                
+      responses:
+        '200':
+          description: Token generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tokenResponse'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '500':
+          $ref: '#/components/responses/UnexpectedError' 
+
+  /refresh:
+    post:
+      tags:
+        - Refresh Token
+      summary: retrieve a new access token using refresh token
+      description: When the short-lived access token expires, use this method with teh longer-lived refresh token to retrieve another access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/refreshTokenRequest'
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/refreshTokenResponse'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+components:
+  schemas:
+    create:
+      type: object
+      properties: 
+        username:
+          type: string
+          example: user1
+        password:
+          type: string
+          example: '******'
+
+    accessToken:
+      type: string
+      example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX3BrIjoxLCJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiY29sZF9zdHVmZiI6IuKYgyIsImV4cCI6MTIzNDU2LCJqdGkiOiJmZDJmOWQ1ZTFhN2M0MmU4OTQ5MzVlMzYyYmNhOGJjYSJ9.NHlztMGER7UADHZJlxNG0WSi22a2KaYSfd1S-AuT7lU
+    refreshToken:
+      type: string
+      example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX3BrIjoxLCJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiY29sZF9zdHVmZiI6IuKYgyIsImV4cCI6MTIzNTY3LCJqdGkiOiJjNzE4ZTVkNjgzZWQ0NTQyYTU0NWJkM2VmMGI0ZGQ0ZSJ9.ekxRxgb9OKmHkfy-zs1Ro_xs1eMLXiR17dIDBVxeT-w
+    tokenResponse:
+      type: object
+      properties:
+        access: 
+          $ref: '#/components/schemas/accessToken'
+        refresh:
+          $ref: '#/components/schemas/refreshToken'
+    refreshTokenRequest:
+      type: object
+      properties:
+        refresh:
+          $ref: '#/components/schemas/refreshToken'
+    refreshTokenResponse:
+      type: object
+      properties:
+        access:
+          $ref: '#/components/schemas/accessToken'
+
+    Error:
+      type: object
+      properties:
+        errorMessage:
+          type: string
+ 
+  responses:
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    PermissionDenied:
+      description: Permission Denied
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnexpectedError:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Error:
+      description: Bad Request.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

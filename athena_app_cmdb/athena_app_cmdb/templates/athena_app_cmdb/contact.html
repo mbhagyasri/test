@@ -1,0 +1,49 @@
+{% extends "athena_app_cmdb/layout.html" %}
+{% block style %}
+<style>
+.map-container iframe{
+   left:0;
+   top:0;
+   height:100%;
+   width:100%;
+   position:absolute;
+}
+
+html, body, {
+   min-width: 320px;
+   height: 100%;
+}
+
+@media (max-width: 740px) {
+   html, body, header, .view {
+      height: 2000px;
+   }
+}
+
+.fixed-top-2 {
+   margin-top: 80px;
+}
+
+body {
+    padding-top: 150px;
+}
+</style>
+{% endblock %}
+{% block content %}
+   <section class="mb-5 pl-3 pr-3">
+
+        <!-- Card -->
+    <!--Card header-->
+      <div class="view view-cascade py-3 gradient-card-header black mx-4 d-flex justify-content-between align-items-center border-1 border-color-black ">
+      </div>
+      <!--/Card header-->
+      <!-- Card content -->
+      <div class="card-body card-body-cascade pb-0">
+                  <!-- Panel data -->
+        <div class="row card-body pt-3 pl-10 pr-10">
+          <div><strong>Version:</strong>   1.0.50
+          <P><strong>Support:</strong>   <a href="mailto:msvx-engineering@cdk.com">msvx-engineering@cdk.com</a></div>
+        </div>
+      </div>
+   </section>
+{% endblock %}

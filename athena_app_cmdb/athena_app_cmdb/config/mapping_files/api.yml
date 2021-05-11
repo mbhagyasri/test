@@ -1,0 +1,70 @@
+paths:
+  /environments:
+    model: environments
+    post:
+      required_inputs:
+        name:
+          type: string
+          choices:
+            - dev
+            - stage
+            - prod
+            - sandbox
+  /locations:
+    model: locations
+    post:
+      required_inputs:
+        name:
+          type: string
+        environment:
+          type: uuid
+      optional_inputs:
+        properties.domain:
+          type: string
+        properties.region:
+          type: string
+          default: us
+          choices:
+            - us
+        properties.status:
+          type: string
+          default: live
+        environment_name:
+          type: lookup_field
+          model: environments
+          lookup_key: name
+          src_key: id
+          dst_key: environment
+          example: dev
+
+  /clusters:
+    model: clusters
+    post:
+      required_inputs:
+        name:
+          type: string
+      optional_inputs:
+        properties.uri:
+          type: string
+      location_name:
+        type: lookup_field
+        model: locations
+        lookup_key: name
+        src_key: id
+        dst_key: location
+        example: aws us-prod
+  /teams:
+    model: teams
+    post:
+      required_inputs:
+        name:
+          type: string
+        properties.email:
+          type: array
+        properties.ad-group:
+          type: array
+        properties.notification:
+          type: array
+      optional_inputs:
+        description:
+          type: string

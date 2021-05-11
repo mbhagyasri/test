@@ -1,0 +1,22 @@
+apiVersion: v1
+data:
+  DATABASE: athena_app_cmdb
+  DJANGO_SETTINGS_MODULE: AppRegistry.settings.prod
+  SQL_DATABASE: postgres
+  SQL_ENGINE: django.db.backends.postgresql
+  SQL_HOST: postgres
+  SQL_PORT: "5432"
+  SQL_USER: postgres
+  REDIS_HOST: redis
+
+  SQL_PASSWORD: ""
+  POSTGRES_PASSWORD: ""
+  SECRET_KEY: ""
+  STACKSTORM_API: ""
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: app-registry-configmap
+  name: app-registry-configmap
+  namespace: app-registry
