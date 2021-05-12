@@ -27,7 +27,7 @@ urlpatterns = [
     path('/<slug:objname>', views.athena_app_cmdbList.as_view(), name='athena_app_cmdb-list'),
     path('/<slug:objname>/detail', views.athena_app_cmdbListDetail.as_view(), name='athena_app_cmdb-list-detail'),
     path('/<slug:objname>/sync-update', views.athena_app_cmdbBulkSyncUpdate.as_view(), name='item-sync-update'),
-    path('/<slug:objname>/<uuid:item>', views.athena_app_cmdbItem.as_view(), name='api-item'),
+    path('/<slug:objname>/<slug:item>', views.athena_app_cmdbItem.as_view(), name='api-item'),
     path('/<slug:objname>/<uuid:item>/detail', views.athena_app_cmdbItemDetail.as_view(), name='api-item-detail'),
     path('/<slug:parentobjname>/<uuid:parent>/associations',
          views.athena_app_cmdbAssociationsList.as_view(), name='athena_app_cmdb-associations-list'),

@@ -1,5 +1,5 @@
 SHA    := $(shell git describe --match=NeVeRmAtCh --always --abbrev=40 --dirty=*)
-NAME   := docker.cdk.com:9015/sr2/athena_app_cmdb
+NAME   := athena_app_cmdb
 TAG    := $(shell git log -1 --pretty=%H)
 IMG    := ${NAME}:${TAG}
 LATEST := ${NAME}:latest

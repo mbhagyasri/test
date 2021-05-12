@@ -6,42 +6,15 @@ import socket
 from uuid import UUID
 import json
 import logging
-from . import exceptions
+from django import http
+from django.db import connection
+from django.conf import settings
 from libs.utility.config_parsers import get_config
 from django.utils.module_loading import import_string
+from django.core.serializers.json import DjangoJSONEncoder
 
 logger = logging.getLogger(__name__)
 config = get_config()
-
-
-def raise_for_error(status_code, message=None):
-    """Helper method to raise exceptions based on the status code of a response received back from Vault.
-    :param status_code: Status code received in a response from Vault.
-    :type status_code: int
-    :param message: Optional message to include in a resulting exception.
-    :type message: dict | str
-    :param errors: Optional errors to include in a resulting exception.
-    :type errors: list | str
-    """
-
-    if status_code == 400:
-        raise exceptions.InvalidRequest(message)
-    elif status_code == 401:
-        raise exceptions.Unauthorized(message)
-    elif status_code == 403:
-        raise exceptions.Forbidden(message)
-    elif status_code == 404:
-        raise exceptions.InvalidPath(message)
-    elif status_code == 406:
-        raise exceptions.NotAcceptable(message)
-    elif status_code == 429:
-        raise exceptions.RateLimitExceeded( message)
-    elif status_code == 500:
-        raise exceptions.InternalServerError(message)
-    elif status_code == 503:
-        raise exceptions.ServerDown(message)
-    else:
-        raise exceptions.UnexpectedError(message)
 
 
 # validate that value provided match the input type expected
@@ -70,6 +43,7 @@ def check_value(param, value):
         return True
     # uuid 4
     elif input_type == 'uuid':
+        logger.info('HERE')
         try:
             UUID(value, version=4)
             return True
@@ -132,3 +106,46 @@ class ObjDict(dict):
             val = super(ObjDict, self).__getattribute__(item)
 
         return val
+
+
+class GEOS_JSONEncoder(DjangoJSONEncoder):
+    def default(self, o):
+        try:
+            return o.json  # Will therefore support all the GEOS objects
+        except:
+            pass
+        return super(GEOS_JSONEncoder, self).default(o)
+
+
+def output_json(out, code=200):
+        if code != 200:
+            out['code'] = code
+        indent = None
+        if settings.DEBUG:
+            if isinstance(out, dict):
+                out['debug_db_queries'] = connection.queries
+            indent = 4
+
+        json_dumps_params = {'ensure_ascii': False, 'indent': indent}
+
+        if type(out) is dict:
+            response = http.JsonResponse(
+                out,
+                status=code,
+                encoder=GEOS_JSONEncoder,
+                json_dumps_params=json_dumps_params)
+        else:
+            encoder = GEOS_JSONEncoder(**json_dumps_params)
+            content = encoder.iterencode(out)
+
+            response = http.StreamingHttpResponse(
+                streaming_content=content,
+                content_type='application/json',
+                status=code)
+
+        response['Cache-Control'] = 'max-age=2419200'  # 4 weeks
+        response['Access-Control-Allow-Origin'] = '*'
+
+        return response
+
+

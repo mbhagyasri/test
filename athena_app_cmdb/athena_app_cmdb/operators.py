@@ -11,19 +11,17 @@ import uuid
 import jsonpatch
 import logging
 
-from copy import deepcopy
 from .models import models_class_lookup
 from django.forms.models import model_to_dict
 from django.conf import settings
-from .utils import exceptions
-from .utils.middleware import is_registered
-from .utils.helper_methods import check_value, raise_for_error
+from .utils.helper_methods import check_value
+from .middleware import ViewException
 from django.views.decorators.cache import cache_page
 from libs.utility.config_parsers import get_config
 
 logger = logging.getLogger(__name__)
 config = get_config()
-
+FORMAT = 'json'
 
 class CacheMixin(object):
     cache_timeout = 5
@@ -39,11 +37,10 @@ class Validators(object):
     def __init__(self):
         self.mappings = self.load_mappings()
         if not self.mappings:
-            raise_for_error(400, message={'Validation errors': 'Failed to load api mapping configuration.'})
+            raise ViewException(FORMAT, {'Validation errors': 'Failed to load api mapping configuration.'}, 400)
         self.errors = {}
 
     def get_associations(self, path, parentobjname):
-        logger.info('Getting associations object for %s' % parentobjname)
         childobj_list = []
         pattern = path + r'/([a-zA-Z0-9_-]+)/'
         for p in self.mappings['paths']:
@@ -54,10 +51,10 @@ class Validators(object):
 
     def parse_mappings(self, path, method, data, raise_exception=True):
         name = data.get('name', None)
-        logger.info('Validating {}, method: {}, item: {}'.format(path, method, name))
         errors = {"name": name, "path": path}
         if path in self.mappings['paths'] and method in self.mappings['paths'][path]:
             mapping = self.mappings['paths'][path][method]
+            modelname = self.mappings['paths'][path]['model']
             # validate required_inputs
             invalid_inputs = []
             missing_inputs = []
@@ -73,7 +70,6 @@ class Validators(object):
                     bad_fields = []
                     if input_type in mapping:
                         for parameter in mapping[input_type]:
-                            logger.info('Checking %s: %s' % (input_type, parameter))
                             mapping_param = mapping[input_type][parameter]
                             if pydash.objects.has(data, parameter) and pydash.objects.get(data, parameter):
                                 check = False
@@ -102,7 +98,6 @@ class Validators(object):
                                                     item_path = '/{}'.format(item_path)
                                                     patch = [{'op': 'remove', 'path': item_path}]
                                                     data = jsonpatch.apply_patch(data, patch=patch)
-                                                    logger.debug('removing {}. {}'.format(parameter, data))
                                                     continue
                                             else:
                                                 # replace value with id
@@ -142,6 +137,19 @@ class Validators(object):
                                                             [pydash.objects.get(data,
                                                                                 mapping_param['related_field_key'])])
                                         check = True
+                                elif mapping_param['type'].lower() == 'unique':
+                                    obj = models_class_lookup[modelname]
+                                    qf = re.sub(r'\.', "__", parameter)
+                                    fq = {qf: pydash.objects.get(data, parameter)}
+                                    obj_data = obj.objects.filter(**fq)
+                                    if obj_data.exists():
+                                        error = 'value for {} is not unique.'.format(parameter)
+                                        if parameter in invalid_inputs_hash:
+                                            continue
+                                        invalid_inputs_hash[parameter] = 1
+                                        bad_fields.append({parameter: error})
+                                    else:
+                                         check = True
                                 elif mapping_param['type'].lower() == 'array' and pydash.objects.has(data, parameter):
                                     if isinstance(current_value, list):
                                         check = True
@@ -197,26 +205,20 @@ class Validators(object):
                     errors["Validation Errors"] = self.errors
                     logger.error(errors)
                     if raise_exception:
-                        raise exceptions.InvalidRequest(error_message=errors)
+                        ViewException(FORMAT, errors, 400)
                     else:
                         return errors
             except Exception as e:
                 logger.exception(e)
-                if is_registered(e):
-                    errors = e.error_message
-                else:
-                    errors["Validation Errors"] = str(e)
                 if raise_exception:
-                    raise_for_error(400, errors)
-                else:
-                    errors
+                    ViewException(FORMAT, str(e), 400)
             return data
 
         else:
             logger.error('path %s not valid.' % path)
             errors["Validation Errors"] = "Method is not supported."
             if raise_exception:
-                raise_for_error(status_code=405, message=errors)
+                ViewException(FORMAT, errors, 405)
             else:
                 return errors
 

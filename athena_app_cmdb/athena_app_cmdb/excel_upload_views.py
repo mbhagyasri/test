@@ -28,7 +28,8 @@ from .views import get_model
 
 from libs.utility.commands import Execute
 from libs.utility.config_parsers import get_config
-from .utils.helper_methods import raise_for_error, JsonUUIDEncoder
+from .utils.helper_methods import JsonUUIDEncoder
+from .middleware import ViewException
 
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,7 @@ EXE = Execute()
 
 IGNORE_FILTERS = ['page_size', 'page']
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
+FORMAT = 'json'
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -47,18 +49,18 @@ class LoadFromExcel(APIView):
         errors_list = []
         wb = {}
         if 'pod_template' not in request.FILES:
-            raise_for_error(406, 'Excel file need to be submitted using key "pod_template".')
+            ViewException(FORMAT, 'Excel file need to be submitted using key "pod_template".', 400)
         excel_file = request.FILES['pod_template']
         try:
             wb = openpyxl.load_workbook(excel_file, data_only=True)
         except Exception as e:
             logger.exception(e)
-            raise_for_error(400, e)
+            ViewException(FORMAT, str(e), 400)
 
         # process sheet via Import Control
         if 'ImportControl' not in wb:
-            raise_for_error(406, "Expecting ImportControl sheet to process upload.  "
-                                 "Please review the spreadsheet and try again")
+            ViewException(FORMAT, "Expecting ImportControl sheet to process upload.  "
+                                 "Please review the spreadsheet and try again", 406)
         # Processing Import Control
         import_control = self.process_import_control(request, wb['ImportControl'])
         logger.debug('processing Import Control')
@@ -70,7 +72,7 @@ class LoadFromExcel(APIView):
         for item in import_control:
             logger.info('Processing sheet: {}'.format(item['sheet']))
             if item['sheet'] not in wb:
-                raise_for_error(406, "Sheet {} not found for processing.".format(item['sheet']))
+                ViewException(FORMAT, "Sheet {} not found for processing.".format(item['sheet']), 406)
             if item['sheet'] not in sheet_data:
                 data = self.load_worksheet(wb[item['sheet']])
                 sheet_data[item['sheet']] = data
@@ -78,7 +80,7 @@ class LoadFromExcel(APIView):
                 data = sheet_data[item['sheet']]
             objname = item['model']
             if not data:
-                raise_for_error(400, "No data found for processing from sheet: {}".format(item['sheet']))
+                ViewException(FORMAT, "No data found for processing from sheet: {}".format(item['sheet']), 400)
             count = 0
             if item['data_set_num'] not in data:
                 logger.error('No data found for section {}'.format(item['description']))

@@ -53,9 +53,13 @@ RUN set -ex \
 # copy entrypoint.sh
 # COPY ./entrypoint.sh /opt/athena_app_cmdb/entrypoint.sh
 
-
 # copy project source code
 COPY . /opt/athena_app_cmdb/
+
+# download AWS RDS SSL certificate to /opt/athena_app_cmdb/etc
+RUN cd /opt/athena_app_cmdb/etc \
+    && wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem \
+    && ln -s rds-combined-ca-bundle.pem db-rootca.pem
 
 # expose the port
 EXPOSE 8000

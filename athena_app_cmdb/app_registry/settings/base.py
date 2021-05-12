@@ -55,7 +55,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_currentuser.middleware.ThreadLocalUserMiddleware'
+    'django_currentuser.middleware.ThreadLocalUserMiddleware',
+    'athena_app_cmdb.middleware.ViewExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'app_registry.urls'
@@ -279,6 +280,7 @@ LOGGING = {
     'formatters': {
         'json': {
             '()': 'json_log_formatter.JSONFormatter',
+          #  'format': '[%(asctime)s] [%(name)s] [%(funcName)s] %(levelname)s %(message)s'
         }
     },
     'filters': {

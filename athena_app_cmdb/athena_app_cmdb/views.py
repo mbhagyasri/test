@@ -32,14 +32,14 @@ from rest_framework.response import Response
 from . import models, serializers
 from .operators import Validators
 from .paginator import MyPaginationMixin
-
-
-from .utils.helper_methods import raise_for_error, JsonUUIDEncoder
+from .middleware import ViewException
+from .utils.helper_methods import check_value
 from libs.utility.config_parsers import get_config
 
 logger = logging.getLogger(__name__)
 config = get_config()
 
+FORMAT = 'json'
 IGNORE_FILTERS = ['page_size', 'page', 'order_by']
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
@@ -61,12 +61,39 @@ def api_root(request, format=None):
 
 
 def get_model(objname):
+
     if objname not in models.models_class_lookup:
         resp = "%s table can not be found." % objname
         logger.error(resp)
-        raise_for_error(404, "Model {0} Not found.".format(objname))
+        raise ViewException(FORMAT, resp, 404)
     obj = models.models_class_lookup[objname]
     return obj
+
+
+def get_item(objname, obj, item):
+    """
+    For backward compatible with old App Registry id, we will search both uuid format and old format
+    :param objname: string value of the uri resource
+    :param obj: model object
+    :param item: id to search
+    :return: data object
+    """
+    got_data = False
+    data = None
+    valid = check_value({'type': 'uuid'}, item)
+    if not valid:
+        q = {'properties__old_version_id': item}
+        data = obj.filter(**q)
+        if data.count() > 0:
+            got_data = True
+            data = data[:1].get()
+    elif obj.filter(id=item).exists:
+        data = obj.get(id=item)
+        got_data = True
+    if not got_data:
+        logger.info('NOT FOUND')
+        raise ViewException(FORMAT, '{} not found.'.format(item), 404)
+    return data
 
 
 def filter_get_request(request, data, page_size):
@@ -100,11 +127,10 @@ def filter_get_request(request, data, page_size):
                         values_list = array[1].split(',')
                         ex[qf] = values_list
                     try:
-                        logger.debug('exclude: {}'.format(ex))
                         data = data.exclude(**ex)
                     except Exception as e:
                         logger.exception(e)
-                        raise_for_error(400, "Invalid filter request.")
+                        raise ViewException(FORMAT, 'Invalid filter request', 400)
                 else:
                     qf = re.sub(r'\.', "__", q)
                     # noinspection PyArgumentList
@@ -113,7 +139,7 @@ def filter_get_request(request, data, page_size):
                         data = data.exclude(**qf)
                     except Exception as e:
                         logger.exception(e)
-                        raise_for_error(400, "Invalid filter request.")
+                        raise ViewException(FORMAT, 'Invalid filter request', 400)
 
         else:
             for q in query_value:
@@ -138,8 +164,11 @@ def filter_get_request(request, data, page_size):
                     data = data.filter(**ft)
                 except Exception as e:
                     logger.exception(e)
-                    raise_for_error(400, "Invalid filter request.")
+                    raise ViewException(FORMAT, "Invalid filter request.", 400)
     return data, page_size
+
+
+# -------------------------  View Classes ---------------------------------------
 
 
 # noinspection PyMethodMayBeStatic
@@ -161,10 +190,10 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
             if data:
                 pass
             else:
-                raise_for_error(404, "No {} found.".format(objname))
+                raise ViewException(FORMAT, "No {} found.".format(objname), 404)
         except Exception as e:
             logger.exception(e)
-            raise_for_error(404, "No {} found.".format(objname))
+            raise ViewException(FORMAT, "No {} found.".format(objname), 404)
         serializer_class = serializers.serializer_class_lookup_read[objname]
         # do not show pagination if query result is less than page size
         logger.info('count %s' % data.count())
@@ -180,12 +209,12 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
             else:
                 obj_serializer = serializer_class(data, many=True)
                 decrypt_data = obj_serializer.data
-                return Response({objname: decrypt_data})
+                return Response(decrypt_data)
         except rest_exceptions.NotFound:
-            raise_for_error(404, 'Not found.')
+            raise ViewException(FORMAT, 'Not found.', 404)
         except Exception as e:
             logger.exception(e)
-            raise_for_error(500, 'Server Exception')
+            raise ViewException(FORMAT, 'Server Exception', 500)
 
     def post(self, request, objname):
         path = '/%s' % objname
@@ -227,10 +256,10 @@ class athena_app_cmdbListDetail(APIView, MyPaginationMixin):
             if data:
                 pass
             else:
-                raise_for_error(404, "No {} found.".format(objname))
+                raise ViewException(FORMAT, "No {} found.".format(objname), 404)
         except Exception as e:
             logger.exception(e)
-            raise_for_error(404, "No {} found.".format(objname))
+            raise ViewException(FORMAT, "No {} found.".format(objname), 404)
         serializer_class = serializers.serializer_class_lookup_read[objname]
         if objname in serializers.serializer_class_lookup_detail:
             serializer_class = serializers.serializer_class_lookup_detail[objname]
@@ -250,10 +279,10 @@ class athena_app_cmdbListDetail(APIView, MyPaginationMixin):
                 decrypt_data = obj_serializer.data
                 return Response({objname: decrypt_data})
         except rest_exceptions.NotFound:
-            raise_for_error(404, 'Not found.')
+            raise ViewException(FORMAT, 'Not found.', 404)
         except Exception as e:
             logger.exception(e)
-            raise_for_error(500, 'Server Exception')
+            raise ViewException(FORMAT, 'Server Exception', 500)
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -265,19 +294,18 @@ class athena_app_cmdbItem(APIView):
     def get(self, request, objname, item):
         obj = get_model(objname)
         if objname == 'tasks' or 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
-            data = obj.objects.all()
+            obj = obj.objects.all()
         else:
-            data = obj.objects.exclude(deleted=1)
-        data = get_object_or_404(data, id=item)
+            obj = obj.objects.exclude(deleted=1)
+        data = get_item(objname, obj, item)
         serializer_class = serializers.serializer_class_lookup_read[objname]
         obj_serializer = serializer_class(data)
         decrypt_data = obj_serializer.data
         return Response(decrypt_data)
 
     def delete(self, request, objname, item):
-        logger.info('DELETE object: %s' % objname)
         obj = get_model(objname)
-        data = get_object_or_404(obj, id=item)
+        data = get_item(objname, obj, item)
         serializer_class = serializers.serializer_class_lookup_read[objname]
         obj_serializer = serializer_class(data)
         if 'HTTP_X_FORCE_DELETE' in request.META and \
@@ -287,7 +315,7 @@ class athena_app_cmdbItem(APIView):
                 data.delete()
             except Exception as e:
                 logger.exception(e)
-                raise_for_error(400, "Invalid request.")
+                raise ViewException(FORMAT, "Invalid request.", 400)
         else:
             data.name = '{} DELETED {}'.format(data.name, timezone.now())
             data.deleted = True
@@ -298,7 +326,11 @@ class athena_app_cmdbItem(APIView):
     def put(self, request, objname, item):
         path = '/{0}'.format(objname)
         obj = get_model(objname)
-        obj = get_object_or_404(obj, id=item)
+        if objname == 'tasks' or 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
+            obj = obj.objects.all()
+        else:
+            obj = obj.objects.exclude(deleted=1)
+        obj = get_item(objname, obj, item)
         method = 'post'
         logger.debug('path %s method: %s request: %s' % (path, method, request.data))
         data = Validators().parse_mappings(data=request.data, path=path, method=method)
@@ -310,7 +342,7 @@ class athena_app_cmdbItem(APIView):
         if serializer.is_valid():
             serializer.save()
         else:
-            raise_for_error(400, serializer.errors)
+            raise ViewException(FORMAT, serializer.errors, 400)
         return Response(serializer.data, status.HTTP_200_OK)
 
     def patch(self, request, objname, item):
@@ -318,15 +350,15 @@ class athena_app_cmdbItem(APIView):
         logger.info('Processing method: PATCH for {} with id: {}'.format(objname, item))
         # We don't support patch against deployment data
         if objname == 'deployments':
-            raise_for_error(405, 'PATCH method is not supported.')
+            raise ViewException(FORMAT, 'PATCH method is not supported.', 405)
         if request.META['CONTENT_TYPE'] != 'application/json-patch+json':
-            raise_for_error(406, 'PATCH method expects application/json-patch+json Content-Type.')
+            raise ViewException(FORMAT, 'PATCH method expects application/json-patch+json Content-Type.', 406)
         obj = get_model(objname)
         if objname == 'tasks' or 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
             obj = obj.objects.all()
         else:
             obj = obj.objects.exclude(deleted=1)
-        obj = get_object_or_404(obj, id=item)
+        obj = get_item(objname, obj, item)
         serializer_class = serializers.serializer_class_lookup[objname]
         obj_serializer = serializer_class(obj)
         current_data = obj_serializer.data
@@ -337,13 +369,13 @@ class athena_app_cmdbItem(APIView):
         try:
             merge_data = jsonpatch.apply_patch(current_data, request.body)
         except Exception as e:
-            raise_for_error(400, "Invalid request. {}".format(e),)
+            raise ViewException(FORMAT, "Invalid request. {}".format(e), 400)
         serializer = serializer_class(obj, data=merge_data, partial=False)
         if serializer.is_valid():
             serializer.update(obj, validated_data=serializer.validated_data)
             serializer.save()
         else:
-            raise_for_error(400, serializer.errors)
+            raise ViewException(FORMAT, serializer.errors, 400)
         return Response(serializer.data, status.HTTP_200_OK)
 
 
@@ -442,8 +474,8 @@ class athena_app_cmdbAssociationsChildCreateDestroy(APIView):
         self.parentobj = get_model( parentobjname)
         self.childobj = get_model( childobjname)
         # Validation to make sure parent and child exists
-        get_model( parentobjname)
-        get_model( childobjname)
+        get_model(parentobjname)
+        get_model(childobjname)
         pdata = self.parentobj.objects.all()
         pdata = get_object_or_404(pdata, id=parent)
         cdata = self.childobj.objects.all()
@@ -464,14 +496,14 @@ class athena_app_cmdbItemHistory(APIView, MyPaginationMixin):
         history_objname = '{0}_history'.format(objname)
         obj = get_model(history_objname)
         if history_objname not in models.models_name_lookup:
-            raise_for_error(404, "This model {} does not store history.".format(objname))
+            raise ViewException(FORMAT, "This model {} does not store history.".format(objname), 404)
         model_name = models.models_name_lookup[objname]
         kwarg = {model_name: item}
         data = obj.objects.all()
         data = data.filter(**kwarg)
         data, page_size = filter_get_request(request, data, page_size)
         if not data.exists():
-            raise_for_error(404, "No {} found.".format(history_objname))
+            raise ViewException(FORMAT, "No {} found.".format(history_objname), 404)
         serializer_class = serializers.serializer_class_lookup_read[history_objname]
         if detail and detail == 'detail':
             serializer_class = serializers.serializer_class_lookup_detail[history_objname]
@@ -492,7 +524,7 @@ class athena_app_cmdbItemHistory(APIView, MyPaginationMixin):
                 return Response({history_objname: decrypt_data})
         except Exception as e:
             logger.exception(e)
-            raise_for_error(500, 'Server Exception')
+            raise ViewException(FORMAT, 'Server Exception', 500)
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -553,10 +585,10 @@ class athena_app_cmdbBulkSyncUpdate(APIView):
                 return Response("Done", status.HTTP_204_NO_CONTENT)
             else:
                 logger.exception("Data to update history sync status is not an array.")
-                raise_for_error(400, {"error":"Expect a list of id to update."})
+                raise ViewException(FORMAT, {"error":"Expect a list of id to update."}, 400)
         except Exception as e:
             logger.exception(e)
-            raise_for_error(400, "Failed to perform Sync Update")
+            raise ViewException(FORMAT, "Failed to perform Sync Update", 400)
 
     def delete(self, request, objname):
         obj = get_model('{}_history'.format(objname))
@@ -573,10 +605,10 @@ class athena_app_cmdbBulkSyncUpdate(APIView):
                 return Response("Done", status.HTTP_204_NO_CONTENT)
             else:
                 logger.exception("Data to update history sync status is not an array.")
-                raise_for_error(400, {"error":"Expect a list of id to update."})
+                raise ViewException(FORMAT, {"error":"Expect a list of id to update."}, 400)
         except Exception as e:
             logger.exception(e)
-            raise_for_error(400, "Failed to perform Sync Update")
+            raise ViewException(FORMAT, "Failed to perform Sync Update", 400)
 
     def clean_old_data(self, objname):
         obj = get_model('{}_history'.format(objname))
@@ -610,30 +642,30 @@ class athena_app_cmdbBulkUpdate(APIView, MyPaginationMixin):
             return_content = []
             # We don't support patch against deployment data
             if objname == 'deployments':
-                raise_for_error(405, 'PATCH method is not supported.')
+                raise ViewException(FORMAT, 'PATCH method is not supported.', 405)
 
             obj = get_model(objname)
             obj = obj.objects.all()
             serializer_class = serializers.serializer_class_lookup[objname]
             if not isinstance(content, list):
-                raise_for_error(406, {"error": "Expect a list of resources"})
+                raise ViewException(FORMAT, {"error": "Expect a list of resources"}, 406)
             for each in content:
                 item = each.get('id', None)
                 if not item:
-                    raise_for_error(400, {"error": "No id found in the data list for update"})
+                    raise ViewException(FORMAT, {"error": "No id found in the data list for update"}, 400)
                 robj = get_object_or_404(obj, id=item)
                 obj_serializer = serializer_class(robj)
                 merge_data = None
                 try:
                     merge_data = jsonpatch.apply_patch(obj_serializer.data, json.dumps(each['patch_data']))
                 except Exception as e:
-                    raise_for_error(400, "Invalid request. {}".format(e), )
+                    raise ViewException(FORMAT, "Invalid request. {}".format(e), 400)
                 serializer = serializer_class(robj, data=merge_data)
                 if serializer.is_valid():
                     serializer.save()
                     return_content.append(serializer.data)
                 else:
-                    raise_for_error(400, serializer.errors)
+                    raise ViewException(FORMAT, serializer.errors, 400)
             return_data[objname] = return_content
         return Response(return_data, status.HTTP_200_OK)
 
@@ -659,7 +691,7 @@ class athena_app_cmdbBulkUpdate(APIView, MyPaginationMixin):
                     content = serializer.data
                 except Exception as e:
                     logger.exception(e)
-                    raise_for_error(400, "Invalid request.")
+                    raise ViewException(FORMAT, "Invalid request.", 400)
             return_data[objname] = content
         return Response(return_data, status.HTTP_201_CREATED)
 
@@ -674,7 +706,7 @@ class athena_app_cmdbBulkUpdate(APIView, MyPaginationMixin):
                 try:
                     item = each.get('id', None)
                     if not item:
-                        raise_for_error(400, {"error": "No id found in the data list for update"})
+                        raise ViewException(FORMAT, {"error": "No id found in the data list for update"}, 400)
                     robj = get_object_or_404(obj, id=item)
                     method = 'put'
                     logger.debug('path %s method: %s request: %s' % (path, method, request.data))
@@ -686,9 +718,9 @@ class athena_app_cmdbBulkUpdate(APIView, MyPaginationMixin):
                         serializer.save()
                         return_content.append(serializer.data)
                     else:
-                        raise_for_error(400, serializer.errors)
+                        raise ViewException(FORMAT, serializer.error, 400)
                 except Exception as e:
                     logger.exception(e)
-                    raise_for_error(400, "Invalid request.")
+                    raise ViewException(FORMAT, "Invalid request.", 400)
             return_data[objname] = return_content
         return Response({objname: return_data}, status.HTTP_200_OK)

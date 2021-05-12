@@ -1,0 +1,85 @@
+{% extends "athena_app_cmdb/layout.html" %}
+
+{% load i18n %}
+
+{% block style %}
+
+  <style>
+
+    .map-container{
+overflow:hidden;
+padding-bottom:56.25%;
+position:relative;
+height:0;
+}
+
+.map-container iframe{
+left:0;
+top:20;
+height:100%;
+width:100%;
+position:absolute;
+}
+
+
+html,body,
+
+    .view {
+      height: 100%;
+    }
+
+
+    body {
+    padding-top: 80px;
+}
+
+ </style>
+
+{% endblock %}
+
+{% block content %}
+
+
+  <!-- Full Page Intro -->
+  <div class="ng-scope" style="background-size: initial; background-position: center center;">
+
+    <!-- Mask & flexbox options-->
+    <div class="mask rgba-black-light d-flex justify-content-center align-items-center">
+
+      <!-- Content -->
+      <div class="container">
+
+        <!--Grid row
+        <div class="row wow fadeIn">
+          Grid column-->
+
+          <!--Grid column-->
+            <!--Card-->
+            <div class="jumbotron text-center my-5">
+
+              <!--Card content-->
+              <div class="card-body">
+
+                <!-- Form -->
+                  <span class="display-1" style="color: #D0011B;"><i class="far fa-frown"></i></span>
+                  <H2 class="display-4">{% trans "OOPS!" %}</H2>
+                  <H3 style="font-size:10:vw">Page Not Found.</H3>
+              </div>
+
+            </div>
+            <!--/.Card
+
+
+        </div>
+        Grid row-->
+
+      </div>
+      <!-- Content -->
+
+    </div>
+    <!-- Mask & flexbox options-->
+
+  </div>
+  <!-- Full Page Intro -->
+{% endblock %}
+

@@ -5,7 +5,7 @@
 import uuid
 from django.db import models
 from requests.structures import CaseInsensitiveDict
-
+from django.core.exceptions import FieldDoesNotExist
 
 athena_app_cmdb_API_PATH = '/api'
 
@@ -35,7 +35,6 @@ class Environment(models.Model):
         return self.name
 
 
-
 class Location(models.Model):
     id = models.UUIDField(db_column='id', primary_key=True, default=uuid.uuid4)
     name = models.CharField(db_column='name', max_length=255, unique=True)
@@ -52,7 +51,7 @@ class Location(models.Model):
         managed = True
         db_table = 'Location'
         verbose_name = 'Location'
-        ordering = ['-updated_at', '-created_at',]
+        ordering = ['-updated_at', '-created_at', ]
 
     @property
     def self_links(self):
@@ -79,7 +78,7 @@ class Cluster(models.Model):
         managed = True
         db_table = 'Cluster'
         verbose_name = 'Kubernetes Cluster'
-        ordering = ['-updated_at', '-created_at',]
+        ordering = ['-updated_at', '-created_at', ]
 
     @property
     def self_links(self):
@@ -116,6 +115,15 @@ class Team(models.Model):
         return self.name
 
 
+@classmethod
+def model_field_exists(cls, field):
+    try:
+        cls._meta.get_field(field)
+        return True
+    except FieldDoesNotExist:
+        return False
+
+
 models_mapping = {'locations': Location, 'environments': Environment, 'teams': Team,
                   'clusters': Cluster
                   }
@@ -125,3 +133,5 @@ models_name_mapping = {'locations': 'Location', 'environments': 'Environment', '
 
 models_class_lookup = CaseInsensitiveDict(models_mapping)
 models_name_lookup = CaseInsensitiveDict(models_name_mapping)
+models.Model.field_exists = model_field_exists
+

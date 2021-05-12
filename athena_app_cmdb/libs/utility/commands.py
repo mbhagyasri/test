@@ -10,9 +10,9 @@ import errno
 import logging
 from datetime import datetime
 
-from athena_app_cmdb.utils.helper_methods import raise_for_error
+from athena_app_cmdb.middleware import ViewException
 logger = logging.getLogger(__name__)
-
+FORMAT = 'json'
 
 class Execute(object):
 
@@ -70,9 +70,9 @@ class Execute(object):
             elif not b:
                 pass
             else:
-                raise_for_error(400, 'NOT IMPLEMENTED merging "{0}" into "{1}"'.format(b, a))
+                ViewException(FORMAT, 'NOT IMPLEMENTED merging "{0}" into "{1}"'.format(b, a), 400)
         except TypeError as e:
-            raise_for_error(400, 'TypeError "{0}" in key "{1}" when merging "{2}" into "{3}"'.format(e, key, b, a))
+            ViewException(FORMAT, 'TypeError "{0}" in key "{1}" when merging "{2}" into "{3}"'.format(e, key, b, a), 400)
         return a
 
     def run_shell_command(self,command_line):

@@ -19,6 +19,8 @@ paths:
         environment:
           type: uuid
       optional_inputs:
+        properties.old_version_id:
+          type: unique
         properties.domain:
           type: string
         properties.region:

@@ -16,12 +16,60 @@ athena_app_cmdb_API_PATH = '/api/athena_app_cmdb'
 
 
 class LocationSerializer(serializers.ModelSerializer):
+    domain = serializers.CharField(required=False)
+    region = serializers.CharField(required=False)
+    status = serializers.CharField(required=False)
+    parameters = serializers.JSONField(required=False)
+    description = serializers.CharField(required=False)
+
     class Meta:
         model = models.Location
         fields = '__all__'
 
     def to_representation(self, instance):
         return LocationGetSerializer(instance).data
+
+    def process_validated_data(self, properties, validated_data):
+        logger.info(validated_data)
+        if 'domain' in validated_data:
+            properties['domain'] = validated_data.get('domain')
+        if 'region' in validated_data:
+            properties['region'] = validated_data.get('region')
+        if 'status' in validated_data:
+            properties['status'] = validated_data.get('status')
+        if 'parameters' in validated_data:
+            properties['parameters'] = validated_data.get('parameters')
+        if 'description' in validated_data:
+            properties['description'] = validated_data.get('description')
+        return properties
+
+    def create(self, validated_data):
+        properties = validated_data.get('properties', {})
+        # backward compatible to app registry v1
+        properties = self.process_validated_data(properties, validated_data)
+        validated_data['properties'] = properties
+        resource = models.Location.objects.create(**validated_data)
+        return resource
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        properties = validated_data.get('properties', instance.properties)
+        instance.deleted = validated_data.get('deleted', instance.deleted)
+        instance.created_at = validated_data.get('created_at', instance.created_at)
+        instance.created_by = validated_data.get('created_by', instance.created_by)
+        instance.updated_at = validated_data.get('updated_at', timezone.now())
+        instance.updated_by = validated_data.get('updated_by', instance.updated_by)
+        instance.deleted_at = validated_data.get('deleted_at', instance.deleted_at)
+        logger.info('----')
+        logger.info('BEFORE')
+        logger.info(properties)
+        properties = self.process_validated_data(properties, validated_data)
+        logger.info('------')
+        logger.info('AFTER')
+        logger.info(properties)
+        instance.properties = properties
+        instance.save()
+        return instance
 
 
 class LocationGetSerializer(serializers.ModelSerializer):
@@ -94,6 +142,10 @@ class ClusterGetSerializer(serializers.ModelSerializer):
 
 
 class TeamSerializer(serializers.ModelSerializer):
+    email = serializers.CharField(required=False)
+    description = serializers.CharField(required=False)
+    notification = serializers.ListField(required=False)
+
     class Meta:
         model = models.Team
         fields = '__all__'
