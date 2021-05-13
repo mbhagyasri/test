@@ -85,3 +85,32 @@ class TeamForm(AppRegistryForm):
 
         }
 
+class ProductForm(AppRegistryForm):
+
+    class Meta:
+        model = models.Product
+        exclude = ['deleted', 'deleted_at', 'original_name']
+        widgets = {
+            'properties': JSONEditorWidget(width='800px', height='800px')
+
+        }
+
+class AssetForm(AppRegistryForm):
+
+    class Meta:
+        model = models.Asset
+        exclude = ['deleted', 'deleted_at', 'original_name']
+        widgets = {
+            'properties': JSONEditorWidget(width='800px', height='800px')
+
+        }
+
+class ResourceForm(AppRegistryForm):
+
+    class Meta:
+        model = models.Resource
+        exclude = ['deleted', 'deleted_at', 'original_name']
+        widgets = {
+            'properties': JSONEditorWidget(width='800px', height='800px')
+
+        }

@@ -93,3 +93,24 @@ class TeamAdmin(AppRegistryDefaultAdmin):
         if obj.properties:
             return obj.properties.get('notification', '')
 
+
+@admin.register(models.Product)
+class ProductAdmin(AppRegistryDefaultAdmin):
+    form = forms.ProductForm
+    list_display = ('id', 'name', 'location')
+
+
+@admin.register(models.Asset)
+class AssetAdmin(AppRegistryDefaultAdmin):
+    form = forms.AssetForm
+    list_display = ('id', 'name', 'location')
+
+
+@admin.register(models.Resource)
+class ResourceAdmin(AppRegistryDefaultAdmin):
+    form = forms.TeamForm
+    list_display = ('id', 'name', 'type', 'location')
+
+    def type(self, obj):
+        if obj.properties:
+            return obj.properties.get('spec.type', '')
