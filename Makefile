@@ -9,7 +9,7 @@ IMGVERSION := ${NAME}:${VERSION}
 build:
 	docker build -t ${IMG} athena_app_cmdb
 	docker tag ${IMG} ${LATEST}
-	docker tag ${IMG} ${IMGVERSION}
+
 
 push:
 	@docker push ${NAME}
