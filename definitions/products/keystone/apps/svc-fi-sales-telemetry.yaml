@@ -1,0 +1,11 @@
+id: svc-fi-sales-telemetry
+name: fi-sales-telemetry
+description: F&I Sales Telemetry API
+type: svc
+_type: asset
+assetMasterId: 143
+appLanguage: java
+team: team-keystone
+product: keystone
+repo: https://stash.cdk.com/projects/CFI/repos/flex-api-sales-field-telemetry/browse
+cicd: https://bamboo.cdk.com/browse/CFI-SVCFISALESTELEMETRY

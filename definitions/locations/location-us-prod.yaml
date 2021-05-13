@@ -1,0 +1,26 @@
+id: location-us-prod
+_type: location
+name: us-prod
+description: Athena Production Platform (USA)
+region: us
+env-type: prod
+domain: athena.connectcdk.com
+status: design
+parameters:
+  integrations:
+    aws:
+      id: "758029684819"
+      name: cdk-aws-athenaplatform-prod
+      account-type: prod
+      primary-region: us-west-2
+      secondary-region: us-east-1
+      cf-acm-region: us-east-1
+      partition: aws
+    dockerRegistries:
+      - type: artifactory
+        dockerEndpoint: "artifactory.cobalt.com"
+        default: true
+    okta:
+      url: "https://connectcdk.okta.com"
+clusters:
+  primary: athena_nearby_iguana

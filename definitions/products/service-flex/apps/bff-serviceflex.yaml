@@ -1,0 +1,11 @@
+id: bff-serviceflex
+name: serviceflex
+description: Serviceflex backend app
+type: bff
+_type: asset
+assetMasterId: 497
+appLanguage: dotnetcore
+team: team-service-flex
+product: service-flex
+repo: https://stash.cdk.com/projects/SVE/repos/bff-serviceflex/browse
+cicd: https://bamboo.cdk.com/browse/SERVICECORE-BFFSERVICEFLEX

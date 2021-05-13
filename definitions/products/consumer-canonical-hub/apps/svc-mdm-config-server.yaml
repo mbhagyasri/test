@@ -1,0 +1,11 @@
+id: svc-mdm-config-server
+name: mdm-config-server
+description: Consumer Canonical Hub Config Server Microservice
+type: svc
+_type: asset
+assetMasterId: 363
+appLanguage: java
+team: team-consumer-canonical-hub
+product: consumer-canonical-hub
+repo: https://stash.cdk.com/projects/TITN/repos/mdm-config-server/browse
+cicd: https://bamboo.cdk.com/browse/CH-SVCMDMCONFIGSERVER

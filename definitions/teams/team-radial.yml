@@ -1,0 +1,15 @@
+id: team-radial
+_type: team
+name: team-radial
+description: Radial Team
+email:
+  - radial@cdk.com
+  - buford.eeds@cdk.com
+ad-group:
+  - Athena Platform Developers
+  - Athena Platform Developers (DSI)
+notification:
+  - email: buford.eeds@cdk.com
+  - email: laxmi.sarva@cdk.com
+  - email: pavan.divi@cdk.com
+  - email: ashish.chide@cdk.com

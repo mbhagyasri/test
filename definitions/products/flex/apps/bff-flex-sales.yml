@@ -1,0 +1,11 @@
+id: bff-flex-sales
+name: flex-sales
+description: Flex Sales backend
+type: bff
+_type: asset
+assetMasterId: 133
+appLanguage: java
+team: team-flex
+product: flex
+repo: https://stash.cdk.com/projects/ATHENAP/repos/bff-flex-sales/browse
+cicd: https://bamboo.cdk.com/browse/APEXAMPLES-BFFFLEXSALES

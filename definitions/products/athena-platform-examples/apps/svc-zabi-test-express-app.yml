@@ -1,0 +1,11 @@
+id: svc-zabi-test-express-app
+name: zabi-test-express-app
+description: A sample 'Hello World' node application to get familiar with athena-cli.
+type: svc
+_type: asset
+assetMasterId: 500
+appLanguage: nodejs
+team: team-athena-platform
+product: athena-platform-examples
+repo: https://stash.cdk.com/projects/ATHENAP/repos/svc-zabi-test-express-app/browse
+cicd: https://bamboo.cdk.com/browse/APEXAMPLES-SVCZABITESTEXPRESSAPP

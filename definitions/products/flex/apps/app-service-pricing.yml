@@ -1,0 +1,13 @@
+id: app-service-pricing
+name: service-pricing
+description: Service Pricing UI
+type: app
+_type: asset
+icon: school
+color: "#FFC107"
+assetMasterId: 440
+appLanguage: reactjs
+team: team-flex
+product: flex
+repo: https://stash.cdk.com/projects/ATU/repos/service-pricing/browse
+cicd: https://bamboo.cdk.com/browse/AUIP-APSPS

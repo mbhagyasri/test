@@ -1,0 +1,11 @@
+id: bff-avrs-ros
+name: avrs-ros-app-api
+description: AVRS Embedded App Backend
+type: bff
+_type: asset
+assetMasterId: 499
+appLanguage: nodejs
+team: team-core-fi
+product: core-fi
+repo: https://stash.cdk.com/projects/CFI/repos/avrs-ros-app-api/browse
+cicd: https://bamboo.cdk.com/browse/CFI-BFFAVRSROSAPI

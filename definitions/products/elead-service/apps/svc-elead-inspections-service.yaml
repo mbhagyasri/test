@@ -1,0 +1,14 @@
+id: svc-elead-inspections-service
+name: elead-inspections-service
+description: Multipoint Inspections Microservice
+type: svc
+_type: asset
+assetMasterId: 438
+appLanguage: dotnetcore
+team: team-elead-service
+product: elead-service
+repo: https://stash.cdk.com/projects/ELP/repos/svc-elead-inspections-service/browse
+cicd: https://bamboo.cdk.com/browse/ELEAD-SVCELEADINSPECTIONSSERVICE
+security:
+  - provider: iam
+  - provider: fortellis

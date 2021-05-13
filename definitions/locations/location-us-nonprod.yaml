@@ -1,0 +1,26 @@
+id: location-us-nonprod
+_type: location
+name: us-nonprod
+description: Athena Stage Platform (USA)
+region: us
+env-type: stage
+domain: athena-nonprod.connectcdk.com
+status: live
+parameters:
+  integrations:
+    aws:
+      id: "773801545948"
+      name: cdk-aws-athenaplatform-nonprod
+      account-type: nonprod
+      primary-region: us-west-2
+      secondary-region: us-east-1
+      cf-acm-region: us-east-1
+      partition: aws
+    dockerRegistries:
+      - type: artifactory
+        dockerEndpoint: "artifactory.cobalt.com"
+        default: true
+    okta:
+      url: "https://connectcdk-dit.oktapreview.com"
+clusters:
+  primary: athena_full_alpaca

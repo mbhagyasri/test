@@ -1,0 +1,11 @@
+id: svc-titan-cs-service-report-api
+name: titan-cs-service-report-api-service
+description: Titan CS Service Report Api
+type: svc
+_type: asset
+assetMasterId: 351
+appLanguage: java
+team: team-cs-performance-dashboard
+product: cs-performance-dashboard
+repo: https://stash.cdk.com/projects/DACS/repos/titan-cs-service-report-api/browse
+cicd: https://bamboo.cdk.com/browse/DAACS-SVCTITANCSSERVICEREPORTAPI

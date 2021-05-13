@@ -1,0 +1,28 @@
+id: svc-devops-metrics
+name: devops-metrics
+description: Athena Devops Metrics
+type: svc
+_type: asset
+assetMasterId: 500
+appLanguage: nodejs
+team: team-athena-platform
+product: athena-platform
+internal: true
+repo: https://stash.cdk.com/projects/ATHENAP/repos/svc-devops-metrics/browse
+cicd: https://bamboo.cdk.com/browse/NGIP-SVCDEVOPSMETRICS
+consumes:
+  - value: bamboo.cdk.com
+    type: external
+  - value: svc-app-registry
+    type: service
+attaches:
+  resources:
+    - name: us-dev-svc-devops-metrics-database
+      environments:
+        - us-dev    
+    - name: us-stage-svc-devops-metrics-database
+      environments:
+        - us-stage
+    - name: us-prod-svc-devops-metrics-database
+      environments:
+        - us-prod

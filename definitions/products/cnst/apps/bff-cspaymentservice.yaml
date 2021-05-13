@@ -1,0 +1,11 @@
+id: bff-cspaymentservice
+name: cspaymentservice
+description: Connected Store Payment Service
+type: bff
+_type: asset
+assetMasterId: 71
+appLanguage: dotnetcore
+team: team-cnst
+product: cnst
+repo: https://stash.cdk.com/projects/ATHENAP/repos/bff-cspaymentservice/browse
+cicd: https://bamboo.cdk.com/browse/APEXAMPLES-BFFCSPAYMENTSERVICE

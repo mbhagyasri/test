@@ -1,0 +1,11 @@
+id: bff-fi-sales-field-definitions
+name: fi-sales-field-definitions
+description: F&I Sales Field Definitions API
+type: bff
+_type: asset
+assetMasterId: 143
+appLanguage: java
+team: team-keystone
+product: keystone
+repo: https://stash.cdk.com/projects/CFI/repos/flex-api-sales-field/browse
+cicd: https://bamboo.cdk.com/browse/CFI-BFFFISALESFIELDDEFINITIONS

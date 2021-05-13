@@ -1,0 +1,11 @@
+id: radial
+_type: product
+environments:
+  - id: us-dev
+    type: dev
+    location: location-us-nonprod
+    prefix: dev
+external-ids:
+  iqr_product_id: 1234
+security:
+  - provider: iam

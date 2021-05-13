@@ -1,0 +1,11 @@
+id: team-flex
+_type: team
+name: flex
+description: Drive Flex Team
+email:
+  - AthenaPlatformDevelopers@cdk.com
+ad-group:
+  - Athena Platform Developers
+  - Athena Platform Developers (DSI)
+notification:
+  - email: AthenaPlatformDevelopers@cdk.com

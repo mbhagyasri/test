@@ -1,0 +1,24 @@
+id: location-eu-nonprod
+_type: location
+name: eu-nonprod
+description: Athena Non Production Platform (EU)
+region: eu
+env-type: stage
+domain: athena-nonprod.cdkapps.eu
+status: design
+parameters:
+  integrations:
+    aws:
+      id: "773801545948"
+      name: cdk-aws-athenaplatform-nonprod
+      account-type: nonprod
+      primary-region: eu-west-1
+      secondary-region: eu-west-2
+      cf-acm-region: us-east-1
+      partition: aws
+    dockerRegistries:
+      - type: artifactory
+        dockerEndpoint: "artifactory.cobalt.com"
+        default: true
+clusters:
+  primary: athena_null_value

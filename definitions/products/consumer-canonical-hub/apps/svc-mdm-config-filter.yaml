@@ -1,0 +1,11 @@
+id: svc-mdm-config-filter
+name: mdm-config-filter-service
+description: Consumer Canonical Hub Filter Microservice
+type: svc
+_type: asset
+assetMasterId: 363
+appLanguage: java
+team: team-consumer-canonical-hub
+product: consumer-canonical-hub
+repo: http://stash.cdk.com/projects/TITN/repos/mdm-config-filter/browse
+cicd: https://bamboo.cdk.com/browse/CH-SVCMDMCONFIGFILTER

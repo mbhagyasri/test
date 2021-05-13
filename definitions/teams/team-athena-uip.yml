@@ -1,0 +1,12 @@
+id: team-athena-uip
+_type: team
+name: athena-uip-team
+description: Team Athena UIP
+email:
+  - athenauipdevelopers@cdk.com
+ad-group:
+  - Athena Platform Developers
+  - Athena Platform Developers (DSI)
+  - Athena UI Portal Developers
+notification:
+  - email: athenauipdevelopers@cdk.com

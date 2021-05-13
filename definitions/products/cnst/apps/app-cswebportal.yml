@@ -1,0 +1,17 @@
+id: app-cswebportal
+name: cswebportals
+description: CS Web Portal
+type: app
+_type: asset
+icon: school
+color: "#FFC107"
+assetMasterId: 71
+appLanguage: reactjs
+team: team-cnst
+product: cnst
+repo: https://stash.cdk.com/projects/ATHENAP/repos/app-cswebportal/browse
+cicd: https://bamboo.cdk.com/browse/APEXAMPLES-APPCSWEBPORTAL
+consumes:
+  - value: bff-cspaymentservice
+    path: /api/*
+    type: service

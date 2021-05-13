@@ -1,0 +1,11 @@
+id: bff-fi-sales-field-data
+name: fi-sales-field-data
+description: F&I Sales Field Data API
+type: bff
+_type: asset
+assetMasterId: 143
+appLanguage: java
+team: team-keystone
+product: keystone
+repo: https://stash.cdk.com/projects/CFI/repos/flex-api-sales-field-data/browse
+cicd: https://bamboo.cdk.com/browse/CFI-BFFFISALESFIELDDATA

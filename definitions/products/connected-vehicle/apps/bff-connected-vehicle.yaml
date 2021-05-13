@@ -1,0 +1,16 @@
+id: bff-connected-vehicle
+name: connected-vehicle-bff
+description: BFF for UI
+appLanguage: dotnetcore
+assetMasterId: 496
+type: bff
+_type: asset
+team: team-connected-vehicle
+product: connected-vehicle
+repo: https://stash.cdk.com/projects/CV/repos/bff-connected-vehicle/browse
+cicd: https://bamboo.cdk.com/browse/CVH-BFFCONNECTEDVEHICLE
+consumes:
+    - value: '*.connectcdk.com'
+      type: external
+    - value: '*.fortellis.io'
+      type: external

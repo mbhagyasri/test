@@ -1,0 +1,3 @@
+id: dms-drive
+_type: securityProvider
+schemes: ["oidc"]

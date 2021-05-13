@@ -1,0 +1,14 @@
+id: app-athena-navigation
+name: athena-uip-navigation-app
+description: Athena UIP Navigation
+type: app
+_type: asset
+icon: school
+color: "#FFC107"
+assetMasterId: 325
+appLanguage: reactjs
+team: team-athena-uip
+product: athena-uip
+repo: https://stash.cdk.com/projects/ATU/repos/app-athena-navigation/browse
+cicd: https://bamboo.cdk.com/browse/AUIP-APPATHENANAVIGATION
+internal: false

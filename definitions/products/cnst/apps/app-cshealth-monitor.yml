@@ -1,0 +1,13 @@
+id: app-cshealth-monitor
+name: cshealthmonitor
+description: CS Health Monitor
+type: app
+_type: asset
+icon: school
+color: "#FFC107"
+assetMasterId: 71
+appLanguage: reactjs
+team: team-cnst
+product: cnst
+repo: http://stash.cdk.com/projects/QUOTE/repos/app-cshealth-monitor/browse
+cicd: https://bamboo.cdk.com/browse/QUOTE-APPCSHEALTHMONITOR

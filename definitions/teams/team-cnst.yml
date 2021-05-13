@@ -1,0 +1,11 @@
+id: team-cnst
+_type: team
+name: cnst
+description: Connected Store Team
+email:
+  - FOSQuoteConsumer@cdk.com
+ad-group:
+  - Athena Platform Developers
+  - Athena Platform Developers (DSI)
+notification:
+  - email: FOSQuoteConsumer@cdk.com

@@ -1,0 +1,15 @@
+id: team-service-flex
+_type: team
+name: service-flex
+description: Service Flex Team
+email:
+  - DevBridgeService@cdk.com
+  - Pune.ServiceFlex@cdk.com
+ad-group:
+  - Athena Platform Developers
+  - Athena Platform Developers (DSI)
+  - DevBridge Service Development
+  - Pune Service Flex
+notification:
+  - email: Pune.ServiceFlex@cdk.com
+  - email: DevBridgeService@cdk.com

@@ -1,0 +1,12 @@
+id: team-core-fi
+_type: team
+name: core-fi
+description: Core F&I Team
+email:
+  - Core.FI.Developers@cdk.com
+ad-group:
+  - Athena Platform Developers
+  - Athena Platform Developers (DSI)
+  - Core FI Product and Development
+notification:
+  - email: Core.FI.Developers@cdk.com

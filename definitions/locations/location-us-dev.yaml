@@ -1,0 +1,26 @@
+id: location-us-dev
+_type: location
+name: us-dev
+description: Athena Development Platform (USA)
+region: us
+env-type: dev
+domain: athena-dev.connectcdk.com
+status: live
+parameters:
+  integrations:
+    aws:
+      id: "711406216734"
+      name: cdk-aws-athenaplatform-dev
+      account-type: dev
+      primary-region: us-west-2
+      secondary-region: us-east-1
+      cf-acm-region: us-east-1
+      partition: aws
+    dockerRegistries:
+      - type: artifactory
+        dockerEndpoint: "artifactory.cobalt.com"
+        default: true
+    okta:
+      url: "https://connectcdk-dev.oktapreview.com"
+clusters:
+  primary: athena_brief_parrot

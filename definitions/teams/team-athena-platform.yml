@@ -1,0 +1,17 @@
+id: team-athena-platform
+_type: team
+name: athena-platform
+description: Athena Platform Team
+email:
+  - AthenaPlatformDevelopers@cdk.com
+ad-group:
+  - Athena Platform Developers
+  - Athena Platform Developers (DSI)
+notification:
+  - email: AthenaPlatformDevelopers@cdk.com
+  - slack: https://cdk-global.slack.com/archives/GPCG44ZPU
+
+opsgenie:
+  name: athena-platform
+  create: true
+  manager: roy.maunders@cdk.com

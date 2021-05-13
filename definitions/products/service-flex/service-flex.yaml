@@ -1,0 +1,34 @@
+id: service-flex
+_type: product
+environments:
+  - id: us-dev
+    location: location-us-nonprod
+    type: dev
+    prefix: dev
+  - id: us-perf
+    type: dev
+    prefix: perf
+    location: location-us-nonprod
+  - id: us-stage
+    type: stage
+    location: location-us-nonprod
+    prefix: stage
+  - id: us-prod
+    type: prod
+    location: location-us-prod
+  - id: us-sandbox
+    type: dev
+    location: location-us-sandbox
+    prefix: sandbox
+external-ids:
+  iqr_product_id: 21
+bamboo-projects:
+  - id: SERVICECORE
+bitbucket-projects:
+  - id: SVE
+security:
+  - provider: cdk-service
+    configuration:
+      jwksuri: https://service-adp1.connectcdk.com/configuration/jwks
+      issuer: cdkservice
+      audience: serviceflex

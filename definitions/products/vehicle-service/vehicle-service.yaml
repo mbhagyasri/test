@@ -1,0 +1,22 @@
+id: vehicle-service
+_type: product
+environments:
+  - id: us-dev
+    location: location-us-nonprod
+    type: dev
+    prefix: dev
+  - id: us-stage
+    type: stage
+    location: location-us-nonprod
+    prefix: stage
+  - id: us-prod
+    type: prod
+    location: location-us-prod
+external-ids:
+  iqr_product_id: 16
+bamboo-projects:
+  - id: SERVICECORE
+bitbucket-projects:
+  - id: SVE
+security:
+  - provider: iam

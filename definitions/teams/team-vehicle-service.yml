@@ -1,0 +1,10 @@
+id: team-vehicle-service
+_type: team
+name: vehicle-service
+description: Vehicle Service Team
+email:
+  - CDKServiceFord@cdk.com
+ad-group:
+  - CDK Service Ford
+notification:
+  - email: CDKServiceFord@cdk.com

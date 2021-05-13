@@ -1,0 +1,23 @@
+apiVersion: "cdk.com/v1"
+kind: Resource
+metadata:
+  name: us-dev-svc-devops-metrics-database
+  description: Devops Metrics dev datastore
+  annotations:
+    iqr_product_id: "7210"
+spec:
+  type: aws-rds
+  owner: team-athena-platform
+  platform: location-us-dev
+  assetMasterId: 500
+  provisioner:
+    type: terraform
+    source: git::https://stash.cdk.com/scm/athenap/terraform-rds.git?ref=1.3.6
+  definition:
+    templateName: athena-rds-postgres-small
+    props:
+      engineType: postgres
+      engineVersion: "12"
+    
+
+

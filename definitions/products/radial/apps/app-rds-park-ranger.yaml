@@ -1,0 +1,13 @@
+id: app-rds-park-ranger
+name: rds-park-ranger
+description: RDS example app
+type: app
+_type: asset
+assetMasterId: 0
+appLanguage: reactjs
+team: team-radial
+product: radial
+repo: https://stash.cdk.com/projects/COM/repos/rds-park-ranger/browse
+icon: school
+color: "#0000FF"
+cicd: https://bamboo.cdk.com/browse/REA-APPRDSPARKRANGER

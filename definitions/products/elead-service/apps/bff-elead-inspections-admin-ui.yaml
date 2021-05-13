@@ -1,0 +1,11 @@
+id: bff-elead-inspections-admin-ui
+name: bff-elead-inspections-admin-ui
+description: Backend for Inspections Admin UI
+appLanguage: nodejs
+assetMasterId: 438
+type: bff
+_type: asset
+team: team-elead-service
+product: elead-service
+repo: https://stash.cdk.com/projects/ELP/repos/bff-elead-inspections-admin-ui/browse
+cicd: https://bamboo.cdk.com/browse/ELEAD-BFFELEADINSPECTIONSADMINUI

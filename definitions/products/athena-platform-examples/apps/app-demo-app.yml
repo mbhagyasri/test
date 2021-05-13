@@ -1,0 +1,21 @@
+id: app-demo-app
+name: demo
+description: Demo App
+type: app
+_type: asset
+icon: school
+color: "#FFC107"
+assetMasterId: 500
+appLanguage: reactjs
+team: team-athena-platform
+product: athena-platform
+repo: https://stash.cdk.com/projects/ATHENAP/repos/reactui-sample-template/browse
+cicd: https://bamboo.cdk.com/browse/NGIP-DAPP
+consumes:
+  - value: bff-demo-app
+    path: /api/*
+    type: service
+security:
+  - provider: iam
+    configuration:
+      callbackPath: /login_callback

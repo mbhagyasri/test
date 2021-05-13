@@ -1,0 +1,11 @@
+id: svc-fi-sales-deal
+name: fi-sales-deal
+description: F&I Sales deal service API
+type: svc
+_type: asset
+assetMasterId: 143
+appLanguage: java
+team: team-keystone
+product: keystone
+repo: https://stash.cdk.com/projects/CFI/repos/keystone-api-deal/browse
+cicd: https://bamboo.cdk.com/browse/CFI-SVCFISALESDEAL

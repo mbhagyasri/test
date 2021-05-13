@@ -1,0 +1,11 @@
+id: svc-consumer-canonical-hub
+name: consumer-canonical-hub-service
+description: Consumer Canonical Hub Microservice
+type: svc
+_type: asset
+assetMasterId: 363
+appLanguage: java
+team: team-consumer-canonical-hub
+product: consumer-canonical-hub
+repo: https://stash.cdk.com/projects/TITN/repos/mdm-canonical-hub/browse
+cicd: https://bamboo.cdk.com/browse/CH-SVCCONSUMERCANONICALHUB

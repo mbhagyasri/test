@@ -1,0 +1,17 @@
+id: app-driveflex-sales
+name: flex-sales-app
+description: Flex Sales frontend
+type: app
+_type: asset
+icon: school
+color: "#FFC107"
+assetMasterId: 133
+appLanguage: reactjs
+team: team-flex
+product: flex
+repo: https://stash.cdk.com/projects/ATHENAP/repos/app-driveflex-sales/browse
+cicd: https://bamboo.cdk.com/browse/APEXAMPLES-APPDRIVEFLEXSALES
+consumes:
+  - value: bff-flex-sales
+    path: /api/*
+    type: service

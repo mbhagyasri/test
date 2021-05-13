@@ -1,0 +1,12 @@
+id: team-connected-vehicle
+_type: team
+name: connected-vehicle
+description: Connected Vehicle Team
+email:
+  - ConnectedVehicleDevelopers@cdk.com
+ad-group:
+  - Athena Platform Developers
+  - Athena Platform Developers (DSI)
+  - Connected Vehicle Developers
+notification:
+  - email: ConnectedVehicleDevelopers@cdk.com

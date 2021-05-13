@@ -1,0 +1,17 @@
+id: app-elead-inspections-admin-ui
+name: app-elead-inspections-admin-ui
+description: Admin UI for multi-point inspections.
+appLanguage: reactjs
+assetMasterId: 438
+type: app
+_type: asset
+icon: school
+color: "#FFC107"
+team: team-elead-service
+product: elead-service
+repo: https://stash.cdk.com/projects/ELP/repos/app-elead-inspections-admin-ui/browse
+cicd: https://bamboo.cdk.com/browse/ELEAD-APPELEADINSPECTIONSADMINUI
+consumes:
+  - value: bff-elead-inspections-admin-ui
+    path: /api/*
+    type: service

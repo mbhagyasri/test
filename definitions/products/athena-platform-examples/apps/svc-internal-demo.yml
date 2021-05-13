@@ -1,0 +1,12 @@
+id: svc-internal-demo
+name: privatedemo
+description: Internal application which is to be accessible through private IP
+type: svc
+_type: asset
+assetMasterId: 500
+appLanguage: nodejs
+team: team-athena-platform
+product: athena-platform-examples
+internal: true
+repo: https://stash.cdk.com/projects/ATHENAP/repos/svc-internal-demo/browse
+cicd: https://bamboo.cdk.com/browse/APEXAMPLES-SVCINTERNALDEMO

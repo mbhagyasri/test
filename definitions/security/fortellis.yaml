@@ -1,0 +1,3 @@
+id: fortellis
+_type: securityProvider
+schemes: ["oauth2", "oidc"]

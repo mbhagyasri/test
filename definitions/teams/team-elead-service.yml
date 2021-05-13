@@ -1,0 +1,12 @@
+id: team-elead-service
+_type: team
+name: elead-service
+description: eLead Service Team
+email:
+  - EleadServiceDevelopers@cdk.com
+ad-group:
+  - Athena Platform Developers
+  - Athena Platform Developers (DSI)
+  - Elead Service Developers
+notification:
+  - email: EleadServiceDevelopers@cdk.com

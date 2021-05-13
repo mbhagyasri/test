@@ -1,0 +1,17 @@
+id: app-avrs-ros
+name: avrs-ros-app-ui
+description: AVRS Fortellis Embedded App
+type: app
+_type: asset
+icon: school
+color: "#076aFF"
+assetMasterId: 499
+appLanguage: reactjs
+team: team-core-fi
+product: core-fi
+repo: https://stash.cdk.com/projects/CFI/repos/avrs-ros-app-ui/browse
+cicd: https://bamboo.cdk.com/browse/CFI-APPAVRSROSUI
+consumes:
+  - value: bff-avrs-ros
+    path: /api/*
+    type: service

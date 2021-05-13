@@ -1,0 +1,13 @@
+id: team-consumer-canonical-hub
+_type: team
+name: consumer-canonical-hub
+description: Consumer Canonical Hub
+email:
+  - Consumer.CanonicalHub@cdk.com
+ad-group:
+  - Athena Platform Developers
+  - Athena Platform Developers (DSI)
+  - Consumer Canonical Hub
+  - India Canonical Hub       
+notification:
+  - email: Consumer.CanonicalHub@cdk.com

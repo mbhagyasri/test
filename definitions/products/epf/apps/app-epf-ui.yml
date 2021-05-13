@@ -1,0 +1,13 @@
+id: app-epf-ui
+name: epf-ui
+description: Engineering Proficiency Framework Team
+type: app
+_type: asset
+icon: school
+color: "#076aEE"
+assetMasterId: 447
+appLanguage: reactjs
+team: team-epf
+product: epf
+repo: https://stash.cdk.com/projects/EP/repos/app-epf-ui/browse
+cicd: https://bamboo.cdk.com/browse/EPY-APPEPFUI

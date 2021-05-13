@@ -1,0 +1,12 @@
+id: team-cs-performance-dashboard
+_type: team
+name: cs-performance-dashboard
+description: CS Performance Dashboard
+email:
+  - Titan.DataIntegrationDev@cdk.com
+ad-group:
+  - Athena Platform Developers
+  - Athena Platform Developers (DSI)
+  - Titan Data Integration Dev
+notification:
+  - email: Titan.DataIntegrationDev@cdk.com

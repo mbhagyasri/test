@@ -1,0 +1,11 @@
+id: team-epf
+_type: team
+name: epf
+description: Engineering Proficiency Framework Team
+email:
+  - ranjita.thakur@cdk.com
+ad-group:
+  - Athena Platform Developers
+  - Athena Platform Developers (DSI)
+notification:
+  - email: ranjita.thakur@cdk.com

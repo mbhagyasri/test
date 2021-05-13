@@ -1,0 +1,17 @@
+id: app-serviceflex-ui
+name: serviceflex-ui
+description: React Service Flex App
+type: app
+_type: asset
+icon: school
+color: "#FFC107"
+assetMasterId: 497
+appLanguage: reactjs
+team: team-service-flex
+product: service-flex
+repo: https://stash.cdk.com/projects/SVE/repos/app-serviceflex-ui/browse
+cicd: https://bamboo.cdk.com/browse/SERVICECORE-APPSERVICEFLEXUI
+consumes:
+  - value: bff-serviceflex
+    path: /api/*
+    type: service

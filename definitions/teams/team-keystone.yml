@@ -1,0 +1,14 @@
+id: team-keystone
+_type: team
+name: keystone
+description: Keystone Team
+email:
+  - Yehor.Mykhaylov@cdk.com
+  - Daniel.Green@cdk.com
+  - Abhijeet.Pai@cdk.com
+ad-group:
+  - Athena Platform Developers
+notification:
+  - email: Yehor.Mykhaylov@cdk.com
+  - email: Daniel.Green@cdk.com
+  - email: Abhijeet.Pai@cdk.com

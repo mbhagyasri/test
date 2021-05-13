@@ -1,0 +1,14 @@
+id: app-athena-messaging-util
+name: athena-uip-messaging-util-app
+description: Athena UIP Messaging Util
+type: app
+_type: asset
+icon: school
+color: "#FFC107"
+assetMasterId: 325
+appLanguage: reactjs
+team: team-athena-uip
+product: athena-uip
+repo: https://stash.cdk.com/projects/ATU/repos/app-athena-messaging-util/browse
+cicd: https://bamboo.cdk.com/browse/AUIP-APPATHENAMESSAGINGUTIL
+internal: false

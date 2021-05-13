@@ -1,0 +1,22 @@
+id: keystone
+_type: product
+environments:
+  - id: us-dev
+    type: dev
+    location: location-us-nonprod
+    prefix: dev
+  - id: us-stage
+    type: stage
+    location: location-us-nonprod
+    prefix: stage
+  - id: us-prod
+    type: prod
+    location: location-us-prod
+external-ids:
+  iqr_product_id: 1234
+bamboo-projects:
+  - id: CFI
+bitbucket-projects:
+  - id: CFI
+security:
+  - provider: iam

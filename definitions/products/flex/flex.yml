@@ -1,0 +1,22 @@
+id: flex
+_type: product
+environments:
+  - id: us-dev
+    type: dev
+    location: location-us-nonprod
+    prefix: dev
+  - id: us-stage
+    type: stage
+    location: location-us-nonprod
+    prefix: stage
+  - id: us-prod
+    type: prod
+    location: location-us-prod
+external-ids:
+  iqr_product_id: 279
+#bamboo-projects:
+#  - id: NGIP
+#bitbucket-projects:
+#  - id: ATHENAP
+security:
+  - provider: iam

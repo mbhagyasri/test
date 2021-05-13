@@ -1,0 +1,10 @@
+id: team-athena-accelerators
+_type: team
+name: athena-accelerators
+description: Athena Accelerators Team
+email:
+  - Athena.Accelerators.Developers@cdk.com
+ad-group:
+  - Athena Accelerators Developers
+notification:
+  - email: Athena.Accelerators.Developers@cdk.com

@@ -1,0 +1,11 @@
+id: svc-fortellis-vehicle-appts
+name: fortellis-vehicle-service-appointments
+description: Fortellis Vehicle Service Appointments Microservice
+type: svc
+_type: asset
+assetMasterId: 441
+appLanguage: dotnetcore
+team: team-vehicle-service
+product: vehicle-service
+repo: https://stash.cdk.com/projects/SVE/repos/fortellis-athena-vehicleservice-appointments/browse
+cicd: https://bamboo.cdk.com/browse/SERVICECORE-SVCFORTELLISVEHICLEAPPTS
