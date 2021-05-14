@@ -51,7 +51,7 @@ RUN set -ex \
 
 
 # copy entrypoint.sh
-# COPY ./entrypoint.sh /opt/athena_app_cmdb/entrypoint.sh
+COPY ./entrypoint.sh /opt/athena_app_cmdb/entrypoint.sh
 
 # copy project source code
 COPY . /opt/athena_app_cmdb/
@@ -64,4 +64,4 @@ RUN cd /opt/athena_app_cmdb/etc \
 # expose the port
 EXPOSE 8000
 
-# ENTRYPOINT ["/opt/athena_app_cmdb/entrypoint.sh"]
+ENTRYPOINT ["/opt/athena_app_cmdb/entrypoint.sh"]
