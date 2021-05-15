@@ -159,7 +159,8 @@ class Asset(models.Model):
     id = models.UUIDField(db_column='id', primary_key=True, default=uuid.uuid4)
     name = models.CharField(db_column='name', max_length=255, unique=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    location = models.ForeignKey(Location, on_delete=models.CASCADE)
+    clusters = models.ManyToManyField(Cluster)
+    environment = models.ForeignKey(Environment, on_delete=models.CASCADE)
     properties = models.JSONField(db_column='properties', blank=True, null=True)
     deleted = models.BooleanField(db_column='deleted', default='f')
     created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
@@ -174,7 +175,7 @@ class Asset(models.Model):
         verbose_name = 'Asset'
         ordering = ['-updated_at', '-created_at',]
         constraints = [
-            models.UniqueConstraint(fields=['name', 'location'], name='unique_asset_name')
+            models.UniqueConstraint(fields=['name', 'environment'], name='unique_asset_name')
         ]
 
     @property
