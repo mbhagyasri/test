@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   DATABASE: athena_app_cmdb
-  DJANGO_SETTINGS_MODULE: AppRegistry.settings.prod
+  DJANGO_SETTINGS_MODULE: appRegistry.settings.prod
   SQL_DATABASE: postgres
   SQL_ENGINE: django.db.backends.postgresql
   SQL_HOST: postgres
