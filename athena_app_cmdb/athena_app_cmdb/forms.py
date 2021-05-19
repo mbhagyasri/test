@@ -42,17 +42,6 @@ class AppRegistryForm(forms.ModelForm):
 # ----------------------------------- Add Each Table fields definition below --------------------------- #
 
 
-class EnvironmentForm(AppRegistryForm):
-
-    class Meta:
-        model = models.Environment
-        exclude = ['deleted', 'deleted_at', 'original_name']
-        widgets = {
-            'properties': JSONEditorWidget(width='800px', height='800px')
-
-        }
-
-
 class LocationForm(AppRegistryForm):
 
     class Meta:

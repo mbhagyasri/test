@@ -47,6 +47,11 @@ FILTER_FIELDS = {"environment_name": "environment.name", "location_name": "locat
                  }
 
 @api_view(['GET'])
+def monitor(request):
+    json_str = {'Health': 'OK'}
+    return Response(json_str, content_type='application/json', status=200)
+
+@api_view(['GET'])
 def redirect(request):
     response = HttpResponseRedirect('/athena_app_cmdb')
     response.status_code = 302
@@ -67,6 +72,7 @@ def get_model(objname):
         logger.error(resp)
         raise ViewException(FORMAT, resp, 404)
     obj = models.models_class_lookup[objname]
+
     return obj
 
 
@@ -724,3 +730,5 @@ class athena_app_cmdbBulkUpdate(APIView, MyPaginationMixin):
                     raise ViewException(FORMAT, "Invalid request.", 400)
             return_data[objname] = return_content
         return Response({objname: return_data}, status.HTTP_200_OK)
+
+

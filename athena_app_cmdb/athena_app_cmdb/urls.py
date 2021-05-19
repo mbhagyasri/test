@@ -34,6 +34,9 @@ urlpatterns = [
     path('/<slug:parentobjname>/<uuid:parent>/associations/<slug:childobjname>',
          views.athena_app_cmdbAssociationsChildList.as_view(), name='athena_app_cmdb-associations-child-list'),
     path('/<slug:parentobjname>/<uuid:parent>/associations/<slug:childobjname>/<uuid:child>',
-         views.athena_app_cmdbAssociationsChildCreateDestroy.as_view(), name='athena_app_cmdb-associations-child-createdestroy'),
+         views.athena_app_cmdbAssociationsChildCreateDestroy.as_view(),
+         name='athena_app_cmdb-associations-child-createdestroy'),
+    # backward compatible for assets
+    #path('/assets/<slug:item>/environments')
 
 ]

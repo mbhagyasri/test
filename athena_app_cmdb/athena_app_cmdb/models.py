@@ -10,38 +10,10 @@ from django.core.exceptions import FieldDoesNotExist
 athena_app_cmdb_API_PATH = '/api'
 
 
-class Environment(models.Model):
-    id = models.UUIDField(db_column='id', primary_key=True, default=uuid.uuid4)
-    name = models.CharField(db_column='name', max_length=50, unique=True)
-    properties = models.JSONField(db_column='properties', blank=True, null=True)
-    deleted = models.BooleanField(db_column='deleted', default='f')
-    created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
-    created_by = models.CharField(db_column='created_by', max_length=100, blank=True, null=True)
-    updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
-    updated_by = models.CharField(db_column='updated_by', max_length=100, blank=True, null=True)
-    deleted_at = models.DateTimeField(db_column='deleted_at', blank=True, null=True)
-
-    class Meta:
-        managed = True
-        db_table = 'Environment'
-        verbose_name = 'Environment'
-        constraints = [
-            models.UniqueConstraint(fields=['name'], name='unique_environment_name')
-        ]
-
-    @property
-    def self_links(self):
-        links = '%s/environments/%s' % (athena_app_cmdb_API_PATH, self.id)
-        return links
-
-    def __str__(self):
-        return self.name
-
-
 class Location(models.Model):
-    id = models.UUIDField(db_column='id', primary_key=True, default=uuid.uuid4)
+    internal_id = models.UUIDField(db_column='id', primary_key=True, default=uuid.uuid4)
+    id = models.CharField(db_column='old_version_id', max_length=50)
     name = models.CharField(db_column='name', max_length=255, unique=True)
-    environment = models.ForeignKey(Environment, on_delete=models.CASCADE)
     properties = models.JSONField(db_column='properties', blank=True, null=True)
     deleted = models.BooleanField(db_column='deleted', default='f')
     created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
@@ -160,7 +132,6 @@ class Asset(models.Model):
     name = models.CharField(db_column='name', max_length=255, unique=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     clusters = models.ManyToManyField(Cluster)
-    environment = models.ForeignKey(Environment, on_delete=models.CASCADE)
     properties = models.JSONField(db_column='properties', blank=True, null=True)
     deleted = models.BooleanField(db_column='deleted', default='f')
     created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
@@ -173,10 +144,8 @@ class Asset(models.Model):
         managed = True
         db_table = 'Asset'
         verbose_name = 'Asset'
-        ordering = ['-updated_at', '-created_at',]
-        constraints = [
-            models.UniqueConstraint(fields=['name', 'environment'], name='unique_asset_name')
-        ]
+        ordering = ['-updated_at', '-created_at', ]
+        unique_together = ('name', 'environment')
 
     @property
     def self_links(self):
@@ -185,6 +154,7 @@ class Asset(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Resource(models.Model):
     id = models.UUIDField(db_column='id', primary_key=True, default=uuid.uuid4)
@@ -203,9 +173,7 @@ class Resource(models.Model):
         db_table = 'Resource'
         verbose_name = 'Resource'
         ordering = ['-updated_at', '-created_at',]
-        constraints = [
-            models.UniqueConstraint(fields=['name', 'location'], name='unique_resource_name')
-        ]
+        unique_together = ('name', 'environment')
 
     @property
     def self_links(self):
@@ -214,6 +182,19 @@ class Resource(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class AssetType(models.Model):
+    id = models.CharField(db_column='id', primary_key=True, max_length=50)
+    name = models.CharField(db_column='name', max_length=50)
+    class Meta:
+        managed = False
+        db_table = 'asset_type'
+
+
+    def __str__(self):
+        return self.name
+
 
 @classmethod
 def model_field_exists(cls, field):
@@ -224,11 +205,13 @@ def model_field_exists(cls, field):
         return False
 
 
-models_mapping = {'locations': Location, 'environments': Environment, 'teams': Team,
-                  'clusters': Cluster, 'products': Product, 'assets': Asset, 'resources': Resource
+models_mapping = {'locations': Location,  'teams': Team,
+                  'clusters': Cluster, 'products': Product, 'assets': Asset, 'resources': Resource,
+                  'asset_types': AssetType
                   }
-models_name_mapping = {'locations': 'Location', 'environments': 'Environment', 'teams': 'Team',
-                       'clusters': 'Cluster', 'products': 'Product', 'assets': 'Asset', 'resources': 'Resource'
+models_name_mapping = {'locations': 'Location', 'teams': 'Team',
+                       'clusters': 'Cluster', 'products': 'Product', 'assets': 'Asset', 'resources': 'Resource',
+                       'asset_types': AssetType
                        }
 
 models_class_lookup = CaseInsensitiveDict(models_mapping)

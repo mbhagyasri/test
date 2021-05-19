@@ -11,5 +11,3 @@ TEMPLATES[0]['OPTIONS']['debug'] = False
 
 APPEND_SLASH = False
 
-# Cache time to live is 15 minutes.
-CACHE_TTL = 60 * 5

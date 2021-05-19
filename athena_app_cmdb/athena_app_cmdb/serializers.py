@@ -94,27 +94,6 @@ class LocationGetSerializer(serializers.ModelSerializer):
         return lks
 
 
-class EnvironmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Environment
-        fields = '__all__'
-
-    def to_representation(self, instance):
-        return EnvironmentGetSerializer(instance).data
-
-
-class EnvironmentGetSerializer(serializers.ModelSerializer):
-    links = serializers.SerializerMethodField()
-
-    class Meta:
-        model = models.Environment
-        fields = ('id', 'name', 'properties',
-                  'links', 'updated_at', 'updated_by',
-                  'created_at', 'created_by', 'deleted',)
-
-    def get_links(self, instance):
-        lks = {'_self': instance.self_links}
-        return lks
 
 
 class ClusterSerializer(serializers.ModelSerializer):
@@ -212,15 +191,20 @@ class TeamGetSerializer(serializers.ModelSerializer):
         return data
 
 
-serializers_mapping = {'locations': LocationSerializer, 'environments': EnvironmentSerializer,
+class AssetType(serializers.ModelSerializer):
+    class Meta:
+        model = models.AssetType
+        fields = '__all__'
+
+serializers_mapping = {'locations': LocationSerializer, 'asset_types': AssetType,
                        'clusters': ClusterSerializer, 'teams': TeamSerializer
                        }
 
 serializers_mapping_read = {
     'locations': LocationGetSerializer,
-    'environments': EnvironmentGetSerializer,
     'clusters': ClusterGetSerializer,
-    'teams': TeamGetSerializer
+    'teams': TeamGetSerializer,
+    'asset_types': AssetType
 }
 
 serializers_mapping_associations = {

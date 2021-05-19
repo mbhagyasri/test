@@ -43,7 +43,6 @@ def check_value(param, value):
         return True
     # uuid 4
     elif input_type == 'uuid':
-        logger.info('HERE')
         try:
             UUID(value, version=4)
             return True

@@ -32,3 +32,4 @@ To consume the application registry definitions:
 
 The app-registry API can be accessed through http://app-registry.athena.connectcdk.com/
 
+### Building the app-registr

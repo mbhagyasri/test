@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include
 from athena_app_cmdb.ui.forms import BootstrapAuthenticationForm
+from athena_app_cmdb.views import monitor
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView)
 from django.contrib.auth import views as auth_views
 
@@ -31,6 +32,7 @@ urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
     path('', include('athena_app_cmdb.ui.urls', namespace='app-registry', )),
     path('/', include('athena_app_cmdb.ui.urls', namespace='app-registry', )),
+    path('monitor', monitor, name='monitor')
 
 
 ]

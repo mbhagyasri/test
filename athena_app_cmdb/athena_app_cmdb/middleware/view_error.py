@@ -25,7 +25,6 @@ class ViewExceptionMiddleware(object):
         if not isinstance(exception, ViewException):
             return None
         format, message, code = exception.args
-        logger.info('HERE {}'.format(format))
         if format == 'html':
             types = {
                 400: http.HttpResponseBadRequest,

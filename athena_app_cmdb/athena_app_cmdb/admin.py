@@ -54,13 +54,6 @@ admin.site.add_action(soft_delete_selected, 'soft_delete_selected')
 # For each table, Add a <Tablename>Admin definition here and <TableName>Form in the forms.py file
 
 
-@admin.register(models.Environment)
-class EnvironmentAdmin(AppRegistryDefaultAdmin):
-    form = forms.EnvironmentForm
-    list_display = ('id', 'name', )
-    search_fields = ['name', 'id', 'properties']
-
-
 @admin.register(models.Location)
 class LocationAdmin(AppRegistryDefaultAdmin):
     form = forms.LocationForm
@@ -103,7 +96,7 @@ class ProductAdmin(AppRegistryDefaultAdmin):
 @admin.register(models.Asset)
 class AssetAdmin(AppRegistryDefaultAdmin):
     form = forms.AssetForm
-    list_display = ('id', 'name', 'location')
+    list_display = ('id', 'name', 'environment')
 
 
 @admin.register(models.Resource)

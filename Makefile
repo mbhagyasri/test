@@ -33,7 +33,7 @@ restart-athena_app_cmdb:
 	docker-compose -f docker-compose-${BUILDENV}.yml restart athena_app_cmdb
 
 logs:
-	docker-compose -f docker-compose-${BUILDENV}.yml logs
+	docker-compose -f docker-compose-${BUILDENV}.yml logs -f
 
 rmi:
 	docker rmi $$(docker images -f dangling=true -q)

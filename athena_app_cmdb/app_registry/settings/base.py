@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 import mimetypes
 import ldap
+import re
+import json
 import athena_app_cmdb as project_module
 from django_auth_ldap.config import LDAPSearch, PosixGroupType
 from datetime import timedelta
@@ -88,17 +90,21 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
+DEFAULT_DB_CONFIG = '{"endpoint": "", "username": "", "password": ""}'
+DB_CONFIG = json.loads(os.getenv('DB_CONFIG', DEFAULT_DB_CONFIG))
+
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('SQL_ENGINE', 'django.db.backends.sqlite3'),
-        'NAME': os.getenv('SQL_DATABASE', os.path.join(BASE_DIR, 'db.sqlite3')),
-        'USER': os.getenv('SQL_USER', 'user'),
-        'PASSWORD': os.getenv('SQL_PASSWORD', 'password'),
-        'HOST': os.getenv('SQL_HOST', 'localhost'),
+        'ENGINE': os.getenv('SQL_ENGINE', 'django.db.backends.postgresql'),
+        'NAME': os.getenv('SQL_DATABASE', 'postgres'),
+        'USER': DB_CONFIG.get('username', 'postgres'),
+        'PASSWORD': DB_CONFIG.get('password', 'password'),
+        'HOST': DB_CONFIG.get('endpoint', 'postgres'),
         'PORT': os.getenv('SQL_PORT', '5432'),
     }
 }
-
+DEFAULT_REDIS_CONFIG = '{"endpoint": "", "username": "", "password": ""}'
+REDIS_CONFIG = json.loads(os.getenv('REDIS_CONFIG', DEFAULT_REDIS_CONFIG))
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -115,11 +121,6 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 30 * 60
-
-# Celery setup
-CELERY_BROKER_URL = 'redis://{}:{}/0'.format(os.getenv('REDIS_HOST', 'athena_app_cmdb-redis'), os.getenv('REDIS_PORT', '6379'))
-CELERY_RESULT_BACKEND = 'django-db'
-CELERY_CACHE_BACKEND = 'django-cache'
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -144,7 +145,7 @@ LOGOUT_REDIRECT_URL = '/'
 
 
 REST_FRAMEWORK = {
-    'PAGE_SIZE': 20,
+    'PAGE_SIZE': 2000,
     'COERCE_DECIMAL_TO_STRING': False,
     'DEFAULT_PAGINATION_CLASS': 'athena_app_cmdb.paginator.Pagination',
     'DEFAULT_PERMISSION_CLASSES': [
