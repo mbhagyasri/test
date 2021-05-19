@@ -12,4 +12,11 @@ INTERNAL_IPS = [
     'localhost',
 ]
 
+# Cache time to live is 1s
+CACHE_TTL = 1
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
