@@ -1,5 +1,5 @@
 # pull official base image
-FROM artifactory.cdk.com/dockerhub/python:3.9.5-alpine3.13
+FROM artifactory.cdk.com/dockerhub/python:3.9.5-alpine3.13 as backend
 
 # expose the port
 EXPOSE 8000
@@ -61,3 +61,13 @@ RUN mkdir -p /opt/athena_app_cmdb/etc \
 COPY . /opt/athena_app_cmdb/
 
 ENTRYPOINT ["/opt/athena_app_cmdb/scripts/entrypoint.sh"]
+
+
+FROM backend as nginx-build
+RUN export SECRET_KEY='SECRET_KEY' && /usr/local/bin/python manage.py collectstatic --no-input
+
+
+FROM nginx:1.19.10-alpine as nginx
+RUN rm -rf /usr/share/nginx/html/*
+COPY --from=nginx-build /opt/athena_app_cmdb/static /usr/share/nginx/html
+CMD ["nginx", "-g", "daemon off;"]
