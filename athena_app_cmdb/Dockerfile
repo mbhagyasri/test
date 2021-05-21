@@ -68,6 +68,7 @@ RUN export SECRET_KEY='SECRET_KEY' && /usr/local/bin/python manage.py collectsta
 
 
 FROM nginx:1.19.10-alpine as nginx
-RUN rm -rf /usr/share/nginx/html/*
+RUN rm -rf /usr/share/nginx/html/* && rm /etc/nginx/conf.d/default.conf
+COPY ./etc/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=nginx-build /opt/athena_app_cmdb/static /usr/share/nginx/html
 CMD ["nginx", "-g", "daemon off;"]
