@@ -67,7 +67,7 @@ FROM backend as nginx-build
 RUN export SECRET_KEY='SECRET_KEY' && /usr/local/bin/python manage.py collectstatic --no-input
 
 
-FROM artifactory.cdk.com/dockerhub/nginx:1.19.10-alpine as nginx
+FROM artifactory.cdk.com/dockerhub/nginx:1.20.0-alpine as nginx
 RUN rm -rf /usr/share/nginx/html/* && rm /etc/nginx/conf.d/default.conf
 COPY ./etc/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=nginx-build /opt/athena_app_cmdb/static /usr/share/nginx/html
