@@ -90,17 +90,23 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
-DEFAULT_DB_CONFIG = '{"endpoint": "", "username": "", "password": ""}'
+DEFAULT_DB_CONFIG = '{"endpoint": "postgres", "username": "postgres", "password": "postgres"}'
 DB_CONFIG = json.loads(os.getenv('DB_CONFIG', DEFAULT_DB_CONFIG))
-
+DB_HOST = 'postgres'
+DB_PORT = '5432'
+if 'endpoint' in DB_CONFIG and DB_CONFIG.get('endpoint', None):
+    p = re.compile (r'(.*):(.*)')
+    m = p.match(DB_CONFIG.get('endpoint'))
+    DB_HOST = m.group(0)
+    DB_PORT = m.group(1)
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('SQL_ENGINE', 'django.db.backends.postgresql'),
         'NAME': os.getenv('SQL_DATABASE', 'postgres'),
         'USER': DB_CONFIG.get('username', 'postgres'),
         'PASSWORD': DB_CONFIG.get('password', 'password'),
-        'HOST': DB_CONFIG.get('endpoint', 'postgres'),
-        'PORT': os.getenv('SQL_PORT', '5432'),
+        'HOST': DB_HOST,
+        'PORT': DB_PORT
     }
 }
 DEFAULT_REDIS_CONFIG = '{"endpoint": "", "username": "", "password": ""}'
@@ -280,8 +286,9 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'json': {
-            '()': 'json_log_formatter.JSONFormatter',
-          #  'format': '[%(asctime)s] [%(name)s] [%(funcName)s] %(levelname)s %(message)s'
+            #  '()': 'json_log_formatter.JSONFormatter',
+            'format':
+                '[%(asctime)s] {"function_name": "%(funcName)s", "Level": "%(levelname)s", "message": :%(message)s"}'
         }
     },
     'filters': {
