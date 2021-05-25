@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 import mimetypes
 import ldap
-import re
 import json
 import athena_app_cmdb as project_module
 from django_auth_ldap.config import LDAPSearch, PosixGroupType
@@ -90,15 +89,12 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
-DEFAULT_DB_CONFIG = '{"endpoint": "postgres", "username": "postgres", "password": "postgres"}'
+DEFAULT_DB_CONFIG = '{"endpoint": "postgres:5432", "username": "postgres", "password": "postgres"}'
 DB_CONFIG = json.loads(os.getenv('DB_CONFIG', DEFAULT_DB_CONFIG))
-DB_HOST = 'postgres'
-DB_PORT = '5432'
-if 'endpoint' in DB_CONFIG and DB_CONFIG.get('endpoint', None):
-    p = re.compile (r'(.*):(.*)')
-    m = p.match(DB_CONFIG.get('endpoint'))
-    DB_HOST = m.group(0)
-    DB_PORT = m.group(1)
+if 'endpoint' in DB_CONFIG and DB_CONFIG.get('endpoint', "") != "":
+    array = DB_CONFIG.get('endpoint').split(':')
+    DB_HOST = array[0]
+    DB_PORT = array[1]
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('SQL_ENGINE', 'django.db.backends.postgresql'),
