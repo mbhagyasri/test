@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.name }}-managed
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "helm.labels" . }}
+spec:
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.cdk.com/id: "athena-app-cmdb"

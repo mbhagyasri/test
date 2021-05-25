@@ -1,0 +1,94 @@
+# Default values for helm.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 1
+
+# Kubernetes 'name' value for created objects
+name: athena-app-cmdb
+
+# Common labels applied to all resources and subresources
+commonLabels:
+  app.cdk.com/id: "athena-app-cmdb"
+  product.cdk.com/id: "athena-platform"
+  team.cdk.com/id: "team-athena-platform"
+
+# Namespace for resources
+namespace: cdk-athena-app-cmdb
+
+imagePullPolicy: Always
+
+imagePullSecrets: []
+
+# Liveness probe
+livenessProbe:
+  failureThreshold: 6
+  httpGet:
+    path: /monitor
+    port: 8000
+    scheme: HTTP
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 1
+
+# Readiness probe
+readinessProbe:
+  failureThreshold: 3
+  httpGet:
+    path: /monitor
+    port: 8000
+    scheme: HTTP
+  periodSeconds: 5
+  successThreshold: 1
+  timeoutSeconds: 1
+###################################
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: NodePort
+  port: 80
+
+containerPort: 8000
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+nodeSelector: {}
+tolerations: []
+affinity: {}
+gateways:
+    private: istio-system/istio-gateway-prv
+    public: istio-system/istio-gateway-pub
+virtualService:
+  enabled: true
+  kubernetesService:
+    httpPort: 80
+  timeout: 30s
+  retryCount: 3
+
