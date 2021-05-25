@@ -279,7 +279,7 @@ public class PlanSpec {
             new PlanIdentifier(PlanSpec.PROJECT_KEY, PlanSpec.PLAN_KEY),
             PlanSpec.PLAN_NAME)
         .releaseNaming(new ReleaseNaming("${bamboo.artifact.container_tag}"))
-        .environments(sandbox(),dev(),nonprod(),prod());
+        .environments(dev(),nonprod(),prod());
     }
 
     ///////////////////////YAML///////////////////////
