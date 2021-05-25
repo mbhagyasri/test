@@ -178,7 +178,7 @@ public class PlanSpec {
                                     .cleanCheckout(true),
                             new ScriptTask()
                                 .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
-                                .inlineBody("export container_tag=${bamboo.buildNumber}\nexport EKS_CLUSTER_NAME=${bamboo.EKS_CLUSTER_NAME}\nexport IQR_ENVIRONMENT=${bamboo.IQR_ENVIRONMENT}\nsh bamboo-specs/scripts/build.sh --verbose\n"),
+                                .inlineBody("export container_tag=${bamboo.buildNumber}\nsh bamboo-specs/scripts/build.sh --verbose\n"),
                             new InjectVariablesTask()
                                 .path(".artifact")
                                 .namespace("artifact")
