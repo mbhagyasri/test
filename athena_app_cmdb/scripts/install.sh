@@ -114,6 +114,8 @@ fi
 
 # End of section
 
+# Section INSTALL
+
 # Choose correct domain for app-registry
 case "$IQR_ENVIRONMENT" in
   prod)
@@ -123,6 +125,19 @@ case "$IQR_ENVIRONMENT" in
     APP_DOMAIN="athena-${IQR_ENVIRONMENT}.connectcdk.com"
     ;;
 esac
+
+# secret key
+echo "Getting SECRET_KEY"
+secret_key="$(aws secretsmanager get-secret-value --secret-id "${region}"-"${IQR_ENVIRONMENT}"-athena-app-cmdb-secret-key | jq -r  .SecretString | jq -r .secret_key)"
+# generate and add new key if nothing found
+if [ -z "${secret_key}" ]; then
+  echo "No secret key found, creating new"
+  secret_key=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 32 | head -n 1)
+  arn="$(aws secretsmanager create-secret --name  "${region}"-"${IQR_ENVIRONMENT}"-athena-app-cmdb-secret-key --secret-string "{ \"secret_key\":\"${secret_key}\"}")"
+  if [ -z "${arn}" ]; then
+    echo "Err: storing secret key failed"
+  fi
+fi
 
 echo "Installing athena-app-cmdb to cluster - $EKS_CLUSTER_NAME"
 echo "Installing frontend"
