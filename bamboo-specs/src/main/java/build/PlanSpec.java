@@ -56,7 +56,7 @@ public class PlanSpec {
     public static String PROJECT_KEY = "NGIP";
 
     public static String PLAN_NAME = PlanSpec.GIT_REPO+"-spec";
-    public static String PLAN_KEY = "NGIP-CMDB";
+    public static String PLAN_KEY = "CMDB";
     //PERMISSIONS
     public static String GROUP_NAME = "Athena PCP";
 
