@@ -138,6 +138,15 @@ if [ -z "${secret_key}" ]; then
     echo "Err: storing secret key failed"
   fi
 fi
+# rds
+echo "Getting RDS url from secret"
+rds="$(kubectl -n cdk-athena-app-cmdb get secret athena-app-cmdb-db-secret -o jsonpath='{.data.db-config}' | base64 -d | jq -r .endpoint)"
+rds_host=${rds%:*}
+rds_port=${rds#*:}
+if [ -z "${rds_host}" ] || [ -z "${rds_port}" ]; then
+  echo "Unable to retrieve RDS info from athena-app-cmdb-db-secret"
+  exit 1
+fi
 
 echo "Installing athena-app-cmdb to cluster - $EKS_CLUSTER_NAME"
 echo "Installing frontend"
@@ -153,6 +162,7 @@ if ! [ "$(helm upgrade --install athena-app-cmdb ./helm/charts/cmdb \
   -n cdk-athena-app-cmdb -f ./helm/charts/cmdb/Values.yaml -f ./helm/values/cmdb/Values."${region}-${IQR_ENVIRONMENT}".yaml \
   --set domain="${APP_DOMAIN}" --set location_id="location-${region}-${IQR_ENVIRONMENT}" \
   --set image=artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb:"$BAMBOO_BUILD_ID" \
+  --set rds_host="${rds_host}" --set rds_port="${rds_port}" \
   --set secret_key="${secret_key}" )" ]; then
 	echo "Err: unable to install athena-app-cmdb into cluster - $EKS_CLUSTER_NAME"
 	exit 1
