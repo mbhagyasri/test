@@ -36,6 +36,7 @@ import com.atlassian.bamboo.specs.builders.task.DownloadItem;
 import com.atlassian.bamboo.specs.util.MapBuilder;
 import com.atlassian.bamboo.specs.api.builders.Variable;
 import com.atlassian.bamboo.specs.api.builders.AtlassianModule;
+import com.atlassian.bamboo.specs.builders.trigger.AfterSuccessfulBuildPlanTrigger;
 //YAML stuff
 import java.io.*;
 import com.amihaiemil.eoyaml.*;
@@ -197,6 +198,7 @@ public class PlanSpec {
     //DEV
     Environment dev(){
         return new Environment(PlanSpec.ENV_DEV_NAME)
+        .triggers(new AfterSuccessfulBuildPlanTrigger()
         .tasks(
             new CleanWorkingDirectoryTask(),
             new ArtifactDownloaderTask()
@@ -223,6 +225,7 @@ public class PlanSpec {
     //NONPROD
     Environment nonprod(){
         return new Environment(PlanSpec.ENV_NONPROD_NAME)
+        .triggers(new AfterSuccessfulBuildPlanTrigger()
         .tasks(
             new CleanWorkingDirectoryTask(),
             new ArtifactDownloaderTask()
