@@ -1,4 +1,4 @@
-django>=3.2.2
+django>=3.2.3
 DjangoRestFramework
 psycopg2
 gunicorn
@@ -20,10 +20,10 @@ tblib
 django-widget-tweaks
 django-bootstrap4
 django-bootstrap-modal-forms
-json-log-formatter
 django-auth-ldap
 python-ldap>=3.0
 ldap3
 django-json-widget
 django-currentuser
 django-admin-autocomplete-filter
+jsonformatter

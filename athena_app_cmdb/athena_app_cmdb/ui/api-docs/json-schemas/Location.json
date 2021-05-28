@@ -1,0 +1,292 @@
+{
+  "description": "An instance of the platform",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Id of the location/instance of platform",
+      "pattern": "^location-[a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 10,
+      "id": "#location",
+      "type": "string"
+    },
+    "env-type": {
+      "description": "CDK environment types",
+      "enum": [
+        "dev",
+        "prod",
+        "stage"
+      ],
+      "type": "string"
+    },
+    "domain": {
+      "description": "domain under which all services will sit",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "design",
+        "live"
+      ],
+      "type": "string"
+    },
+    "region": {
+      "description": "Where is this instance deployed?",
+      "enum": [
+        "eu",
+        "us"
+      ],
+      "type": "string"
+    },
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "integrations": {
+          "type": "object",
+          "additionalProperties": {},
+          "properties": {
+            "aws": {
+              "description": "AWS parameters",
+              "type": "object",
+              "properties": {
+                "account-type": {
+                  "description": "CDK AWS account types",
+                  "enum": [
+                    "dev",
+                    "nonprod",
+                    "prod"
+                  ],
+                  "type": "string"
+                },
+                "primary-region": {
+                  "type": "string"
+                },
+                "secondary-region": {
+                  "type": "string"
+                },
+                "cf-acm-region": {
+                  "type": "string"
+                },
+                "partition": {
+                  "description": "AWS account partition",
+                  "type": "string",
+                  "enum": [
+                    "aws"
+                  ]
+                },
+                "id": {
+                  "pattern": "^[0-9]{12}$",
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "account-type",
+                "cf-acm-region",
+                "id",
+                "name",
+                "partition",
+                "primary-region",
+                "secondary-region"
+              ]
+            },
+            "okta": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "url"
+              ]
+            },
+            "dockerRegistries": {
+              "type": "array",
+              "items": [
+                {
+                  "anyOf": [
+                    {
+                      "description": "AWS ECR Registry",
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "ecr"
+                          ]
+                        },
+                        "source-account-id": {
+                          "type": "number"
+                        },
+                        "aws-region": {
+                          "type": "string"
+                        },
+                        "dockerEndpoint": {
+                          "type": "string"
+                        },
+                        "default": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "aws-region",
+                        "default",
+                        "source-account-id",
+                        "type"
+                      ]
+                    },
+                    {
+                      "description": "Artifactory Docker registry",
+                      "type": "object",
+                      "properties": {
+                        "dockerEndpoint": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "artifactory"
+                          ]
+                        },
+                        "default": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "default",
+                        "dockerEndpoint",
+                        "type"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "minItems": 1,
+              "additionalItems": {
+                "anyOf": [
+                  {
+                    "anyOf": [
+                      {
+                        "description": "AWS ECR Registry",
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "ecr"
+                            ]
+                          },
+                          "source-account-id": {
+                            "type": "number"
+                          },
+                          "aws-region": {
+                            "type": "string"
+                          },
+                          "dockerEndpoint": {
+                            "type": "string"
+                          },
+                          "default": {
+                            "type": "boolean"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                          "aws-region",
+                          "default",
+                          "source-account-id",
+                          "type"
+                        ]
+                      },
+                      {
+                        "description": "Artifactory Docker registry",
+                        "type": "object",
+                        "properties": {
+                          "dockerEndpoint": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "artifactory"
+                            ]
+                          },
+                          "default": {
+                            "type": "boolean"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                          "default",
+                          "dockerEndpoint",
+                          "type"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "required": [
+            "aws",
+            "dockerRegistries"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "integrations"
+      ]
+    },
+    "clusters": {
+      "description": "2021-Feb Adding MultiCluster Support\nValue is EKS cluster name (ex: athena_full_alpaca)",
+      "type": "object",
+      "properties": {
+        "primary": {
+          "type": "string"
+        },
+        "secondary": {
+          "type": "string"
+        },
+        "tertiary": {
+          "type": "string"
+        },
+        "quaternary": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "primary"
+      ]
+    },
+    "name": {
+      "description": "Name of the entity",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 3,
+      "type": "string"
+    },
+    "description": {
+      "description": "Description of the entity",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "clusters",
+    "domain",
+    "env-type",
+    "id",
+    "name",
+    "parameters",
+    "region",
+    "status"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

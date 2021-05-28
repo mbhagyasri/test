@@ -1,0 +1,62 @@
+get:
+  parameters:
+    - in: query
+      name: params
+      schema:
+        type: object
+      style: form
+      explode: true
+  summary: Get all assets
+  operationId: listAssets
+  tags:
+    - assets
+  responses:
+    "200":
+      description: An array of assets
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Assets"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "./Error.yaml"
+post:
+  summary: Create new asset
+  tags:
+    - assets
+  operationId: createAsset
+  consumes:
+    - application/json
+  produces:
+    - application/json
+  parameters:
+    - in: "body"
+      name: "body"
+      description: Create a new asset entity within app-registry.
+      required: true
+      schema:
+        $ref: "./json-schemas/Svc.json"
+  responses:
+    "200":
+      description: Asset record inserted
+    default:
+      description: Asset insert failed
+components:
+  schemas:
+    Assets:
+      type: array
+      items:
+        $ref: "#/components/schemas/Asset"
+    Asset:
+      type: object
+      anyOf:
+        - $ref: "./openapi-schemas/Svc.json"
+        - $ref: "./openapi-schemas/App.json"
+        - $ref: "./openapi-schemas/Bff.json"
+      discriminator:
+        propertyName: type

@@ -15,8 +15,10 @@ import mimetypes
 import ldap
 import json
 import athena_app_cmdb as project_module
+from collections import OrderedDict
 from django_auth_ldap.config import LDAPSearch, PosixGroupType
 from datetime import timedelta
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -282,9 +284,13 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'json': {
-            #  '()': 'json_log_formatter.JSONFormatter',
-            'format':
-                '[%(asctime)s] {"function_name": "%(funcName)s", "Level": "%(levelname)s", "message": :%(message)s"}'
+            'class': 'jsonformatter.JsonFormatter',
+            'format': OrderedDict([
+                ("ts", "%(asctime)s"),
+                ("FunctionName", "%(funcName)s"),
+                ("loglevel", "%(levelname)s"),
+                ("message", "%(message)s"),
+            ])
         }
     },
     'filters': {

@@ -53,16 +53,16 @@ def monitor(request):
 
 @api_view(['GET'])
 def redirect(request):
-    response = HttpResponseRedirect('/athena_app_cmdb')
+    response = HttpResponseRedirect('/')
     response.status_code = 302
     return response
 
 
 @api_view(['GET'])
 def api_root(request, format=None):
-    athena_app_cmdb_api_root = reverse('athena_app_cmdb-home', request=request, format=format)
-    json_str = {'ROOT': reverse('athena_app_cmdb-home', request=request, format=format)}
-    return Response({'athena_app_cmdb-home': reverse('athena_app_cmdb-home', request=request, format=format)})
+    athena_app_cmdb_api_root = reverse('home', request=request, format=format)
+    json_str = {'ROOT': reverse('home', request=request, format=format)}
+    return Response({'home': reverse('home', request=request, format=format)})
 
 
 def get_model(objname):

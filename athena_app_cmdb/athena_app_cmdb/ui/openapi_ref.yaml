@@ -1,0 +1,292 @@
+openapi: 3.0.0
+info:
+  description: |
+    App Registry
+    
+    The following rules are applicable to all paths below:
+    <H3>Validation against Model:</H3>
+    <ul><li>Validation against fields will only be applicable to fields listed in the model.
+    <li>To include additional attribute to the particular resource, those these attribute inside properties field.  Additional data pushed to <b>properties</b> object field that are not listed will be accepted but will not have any validation performed against them.
+    <li>Try to create an object to store similar / functionality instead of adding all attributes as key/value at the first level of properties.
+    </ul>
+    
+    <H3>Filtering Capabilities is applicable to all paths making GET calls.</H3>
+    <ul><li>Use dot(.) notation to traverse down the properties object.  
+        <ul><li><B>Example:</B> To search for items with properties['parameters']['integrations']['aws']['name'] = 'abc', use: <BR><i>?properties.integrations.aws.name=abc</i> </li>
+        </ul>
+        </li>
+    <li>Use dot(.) notation to traverse through foreign key relationship.  This can be on multilayer foreign key relationship.
+      <ul><li><B>Example:</B> To search for assets where its cluster's location's properties['parameters']['integrations']['aws']['id'] = xxxxxx and it belongs to a team with service in its name, use: 
+        <BR><i>?cluster.location.properties.parameters.integrations.aws.id=xxxxxx&team.name.icontains=service
+      </i>
+      <li>In this example, cluster and team are foreign key on the assets model and locations is a foreign key to clusters. 
+      </li></ul>
+    </li>
+    <li>Chaining filters are execute as "AND". Try to use negative expression (excludes) if needing to perform "OR" operations.
+    <li><B>Excludes</B>:
+      <ul><li> to search for the reverse (is not equal, does not contain, does not startswith) use <b>exclude=</b> infront of the particular query parameter.  </li>
+        <ul><li><b>Example:</b> to search for properties['notification'] does not contain FOS and name contains def, use:<BR>
+        <i>exclude=properties.notification.icontains=FOS&name.contains=def</i>
+        </li>
+        </ul></ul></li>
+    <li><B>Powerful filter capabilities</B>:<BR>
+    include these additional lookups to create powerful fitering:
+      <ul><li><b>iexact:</b> case insensitive search. name.iexact=Abc will mach if name is "abc", "ABC", or "Abc"</li>
+      <ul><li>SQL equivalents for <B>x.iexact=Abc</B>:
+      <ul><li>SELECT ... WHERE ... <B>ILIKE</B> 'Abc'</li></ul></ul>
+      <li><b>contains:</b> Case-sensitive containment search.  Use this method to find if an element exist in a list in one of attributes in the properties.
+      <ul><li>SQL equivalents for <B>x.contains=Abc</B>:
+      <ul><li>SELECT ... WHERE ... <B>LIKE</B> '%Abc%'</li></ul></ul>
+      <li><b>icontains:</b> Case-insensitive containment search.
+      <ul><li>SQL equivalents for <B>x.icontains=Abc</B>:
+      <ul><li>SELECT ... WHERE ... <B>ILIKE</B> '%Abc%'</li></ul></ul>
+      <li><b>in:</b> similar to database query for IN queries
+      <ul><li>SQL equivalents for <B>x.in=Abc,def,xyz</B>:
+      <ul><li>SELECT ... WHERE ... <B>IN</B> ('Abc','def','xyz')</li></ul></ul>
+      <li><b>lt / gt / lte / gte</b>: less than / greater than / less than or equal / greater than or equal to (use for integer or date)
+      <ul><li>SQL equivalents for <B>x.gt=4</B>:
+      <ul><li>SELECT ... WHERE ... <B>></B> 4</li></ul>
+      <li>SQL equivalents for <B>x.lte=2005-02-01</B>:
+      <ul><li>SELECT ... WHERE ... <B><=</B> '2005-02-01'</li></ul>
+      </ul>
+      <li><b>isnull</b>: Takes either True or False, which correspond to SQL queries of IS NULL and IS NOT NULL, respectively. Value <B>true/false</b> is case insensitive.
+      <ul><li>SQL equivalents for <B>x.isnull=true</B>:
+      <ul><li>SELECT ... WHERE x <B>IS NULL</B> </li></ul>
+      <li>SQL equivalents for <B>x.isnull=False</B>:
+      <ul><li>SELECT ... WHERE x <B>IS NOT NULL</B></li></ul>
+      </ul>
+      <li><b>year:</b> For date and datetime fields, an exact year match.
+      <ul><li>SQL equivalents for <B>created_at.year=2020</B>:
+      <ul><li>SELECT ... WHERE created_at <B>BETWEEN</B>'2020-01-01' <B>AND</B> '2020-12-31'</li></ul>
+      <li>SQL equivalents for <B>created_at.year.lte=2020</B>:
+      <ul><li>SELECT ... WHERE created_at <B><=</B> '2020-01-01'</li></ul>
+      </ul>
+      <li><b>month:</b> For date and datetime fields, an exact month match.  Takes an integer 1 (January) through 12 (December).
+      <ul><li>SQL equivalents for <B>created_at.month=12</B>:
+      <ul><li>SELECT ... WHERE ... <B>EXTRACT</B>('month' <B>FROM</B> created_at) = '12'</li></ul>
+      <li>SQL equivalents for <B>created_at.month.gte=6</B>:
+      <ul><li>SELECT ... WHERE ... <B>EXTRACT</B>('month' <B>FROM</B> created_at) >= '6'</li></ul>
+      </ul>
+      <li><b>day:</b> For date and datetime fields, an exact day match.
+      <li><b>week_day:</b> For date and datetime fields, a ‘day of the week’ match.  Takes an integer value representing the day of week from 1 (Sunday) to 7 (Saturday).
+    </ul>
+  version: 1.0.61
+  title: App Registry
+  contact:
+    name: Athena Platform Developers
+    email: AthenaPlatformDevelopers@cdk.com
+servers:
+  - url: /
+    description: Default
+  - url: https://app-registry.athena.connectcdk.com/
+    description: Production
+  - url: https://stage-app-registry.athena-nonprod.connectcdk.com/
+    description: Stage
+  - url: https://dev-app-registry.athena-nonprod.connectcdk.com/
+    description: Development
+  - url: http://localhost:8000/
+    description: local environment
+
+paths:
+  /assets:
+    $ref: "./api-docs/assets-all.yaml"
+  /assets/{id}:
+    $ref: "./api-docs/asset-by-id.yaml"
+  /assets/{id}/environments:
+    $ref: "./api-docs/environments-of-asset.yaml"
+  /assets/{id}/environments/{environmentId}:
+    $ref: "./api-docs/environment-of-asset-by-id.yaml"
+  /assets/{id}/deploymentLocation/{environmentId}:
+    $ref: "./api-docs/deploymentlocation-of-asset-by-environment-id.yaml"
+  /assets/{id}/securityConfiguration:
+    $ref: "./api-docs/securityConfiguration-of-asset.yaml"
+  /assets/{id}/urls:
+    $ref: "./api-docs/urls-of-asset.yaml"
+  /assets/{id}/rds:
+    $ref: "./api-docs/rds-of-asset.yaml"
+  /clusters:
+    $ref: "./api-docs/clusters-all.yaml"
+  /clusters/{id}:
+    $ref: "./api-docs/cluster-by-id.yaml"
+  /locations:
+    $ref: "./api-docs/locations-all.yaml"
+  /locations/{id}:
+    $ref: "./api-docs/location-by-id.yaml"
+  /products:
+    $ref: "./api-docs/products-all.yaml"
+  /products/{id}:
+    $ref: "./api-docs/product-by-id.yaml"
+  /teams:
+    $ref: "./api-docs/teams-all.yaml"
+  /teams/{id}:
+    $ref: "./api-docs/team-by-id.yaml"
+  /securityProviders:
+     $ref: "./api-docs/security-all.yaml"
+  /securityProviders/{id}:
+     $ref: "./api-docs/security-by-id.yaml"
+  /resources:
+    $ref: "./api-docs/resources-all.yaml"
+  /resources/{name}:
+    $ref: "./api-docs/resources-by-name.yaml"
+  /bulk-change:
+    $ref: "./api-docs/bulk-update.yaml"
+
+components:
+  schemas:
+    Team:
+      type: object
+      $ref: "./api-docs/json-schemas/Team.json"
+    Product:
+      type: object
+      $ref: "./api-docs/json-schemas/Product.json"
+    SecurityProvider:
+      type: object
+      $ref: "./api-docs/json-schemas/SecurityProvider.json"
+    SecurityProviders:
+      type: array
+      items:
+        $ref: "#/components/schemas/SecurityProvider"
+    Location:
+      type: object
+      $ref: "./api-docs/json-schemas/Location.json"
+    Locations:
+      type: array
+      items:
+        $ref: "#/components/schemas/Location"
+    Asset:
+      type: object
+      anyOf:
+        - $ref: "./api-docs/openapi-schemas/Svc.json"
+        - $ref: "./api-docs/openapi-schemas/App.json"
+        - $ref: "./api-docs/openapi-schemas/Bff.json"
+      discriminator: # seems like swagger ui doesn't support discriminators, so benefit of using this is minimal...
+        propertyName: type
+        mapping:
+          svc: "./api-docs/openapi-schemas/Svc.json"
+          app: "./api-docs/openapi-schemas/App.json"
+          bff: "./api-docs/openapi-schemas/Bff.json"
+    Assets:
+      type: array
+      items:
+        $ref: "#/components/schemas/Asset"
+    Environment:
+      type: object
+      $ref: "./api-docs/json-schemas/Environment.json"
+    Environments:
+      type: array
+      items:
+        $ref: "#/components/schemas/Environment"
+    AppUrl:
+      type: "object"
+      $ref: "./api-docs/json-schemas/ApplicationUrl.json"
+    AppUrls:
+      type: array
+      items:
+        $ref: "#/components/schemas/AppUrl"
+    Rds:
+      type: object
+      items:
+        $ref: "./api-docs/json-schemas/Rds.json"
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+
+    LoadFromExcel:
+      type: object
+      properties:
+        Message:
+          type: string
+          example: Spreadsheet was upload successfully
+        "Sections successfully processed":
+          type: array
+          items:
+            type: string
+    PatchRequest:
+      type: array
+      items:
+        $ref: '#/components/schemas/PatchDocument'
+    PatchDocument:
+      description: A JSONPatch docuemnt as defined by RFC
+      required:
+        - op
+        - path
+      properties:
+        op:
+          type: string
+          description: The operation to be performed
+          enum:
+            - add
+            - remove
+            - replace
+            - move
+            - copy
+            - test
+        path:
+          type: string
+          description: A JSON-Pointer
+          example: /properties/managed_options/os_monitoring/active
+        value:
+          type: object
+          description: The value to be used within the operations.
+          example: true
+        from:
+          type: string
+          description: A string containing a JSON Pointer value.
+    BulkUpdate:
+      type: object
+      description: for each model, send a list of objects to process
+
+    BulkUpdatePatch:
+      type: object
+      description: for each model, send a list of objects to process
+      properties:
+        teams:
+          type: array
+          items:
+            properties:
+              id: 
+                type: string
+              patch_data:
+                $ref: '#/components/schemas/PatchRequest'
+        assets:
+          type: array
+          items:
+            properties:
+              id: 
+                type: string
+              patch_data:
+                $ref: '#/components/schemas/PatchRequest'    
+
+  parameters:
+    IncludeDeletedParam:
+      in: header
+      name: X-INCLUDE-DELETED
+      schema:
+        type: string
+      required: false
+      description: send true to include deleted items in response
+    PageSizeParam:
+      in: query
+      name: page_size
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        default: 20
+      required: false
+      description: user can override the number of items to be return for pagination. Default is 20. Max is set to 1000.
+    PageParam:
+      in: query
+      name: page
+      schema:
+        type: integer
+      required: false
+      description: specify the page for the query if there are more than 1 page
+
+    

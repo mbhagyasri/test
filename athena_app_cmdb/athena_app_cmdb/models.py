@@ -145,7 +145,7 @@ class Asset(models.Model):
         db_table = 'Asset'
         verbose_name = 'Asset'
         ordering = ['-updated_at', '-created_at', ]
-        unique_together = ('name', 'environment')
+
 
     @property
     def self_links(self):
@@ -173,7 +173,6 @@ class Resource(models.Model):
         db_table = 'Resource'
         verbose_name = 'Resource'
         ordering = ['-updated_at', '-created_at',]
-        unique_together = ('name', 'environment')
 
     @property
     def self_links(self):

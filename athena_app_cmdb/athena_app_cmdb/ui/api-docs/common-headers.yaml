@@ -1,0 +1,22 @@
+response:
+  x-item-count:
+    description: Number of items in the response
+    schema:
+      type: number
+
+  content-length:
+    description: size of the entity-body
+    schema:
+      type: number
+  content-type:
+    description: Media type of the resource
+    schema:
+      type: string
+  date:    
+    description: Date and time at which the message was originated
+    schema:
+      type: string
+  etag:
+    description: The identifier for a specific version of this resource      
+    schema:
+      type: string

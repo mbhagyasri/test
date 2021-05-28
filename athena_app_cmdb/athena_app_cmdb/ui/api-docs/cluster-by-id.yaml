@@ -1,0 +1,75 @@
+get:
+  summary: Info for a specific cluster
+  operationId: getClusterById
+  tags:
+    - clusters
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the cluster to retrieve
+      schema:
+        type: string
+      example: "athena_brief_parrot"
+  responses:
+    "200":
+      description: Expected response to a valid request
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Cluster"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+put:
+  summary: Update a specific cluster
+  operationId: updateCluster
+  tags:
+    - clusters
+  parameters:
+    - name: body
+      in: body
+      required: true
+      description: The id determines the cluster to update
+      schema:
+        $ref: "./json-schemas/Cluster.json"
+  responses:
+    "200":
+      description: Cluster record updated
+    default:
+      description: Cluster update failed
+delete:
+  summary: Delete a specific cluster
+  operationId: deleteCluster
+  tags:
+    - clusters
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the cluster to delete (caution)
+      schema:
+        type: string
+      example: "athena_example_cluster"
+  responses:
+    "200":
+      description: Cluster record deleted
+    default:
+      description: Cluster delete failed
+components:
+  schemas:
+    Clusters:
+      type: array
+      items:
+        $ref: "#/components/schemas/Cluster"
+    Cluster:
+      type: object
+      $ref: "./openapi-schemas/Cluster.json"
+    Error:
+      type: object
+      $ref: "Error.yaml"

@@ -1,0 +1,60 @@
+get:
+  parameters:
+    - in: query
+      name: params
+      schema:
+        type: object
+      style: form
+      explode: true
+  summary: Get all resources
+  operationId: listResources
+  tags:
+    - resources
+  responses:
+    "200":
+      description: An array of resources
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Resources"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+post:
+  summary: Create new resource
+  tags:
+    - resources
+  operationId: createResource
+  consumes:
+    - application/json
+  produces:
+    - application/json
+  parameters:
+    - in: "body"
+      name: "body"
+      description: Create a new resource entity within app-registry
+      required: true
+      schema:
+        $ref: "./json-schemas/Resource.json"
+  responses:
+    "200":
+      description: Resource data has been inserted
+    default:
+      description: Failed to insert the resource data
+components:
+  schemas:
+    Resource:
+      type: object
+      $ref: "./openapi-schemas/Resource.json"
+    Resources:
+      type: array
+      items:
+        $ref: "#/components/schemas/Resource"
+    Error:
+      type: object
+      $ref: "Error.yaml"

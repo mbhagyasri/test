@@ -57,7 +57,6 @@ admin.site.add_action(soft_delete_selected, 'soft_delete_selected')
 @admin.register(models.Location)
 class LocationAdmin(AppRegistryDefaultAdmin):
     form = forms.LocationForm
-    autocomplete_fields = ['environment', ]
     list_display = ('id', 'name', 'description', 'aws_account_id')
 
     def aws_account_id(self, obj):
@@ -96,7 +95,7 @@ class ProductAdmin(AppRegistryDefaultAdmin):
 @admin.register(models.Asset)
 class AssetAdmin(AppRegistryDefaultAdmin):
     form = forms.AssetForm
-    list_display = ('id', 'name', 'environment')
+    list_display = ('id', 'name', )
 
 
 @admin.register(models.Resource)

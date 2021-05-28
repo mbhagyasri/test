@@ -1,0 +1,75 @@
+get:
+  summary: Info for a specific location
+  operationId: getLocationById
+  tags:
+    - locations
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the location to retrieve
+      schema:
+        type: string
+      example: "location-us-dev"
+  responses:
+    "200":
+      description: Expected response to a valid request
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Location"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+put:
+  summary: Update a specific location
+  operationId: updateLocation
+  tags:
+    - locations
+  parameters:
+    - name: body
+      in: body
+      required: true
+      description: The id determines the location to update
+      schema:
+        $ref: "./json-schemas/Location.json"
+  responses:
+    "200":
+      description: Location record updated
+    default:
+      description: Location update failed
+delete:
+  summary: Delete a specific location
+  operationId: deleteLocation
+  tags:
+    - locations
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the location to delete (caution)
+      schema:
+        type: string
+      example: "location-example-delete"
+  responses:
+    "200":
+      description: Location record deleted
+    default:
+      description: Location delete failed
+components:
+  schemas:
+    Locations:
+      type: array
+      items:
+        $ref: "#/components/schemas/Location"
+    Location:
+      type: object
+      $ref: "./openapi-schemas/Location.json"
+    Error:
+      type: object
+      $ref: "Error.yaml"

@@ -1,0 +1,39 @@
+get:
+  summary: Get application URL by an asset id
+  operationId: getURLsByAssetId
+  tags:
+    - assets
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the asset to retrieve application url
+      schema:
+        type: string
+      example: "svc-demo-svc"
+  responses:
+    "200":
+      description: Expected response to a valid request
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/AppUrls"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    AppUrl:
+      type: object
+      $ref: "./json-schemas/ApplicationUrl.json"
+    AppUrls:
+      type: array
+      $ref: "#components/schemas/AppUrl"
+    Error:
+      type: object
+      $ref: "Error.yaml"

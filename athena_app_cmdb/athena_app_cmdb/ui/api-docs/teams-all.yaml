@@ -1,0 +1,53 @@
+get:
+  summary: Get all teams
+  operationId: listTeams
+  tags:
+    - teams
+  responses:
+    "200":
+      description: An array of teams
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Teams"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+post:
+  summary: Create new team
+  tags:
+    - teams
+  operationId: createTeam
+  consumes:
+    - application/json
+  produces:
+    - application/json
+  parameters:
+    - in: "body"
+      name: "body"
+      description: Create a new team entity within app-registry.
+      required: true
+      schema:
+        $ref: "./json-schemas/Team.json"
+  responses:
+    "200":
+      description: Team record inserted
+    default:
+      description: Team insert failed
+components:
+  schemas:
+    Teams:
+      type: array
+      items:
+        $ref: "#/components/schemas/Team"
+    Team:
+      type: object
+      $ref: "./openapi-schemas/ServiceDefinition.json"
+    Error:
+      type: object
+      $ref: "Error.yaml"

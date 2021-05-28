@@ -1,0 +1,43 @@
+get:
+  summary: Get a deploymentlocation for an asset by environment id
+  operationId: getDeploymentLocationOfAssetByEnvironmentId
+  tags:
+    - assets
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the asset
+      schema:
+        type: string
+      example: "svc-demo-svc"       
+    - name: environmentId
+      in: path
+      required: true
+      description: The id of the environment to retrieve
+      schema:
+        type: string  
+      example: "us-dev"          
+  responses:
+    "200":
+      description: The id of the environment of whose deployment location to retrieve
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Location"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    Location:
+      type: object
+      $ref: "./openapi-schemas/Location.json"
+    Error:
+      type: object
+      $ref: "Error.yaml"

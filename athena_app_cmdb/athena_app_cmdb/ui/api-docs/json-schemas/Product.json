@@ -1,0 +1,211 @@
+{
+  "description": "Product\n\none product has many assets/applications.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Id of the product",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 3,
+      "id": "#product",
+      "type": "string"
+    },
+    "external-ids": {
+      "description": "Ids of this product in other external systems",
+      "type": "object",
+      "properties": {
+        "iqr_product_id": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "iqr_product_id"
+      ]
+    },
+    "bamboo-projects": {
+      "description": "List of bamboo projects associated with this product",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Id",
+            "pattern": "^[A-Z][A-Z0-9]{1,}$",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id"
+        ]
+      }
+    },
+    "bitbucket-projects": {
+      "description": "List of stash/bitbucket projects associated with this product",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Id\n\npattern ^[A-Z][A-Z0-9]{1,}$",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id"
+        ]
+      }
+    },
+    "environments": {
+      "description": "List of environments for this product",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Name of the entity",
+            "id": "#environment",
+            "pattern": "^[a-z]{2,3}-[a-z0-9-]*$",
+            "minLength": 3,
+            "type": "string"
+          },
+          "type": {
+            "description": "Environment type",
+            "enum": [
+              "dev",
+              "dit",
+              "perf",
+              "prod",
+              "qa",
+              "stage"
+            ],
+            "type": "string"
+          },
+          "location": {
+            "description": "Location Id",
+            "pattern": "^location-[a-z0-9-]{0,61}[a-z0-9]$",
+            "minLength": 10,
+            "type": "string"
+          },
+          "prefix": {
+            "description": "Short name of the environment",
+            "pattern": "^[a-z]{2,3}[a-z0-9]*$",
+            "minLength": 3,
+            "type": "string"
+          },
+          "cluster": {
+            "description": "*\nOrdinal value of the EKS cluster (primary, secondary, tertiary)",
+            "enum": [
+              "primary",
+              "quaternary",
+              "secondary",
+              "tertiary"
+            ],
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "location",
+          "type"
+        ]
+      }
+    },
+    "security": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "enum": [
+              "cdk-service",
+              "dms-drive",
+              "fortellis",
+              "iam",
+              "none"
+            ],
+            "type": "string"
+          },
+          "configuration": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "jwksuri": {
+                    "type": "string"
+                  },
+                  "issuer": {
+                    "type": "string"
+                  },
+                  "audience": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "audience",
+                  "issuer",
+                  "jwksuri"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "jwksuri": {
+                    "type": "string"
+                  },
+                  "issuer": {
+                    "type": "string"
+                  },
+                  "audience": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "audience",
+                  "issuer",
+                  "jwksuri"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "callbackPath": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "callbackPath"
+                ]
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "provider"
+        ]
+      }
+    },
+    "description": {
+      "description": "Description of the entity",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "environments",
+    "external-ids",
+    "id",
+    "security"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

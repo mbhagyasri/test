@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "string"
+    },
+    "protocol": {
+      "enum": [
+        "http",
+        "https",
+        "tcp"
+      ],
+      "type": "string"
+    },
+    "type": {
+      "enum": [
+        "external",
+        "service"
+      ],
+      "type": "string"
+    },
+    "port": {
+      "type": "number"
+    },
+    "retryAttempts": {
+      "type": "number"
+    },
+    "retryTimeout": {
+      "type": "string"
+    },
+    "activateCircuitbreaker": {
+      "type": "boolean"
+    },
+    "name": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "value"
+  ]
+}

@@ -1,0 +1,36 @@
+get:
+  summary: Get RDS database details
+  operationId: getRdsDetailsByAssetId
+  tags:
+    - assets
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the asset to retrieve application's database if exists
+      schema:
+        type: string
+      example: "bff-demo-app"
+  responses:
+    "200":
+      description: Expected response to a valid request
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Rds"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    Rds:
+      type: object
+      $ref: "./json-schemas/Rds.json"
+    Error:
+      type: object
+      $ref: "Error.yaml"

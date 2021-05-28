@@ -1,0 +1,38 @@
+get:
+  summary: Security configuration for asset
+  operationId: getAssetSecurityConfiguration
+  tags:
+    - assets
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the asset to retrieve
+      schema:
+        type: string
+      example: "svc-demo-svc"
+  responses:
+    "200":
+      description: Expected response to a valid request
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/AssetSecurityConfiguration"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    AssetSecurityConfiguration:
+      type: array
+      items:
+        type: object
+        $ref: "./openapi-schemas/SharedSecurityConfiguration.json"
+    Error:
+      type: object
+      $ref: "Error.yaml"

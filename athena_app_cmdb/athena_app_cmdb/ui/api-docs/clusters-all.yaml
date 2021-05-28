@@ -1,0 +1,53 @@
+get:
+  summary: Get all clusters
+  operationId: listClusters
+  tags:
+    - clusters
+  responses:
+    "200":
+      description: An array of clusters
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Clusters"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+post:
+  summary: Create new cluster
+  tags:
+    - clusters
+  operationId: createCluster
+  consumes:
+    - application/json
+  produces:
+    - application/json
+  parameters:
+    - in: "body"
+      name: "body"
+      description: Create a new EKS cluster entity within app-registry.
+      required: true
+      schema:
+        $ref: "./json-schemas/Cluster.json"
+  responses:
+    "200":
+      description: Cluster record inserted
+    default:
+      description: Cluster insert failed
+components:
+  schemas:
+    Cluster:
+      type: object
+      $ref: "./openapi-schemas/Cluster.json"
+    Clusters:
+      type: array
+      items:
+        $ref: "#/components/schemas/Cluster"
+    Error:
+      type: object
+      $ref: "Error.yaml"

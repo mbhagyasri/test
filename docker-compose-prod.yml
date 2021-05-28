@@ -4,7 +4,7 @@ services:
     container_name: "athena_app_cmdb"
     image: athena_app_cmdb
     hostname: athena_app_cmdb
-    command: gunicorn --config /opt/athena_app_cmdb/gunicorn_cfg.py app_registry.wsgi:application
+    command: gunicorn --log-config /opt/athena_app_cmdb/etc/gunicorn_logging.conf --config /opt/athena_app_cmdb/gunicorn_cfg.py app_registry.wsgi:application
     volumes:
       - ./athena_app_cmdb/:/opt/athena_app_cmdb
       - /docker/gfs_data/athena_app_cmdb/static_files:/opt/athena_app_cmdb/static

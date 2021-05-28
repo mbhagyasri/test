@@ -1,0 +1,8 @@
+{
+  "enum": [
+    "http",
+    "https",
+    "tcp"
+  ],
+  "type": "string"
+}

@@ -1,0 +1,32 @@
+get:
+  summary: Get all security providers
+  operationId: listSecurityProviders
+  tags:
+    - security
+  responses:
+    "200":
+      description: An array of security providers
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SecurityProviders"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+components:            
+  schemas:
+    SecurityProvider:
+      type: object
+      $ref: "./openapi-schemas/SecurityProvider.json"
+    SecurityProviders:
+      type: array
+      items:
+        $ref: "#/components/schemas/SecurityProvider" 
+    Error:
+      type: object
+      $ref: "Error.yaml"

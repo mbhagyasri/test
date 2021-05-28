@@ -16,12 +16,13 @@ Including another URLconf
 
 from django.urls import path
 from . import views
+from .ui.views import Swagger
 from . import excel_upload_views
 
 
 app_name = 'app-registry'
 urlpatterns = [
-    path('/', views.api_root, name='app-registry-home'),
+    path('', Swagger.as_view(), name='api-doc'),
     path('/load-from-excel', excel_upload_views.LoadFromExcel.as_view(), name='api-load-from-excel'),
     path('/bulk-update', views.athena_app_cmdbBulkUpdate.as_view(), name='api-bulk-update'),
     path('/<slug:objname>', views.athena_app_cmdbList.as_view(), name='athena_app_cmdb-list'),

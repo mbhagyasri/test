@@ -1,0 +1,53 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Name of the entity",
+      "id": "#environment",
+      "pattern": "^[a-z]{2,3}-[a-z0-9-]*$",
+      "minLength": 3,
+      "type": "string"
+    },
+    "type": {
+      "description": "Environment type",
+      "enum": [
+        "dev",
+        "dit",
+        "perf",
+        "prod",
+        "qa",
+        "stage"
+      ],
+      "type": "string"
+    },
+    "location": {
+      "description": "Location Id",
+      "pattern": "^location-[a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 10,
+      "type": "string"
+    },
+    "prefix": {
+      "description": "Short name of the environment",
+      "pattern": "^[a-z]{2,3}[a-z0-9]*$",
+      "minLength": 3,
+      "type": "string"
+    },
+    "cluster": {
+      "description": "*\nOrdinal value of the EKS cluster (primary, secondary, tertiary)",
+      "enum": [
+        "primary",
+        "quaternary",
+        "secondary",
+        "tertiary"
+      ],
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "location",
+    "type"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

@@ -1,0 +1,31 @@
+{
+  "anyOf": [
+    {
+      "type": "object",
+      "properties": {
+        "address": {
+          "description": "Email",
+          "format": "email",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "address"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "channel"
+      ]
+    }
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

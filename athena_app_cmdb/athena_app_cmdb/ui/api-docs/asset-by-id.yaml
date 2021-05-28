@@ -1,0 +1,73 @@
+get:
+  summary: Info for a specific asset
+  operationId: getAssetById
+  tags:
+    - assets
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the asset to retrieve
+      schema:
+        type: string
+      example: "svc-demo-svc"
+  responses:
+    "200":
+      description: Expected response to a valid request
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Asset"
+
+
+put:
+  summary: Update a specific asset
+  operationId: updateAsset
+  tags:
+    - assets
+  parameters:
+    - name: body
+      in: body
+      required: true
+      description: The id determines the asset to update
+      schema:
+        $ref: "./json-schemas/Svc.json"
+  responses:
+    "200":
+      description: Asset record updated
+    default:
+      description: Asset update failed
+delete:
+  summary: Delete a specific asset
+  operationId: deleteAsset
+  tags:
+    - assets
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the asset to delete (caution)
+      schema:
+        type: string
+      example: "svc-example-delete"
+  responses:
+    "200":
+      description: Asset record deleted
+    default:
+      description: Asset delete failed
+components:
+  schemas:
+    Assets:
+      type: array
+      items:
+        $ref: "#/components/schemas/Asset"
+    Asset:
+      type: object
+      anyOf:
+        - $ref: "./openapi-schemas/Svc.json"
+        - $ref: "./openapi-schemas/App.json"
+        - $ref: "./openapi-schemas/Bff.json"
+      discriminator:
+        propertyName: type

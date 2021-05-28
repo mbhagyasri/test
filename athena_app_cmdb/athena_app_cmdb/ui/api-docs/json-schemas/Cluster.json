@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "EKS cluster name",
+      "pattern": "^athena_[a-z0-9_]{0,61}[a-z0-9]$",
+      "minLength": 10,
+      "type": "string"
+    },
+    "uri": {
+      "description": "Endpoint for EKS cluster",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "uri"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

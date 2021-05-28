@@ -1,0 +1,53 @@
+get:
+  summary: Get all locations
+  operationId: listLocations
+  tags:
+    - locations
+  responses:
+    "200":
+      description: An array of locations
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Locations"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+post:
+  summary: Create new location
+  tags:
+    - locations
+  operationId: createLocation
+  consumes:
+    - application/json
+  produces:
+    - application/json
+  parameters:
+    - in: "body"
+      name: "body"
+      description: Create a new location entity within app-registry.
+      required: true
+      schema:
+        $ref: "./json-schemas/Location.json"
+  responses:
+    "200":
+      description: Location record inserted
+    default:
+      description: Location insert failed
+components:
+  schemas:
+    Location:
+      type: object
+      $ref: "./openapi-schemas/Location.json"
+    Locations:
+      type: array
+      items:
+        $ref: "#/components/schemas/Location"
+    Error:
+      type: object
+      $ref: "Error.yaml"

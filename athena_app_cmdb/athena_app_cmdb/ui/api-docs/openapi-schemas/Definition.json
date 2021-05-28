@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Id of the entity",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 3,
+      "type": "string"
+    },
+    "name": {
+      "description": "Name of the entity",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 3,
+      "type": "string"
+    },
+    "description": {
+      "description": "Description of the entity",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name"
+  ]
+}

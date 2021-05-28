@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+    "environment_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string",
+      "pattern": "^(http?|https?)://"
+    }
+  }
+}

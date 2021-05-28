@@ -1,0 +1,63 @@
+post:
+  summary: Bulk Create
+  tags:
+    - Bulk Change
+  operationId: createBulk
+  consumes:
+    - application/json
+  produces:
+    - application/json
+  parameters:
+    - in: "body"
+      name: "body"
+      description: Create a set of items.
+      required: true
+      schema:
+        $ref: "#/components/schemas/BulkChange"
+  responses:
+    "201":
+      description: record inserted
+    default:
+      description: record insert failed
+put:
+  tags:
+    - Bulk Change
+  summary: Bulk updates
+  consumes:
+    - application/json
+  produces:
+    - application/json
+  parameters:
+    - in: "body"
+      name: "body"
+      description: Create a set of items.
+      required: true
+      schema:
+        $ref: "#components/schemas/BulkChange"
+  responses:
+    "200":
+      description: records updated
+    default:
+      description: records update failed
+
+components:
+  schemas:
+    BulkChange:
+      type: object
+      anyOf:
+        - assets:
+            type: array
+            items:
+              $ref: "./assets-all.yaml#/components/schemas/Asset"
+        - clusters:
+            type: array
+            items:
+              $ref: "./clusters-all.yaml#/components/schemas/Cluster"
+        - locations:
+            type: array
+            items:
+              $ref: "./locations-all.yaml#/components/schemas/Location"
+        - products:
+            type: array
+            items:
+              $ref: "./products-all.yaml#/components/schemas/Product"

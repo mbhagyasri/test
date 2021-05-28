@@ -1,0 +1,99 @@
+{
+  "description": "Engineering team.  May develop many products and applications",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Id of the team",
+      "pattern": "^team-[a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 5,
+      "type": "string"
+    },
+    "email": {
+      "description": "Team email used for information communications and approvals",
+      "items": {
+        "type": "string",
+        "format": "email"
+      },
+      "type": "array"
+    },
+    "ad-group": {
+      "description": "Team active directory groups",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "opsgenie": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "manager": {
+          "type": "string"
+        },
+        "create": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "create",
+        "manager",
+        "name"
+      ]
+    },
+    "notification": {
+      "description": "Notification settings",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "email": {
+                "description": "Email",
+                "format": "email",
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "email"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "slack": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "slack"
+            ]
+          }
+        ]
+      }
+    },
+    "name": {
+      "description": "Name of the entity",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 3,
+      "type": "string"
+    },
+    "description": {
+      "description": "Description of the entity",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "ad-group",
+    "email",
+    "id",
+    "name",
+    "notification"
+  ]
+}

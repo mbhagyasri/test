@@ -1,0 +1,43 @@
+get:
+  summary: Get an environment for an asset by asset id
+  operationId: getEnvironmentOfAssetById
+  tags:
+    - assets
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the asset
+      schema:
+        type: string
+      example: "svc-demo-svc"             
+    - name: environmentId
+      in: path
+      required: true
+      description: The id of the environment to retrieve
+      schema:
+        type: string          
+      example: "us-dev"          
+  responses:
+    "200":
+      description: The ids of asset and environment to retrieve
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Environment"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    Environment:
+      type: object
+      $ref: "./openapi-schemas/Environment.json"
+    Error:
+      type: object
+      $ref: "Error.yaml"

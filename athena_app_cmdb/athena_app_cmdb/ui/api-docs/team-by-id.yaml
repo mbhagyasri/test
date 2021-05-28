@@ -1,0 +1,75 @@
+get:
+  summary: Info for a specific team
+  operationId: getTeamById
+  tags:
+    - teams
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the team to retrieve
+      schema:
+        type: string
+      example: "team-athena-platform"
+  responses:
+    "200":
+      description: Expected response to a valid request
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Team"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+put:
+  summary: Update a specific team
+  operationId: updateTeam
+  tags:
+    - teams
+  parameters:
+    - name: body
+      in: body
+      required: true
+      description: The id determines the team to update
+      schema:
+        $ref: "./json-schemas/Team.json"
+  responses:
+    "200":
+      description: Team record updated
+    default:
+      description: Team update failed
+delete:
+  summary: Delete a specific team
+  operationId: deleteTeam
+  tags:
+    - teams
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the team to delete (caution)
+      schema:
+        type: string
+      example: "team-example-delete"
+  responses:
+    "200":
+      description: Team record deleted
+    default:
+      description: Team delete failed
+components:
+  schemas:
+    Teams:
+      type: array
+      items:
+        $ref: "#/components/schemas/Team"
+    Team:
+      type: object
+      $ref: "./openapi-schemas/Team.json"
+    Error:
+      type: object
+      $ref: "Error.yaml"

@@ -1,0 +1,75 @@
+get:
+  summary: Info for a specific product
+  operationId: getProductById
+  tags:
+    - products
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the product to retrieve
+      schema:
+        type: string
+      example: "athena-platform-examples"
+  responses:
+    "200":
+      description: Expected response to a valid request
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Product"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+put:
+  summary: Update a specific product
+  operationId: updateProduct
+  tags:
+    - products
+  parameters:
+    - name: body
+      in: body
+      required: true
+      description: The id determines the product to update
+      schema:
+        $ref: "./json-schemas/Product.json"
+  responses:
+    "200":
+      description: Product record updated
+    default:
+      description: Product update failed
+delete:
+  summary: Delete a specific product
+  operationId: deleteProduct
+  tags:
+    - products
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the product to delete (caution)
+      schema:
+        type: string
+      example: "athena-example-delete"
+  responses:
+    "200":
+      description: Product record deleted
+    default:
+      description: Product delete failed
+components:
+  schemas:
+    Products:
+      type: array
+      items:
+        $ref: "#/components/schemas/Product"
+    Product:
+      type: object
+      $ref: "./openapi-schemas/Product.json"
+    Error:
+      type: object
+      $ref: "Error.yaml"

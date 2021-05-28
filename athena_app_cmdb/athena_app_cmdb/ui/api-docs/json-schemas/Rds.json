@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "properties": {
+    "endpoint": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "port": {
+          "type": "number"
+        }
+      }
+    },
+    "environment_id": {
+      "type": "string"
+    },
+    "dbname": {
+      "type": "string"
+    }
+  }
+}

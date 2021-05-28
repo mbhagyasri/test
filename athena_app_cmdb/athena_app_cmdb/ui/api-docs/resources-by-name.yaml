@@ -1,0 +1,73 @@
+get:
+  summary: Info for a specific resource
+  operationId: getResourceByName
+  tags:
+    - resources
+  parameters:
+    - name: name
+      in: path
+      required: true
+      description: The name of the resource to retrieve
+      schema:
+        type: string
+      example: "rds"
+  responses:
+    "200":
+      description: Expected response to a valid request
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Resource"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+put:
+  summary: Update a specific resource
+  operationId: updateResource
+  tags:
+    - resources
+  parameters:
+    - name: body
+      in: body
+      required: true
+      description: The name determines the resource to update
+      schema:
+        $ref: "./json-schemas/Resource.json"
+  responses:
+    "200":
+      description: Resource data has been updated
+    "400":
+      description: Invalid request or schema validation failed
+    default:
+      description: Failed to update the resource data
+delete:
+  summary: Delete a specific resource
+  operationId: deleteById
+  tags:
+    - resources
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The name of the resource to delete (caution)
+      schema:
+        type: string
+      example: "svc-example-delete"
+  responses:
+    "200":
+      description: Resource deleted successfully
+    default:
+      description: Failed to delete the resource data
+components:
+  schemas:
+    Resource:
+      type: object
+      $ref: "./openapi-schemas/Resource.json"
+    Error:
+      type: object
+      $ref: "Error.yaml"

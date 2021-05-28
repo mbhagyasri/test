@@ -1,3 +1,11 @@
+### build up swagger
+FROM artifactory.cdk.com/dockerhub/node:12-alpine AS node-tmp
+RUN mkdir -p /opt/athena_app_cmdb && chown -R node:node /opt/athena_app_cmdb
+WORKDIR /opt/athena_app_cmdb
+COPY ./athena_app_cmdb/ui /opt/athena_app_cmdb/athena_app_cmdb/ui
+RUN npm install -g @apidevtools/swagger-cli openapi-types@>=7 \
+    && swagger-cli bundle --outfile=/opt/athena_app_cmdb/athena_app_cmdb/ui/openapi.yaml /opt/athena_app_cmdb/athena_app_cmdb/ui/openapi_ref.yaml
+
 # pull official base image
 FROM artifactory.cdk.com/dockerhub/python:3.9.5-alpine3.13 as backend
 
@@ -10,18 +18,16 @@ ENV PYTHONUNBUFFERED 1
 ENV DJANGO_SETTINGS_MODULE=app_registry.settings.prod
 
 # Copy your application code to the container (make sure you create a .dockerignore file if any large files or directories should be excluded)
-RUN mkdir -p /opt/athena_app_cmdb/config /opt/node_modules
+RUN mkdir -p /opt/athena_app_cmdb/config /opt/athena_app_cmdb/etc
 WORKDIR /opt/athena_app_cmdb
 
 ARG requirements=requirements/prod.txt
 
 # Copy in your requirements file
 COPY requirements/ /opt/athena_app_cmdb/requirements/
-
 # Installing client libraries and any other package you need
 # These are packages that are needed during runtime
 RUN apk add --update --no-cache python3 libpq bash expat-dev libffi curl py-pip
-
 # Install build deps, then run `pip install`, then remove unneeded build deps all in a single step. Correct the path to your production requirements file, if needed.
 RUN set -ex \
     && apk add --update --no-cache --virtual .build-deps \
@@ -50,18 +56,15 @@ RUN set -ex \
     )" \
     && apk add --virtual .python-rundeps $runDeps \
     && apk del .build-deps
-
-# download AWS RDS SSL certificate to /opt/athena_app_cmdb/etc
-RUN mkdir -p /opt/athena_app_cmdb/etc \
-    && cd /opt/athena_app_cmdb/etc \
-    && wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem \
-    && ln -s rds-combined-ca-bundle.pem db-rootca.pem
-
 # copy project source code
 COPY . /opt/athena_app_cmdb/
-
+COPY --from=node-tmp /opt/athena_app_cmdb/athena_app_cmdb/ui/openapi.yaml /opt/athena_app_cmdb/athena_app_cmdb/ui/
+RUN cp /opt/athena_app_cmdb/athena_app_cmdb/ui/openapi.yaml /root/openapi_2.yaml
+# download AWS RDS SSL certificate to /opt/athena_app_cmdb/etc
+RUN cd /opt/athena_app_cmdb \
+    && wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem \
+    && cp rds-combined-ca-bundle.pem etc/db-rootca.pem
 ENTRYPOINT ["/opt/athena_app_cmdb/scripts/entrypoint.sh"]
-
 
 FROM backend as nginx-build
 RUN export SECRET_KEY='SECRET_KEY' && /usr/local/bin/python manage.py collectstatic --no-input
@@ -79,3 +82,5 @@ COPY ["./helm", "./helm"]
 COPY ["./scripts", "./scripts"]
 RUN shellcheck ./scripts/install.sh
 ENTRYPOINT [ "./scripts/install.sh" ]
+
+

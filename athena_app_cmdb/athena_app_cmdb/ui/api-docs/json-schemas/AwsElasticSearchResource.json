@@ -1,0 +1,170 @@
+{
+  "type": "object",
+  "properties": {
+    "spec": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "aws-elasticsearch"
+          ]
+        },
+        "owner": {
+          "type": "string"
+        },
+        "platform": {
+          "description": "Id of the location/instance of platform",
+          "pattern": "^location-[a-z0-9-]{0,61}[a-z0-9]$",
+          "minLength": 10,
+          "type": "string"
+        },
+        "assetMasterId": {
+          "type": "number"
+        },
+        "provisioner": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "terraform"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "source",
+            "type"
+          ]
+        },
+        "definition": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "type": "string"
+            },
+            "templateName": {
+              "description": "AWS ES Templates",
+              "type": "string",
+              "enum": [
+                "athena-es-large",
+                "athena-es-large-warm",
+                "athena-es-medium",
+                "athena-es-medium-warm",
+                "athena-es-mini",
+                "athena-es-small",
+                "athena-es-xlarge",
+                "athena-es-xlarge-warm"
+              ]
+            },
+            "props": {
+              "type": "object",
+              "properties": {
+                "esVersion": {
+                  "type": "string"
+                },
+                "hostName": {
+                  "type": "string"
+                },
+                "authentication": {
+                  "type": "object",
+                  "additionalProperties": {}
+                },
+                "cognito": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "esVersion",
+                "hostName"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "props",
+            "templateName"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "assetMasterId",
+        "definition",
+        "owner",
+        "platform",
+        "type"
+      ]
+    },
+    "apiVersion": {
+      "type": "string",
+      "enum": [
+        "cdk.com/v1"
+      ]
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "Resource"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {},
+      "properties": {
+        "name": {
+          "description": "Unique identifier",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "properties": {
+            "iqr_product_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "iqr_product_id"
+          ]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "annotations",
+        "description",
+        "name"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

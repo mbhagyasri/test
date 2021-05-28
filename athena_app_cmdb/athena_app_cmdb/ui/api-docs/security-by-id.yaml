@@ -1,0 +1,41 @@
+get:
+  summary: Security Provider
+  operationId: getSecurityProviderById
+  tags:
+    - security
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the security provider to retrieve
+      schema:
+        type: string
+      example: "iam"  
+  responses:
+    "200":
+      description: Expected response to a valid request
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SecurityProvider"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    SecurityProviders:
+      type: array
+      items:
+        $ref: "#/components/schemas/SecurityProvider"
+    SecurityProvider:
+      type: object
+      $ref: "./openapi-schemas/SecurityProvider.json"
+    Error:
+      type: object
+      $ref: "Error.yaml"

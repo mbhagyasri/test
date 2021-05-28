@@ -1,0 +1,30 @@
+{
+  "anyOf": [
+    {
+      "type": "object",
+      "properties": {
+        "email": {
+          "description": "Email",
+          "format": "email",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "email"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "slack": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "slack"
+      ]
+    }
+  ]
+}
