@@ -64,6 +64,7 @@ RUN cp /opt/athena_app_cmdb/athena_app_cmdb/ui/openapi.yaml /root/openapi_2.yaml
 RUN cd /opt/athena_app_cmdb \
     && wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem \
     && cp rds-combined-ca-bundle.pem etc/db-rootca.pem
+RUN chmod +x /opt/athena_app_cmdb/scripts/entrypoint.sh
 ENTRYPOINT ["/opt/athena_app_cmdb/scripts/entrypoint.sh"]
 
 FROM backend as nginx-build
@@ -81,6 +82,7 @@ FROM artifactory.cobalt.com/athena/athena-platform/tooling-base:latest as instal
 COPY ["./helm", "./helm"]
 COPY ["./scripts", "./scripts"]
 RUN shellcheck ./scripts/install.sh
+RUN chmod +x ./scripts/install.sh
 ENTRYPOINT [ "./scripts/install.sh" ]
 
 
