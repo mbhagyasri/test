@@ -33,7 +33,8 @@ components:
       $ref: "./json-schemas/ApplicationUrl.json"
     AppUrls:
       type: array
-      $ref: "#components/schemas/AppUrl"
+      items:
+        $ref: "#/components/schemas/AppUrl"
     Error:
       type: object
       $ref: "Error.yaml"
