@@ -19,46 +19,49 @@
           "type": "string"
         },
         "consumes": {
-          "description": "List of services that this application uses.",
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
-              "value": {
-                "type": "string"
+              "environment": {
+                "type": "string",
+                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
               },
-              "path": {
-                "type": "string"
-              },
-              "port": {
-                "type": "number"
-              },
-              "type": {
-                "enum": [
-                  "external",
-                  "service"
-                ],
-                "type": "string"
-              },
-              "retryAttempts": {
-                "type": "number"
-              },
-              "retryTimeout": {
-                "type": "string"
-              },
-              "activateCircuitbreaker": {
-                "type": "boolean"
-              },
-              "name": {
-                "type": "string"
+              "entries": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    },
+                    "protocol": {
+                      "enum": [
+                        "http",
+                        "https",
+                        "tcp"
+                      ],
+                      "type": "string"
+                    },
+                    "type": {
+                      "enum": [
+                        "external",
+                        "service"
+                      ],
+                      "type": "string"
+                    },
+                    "port": {
+                      "type": "number"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
               }
-            },
-            "additionalProperties": false,
-            "required": [
-              "path",
-              "type",
-              "value"
-            ]
+            }
           }
         },
         "team": {
@@ -82,9 +85,20 @@
           "type": "string"
         },
         "internal": {
-          "description": "Is only available inside private network",
-          "default": false,
-          "type": "boolean"
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "environment": {
+                "type": "string",
+                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+              },
+              "entry": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          }
         },
         "type": {
           "enum": [
@@ -99,75 +113,87 @@
           "items": {
             "type": "object",
             "properties": {
-              "provider": {
-                "enum": [
-                  "cdk-service",
-                  "dms-drive",
-                  "fortellis",
-                  "iam",
-                  "none"
-                ],
-                "type": "string"
+              "environment": {
+                "type": "string",
+                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
               },
-              "configuration": {
-                "anyOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "jwksuri": {
-                        "type": "string"
-                      },
-                      "issuer": {
-                        "type": "string"
-                      },
-                      "audience": {
-                        "type": "string"
-                      }
+              "entries": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "provider": {
+                      "enum": [
+                        "cdk-service",
+                        "dms-drive",
+                        "fortellis",
+                        "iam",
+                        "none"
+                      ],
+                      "type": "string"
                     },
-                    "additionalProperties": false,
-                    "required": [
-                      "audience",
-                      "issuer",
-                      "jwksuri"
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "jwksuri": {
-                        "type": "string"
-                      },
-                      "issuer": {
-                        "type": "string"
-                      },
-                      "audience": {
-                        "type": "string"
-                      }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                      "audience",
-                      "issuer",
-                      "jwksuri"
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "callbackPath": {
-                        "type": "string"
-                      }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                      "callbackPath"
-                    ]
+                    "configuration": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "jwksuri": {
+                              "type": "string"
+                            },
+                            "issuer": {
+                              "type": "string"
+                            },
+                            "audience": {
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "audience",
+                            "issuer",
+                            "jwksuri"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "jwksuri": {
+                              "type": "string"
+                            },
+                            "issuer": {
+                              "type": "string"
+                            },
+                            "audience": {
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "audience",
+                            "issuer",
+                            "jwksuri"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "callbackPath": {
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "callbackPath"
+                          ]
+                        }
+                      ]
+                    }
                   }
-                ]
+                }
               }
             },
             "additionalProperties": false,
@@ -232,6 +258,81 @@
         "description": {
           "description": "Description of the entity",
           "type": "string"
+        },
+        "istio": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "environment": {
+                "type": "string",
+                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+              },
+              "entry": {
+                "type": "object",
+                "properties": {
+                  "virtualservice": {
+                    "type": "object",
+                    "properties": {
+                      "http": {
+                        "type": "object",
+                        "properties": {
+                          "retries": {
+                            "attempts": {
+                              "type": "number"
+                            },
+                            "perTryTimeout": {
+                              "type": "string"
+                            },
+                            "retryOn": {
+                              "type": "string"
+                            }
+                          },
+                          "timeout": {
+                            "type": "string",
+                            "default": "300s"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                          "timeout"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "virtualservice"
+                ]
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "environment",
+              "entry"
+            ]
+          }
+        },
+        "additionalUrls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "environment": {
+                "type": "string",
+                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+              },
+              "entries": {
+                "type": "array"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "environment",
+              "entries"
+            ]
+          }
         }
       },
       "additionalProperties": false,
@@ -265,45 +366,45 @@
           "items": {
             "type": "object",
             "properties": {
-              "value": {
-                "type": "string"
+              "environment": {
+                "type": "string",
+                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
               },
-              "protocol": {
-                "enum": [
-                  "http",
-                  "https",
-                  "tcp"
-                ],
-                "type": "string"
-              },
-              "type": {
-                "enum": [
-                  "external",
-                  "service"
-                ],
-                "type": "string"
-              },
-              "port": {
-                "type": "number"
-              },
-              "retryAttempts": {
-                "type": "number"
-              },
-              "retryTimeout": {
-                "type": "string"
-              },
-              "activateCircuitbreaker": {
-                "type": "boolean"
-              },
-              "name": {
-                "type": "string"
+              "entries": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    },
+                    "protocol": {
+                      "enum": [
+                        "http",
+                        "https",
+                        "tcp"
+                      ],
+                      "type": "string"
+                    },
+                    "type": {
+                      "enum": [
+                        "external",
+                        "service"
+                      ],
+                      "type": "string"
+                    },
+                    "port": {
+                      "type": "number"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
               }
-            },
-            "additionalProperties": false,
-            "required": [
-              "type",
-              "value"
-            ]
+            }
           }
         },
         "timeout": {
@@ -330,9 +431,20 @@
           "type": "string"
         },
         "internal": {
-          "description": "Is only available inside private network",
-          "default": false,
-          "type": "boolean"
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "environment": {
+                "type": "string",
+                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+              },
+              "entry": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          }
         },
         "type": {
           "enum": [
@@ -347,75 +459,87 @@
           "items": {
             "type": "object",
             "properties": {
-              "provider": {
-                "enum": [
-                  "cdk-service",
-                  "dms-drive",
-                  "fortellis",
-                  "iam",
-                  "none"
-                ],
-                "type": "string"
+              "environment": {
+                "type": "string",
+                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
               },
-              "configuration": {
-                "anyOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "jwksuri": {
-                        "type": "string"
-                      },
-                      "issuer": {
-                        "type": "string"
-                      },
-                      "audience": {
-                        "type": "string"
-                      }
+              "entries": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "provider": {
+                      "enum": [
+                        "cdk-service",
+                        "dms-drive",
+                        "fortellis",
+                        "iam",
+                        "none"
+                      ],
+                      "type": "string"
                     },
-                    "additionalProperties": false,
-                    "required": [
-                      "audience",
-                      "issuer",
-                      "jwksuri"
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "jwksuri": {
-                        "type": "string"
-                      },
-                      "issuer": {
-                        "type": "string"
-                      },
-                      "audience": {
-                        "type": "string"
-                      }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                      "audience",
-                      "issuer",
-                      "jwksuri"
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "callbackPath": {
-                        "type": "string"
-                      }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                      "callbackPath"
-                    ]
+                    "configuration": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "jwksuri": {
+                              "type": "string"
+                            },
+                            "issuer": {
+                              "type": "string"
+                            },
+                            "audience": {
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "audience",
+                            "issuer",
+                            "jwksuri"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "jwksuri": {
+                              "type": "string"
+                            },
+                            "issuer": {
+                              "type": "string"
+                            },
+                            "audience": {
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "audience",
+                            "issuer",
+                            "jwksuri"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "callbackPath": {
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "callbackPath"
+                          ]
+                        }
+                      ]
+                    }
                   }
-                ]
+                }
               }
             },
             "additionalProperties": false,
@@ -480,6 +604,81 @@
         "description": {
           "description": "Description of the entity",
           "type": "string"
+        },
+        "istio": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "environment": {
+                "type": "string",
+                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+              },
+              "entry": {
+                "type": "object",
+                "properties": {
+                  "virtualservice": {
+                    "type": "object",
+                    "properties": {
+                      "http": {
+                        "type": "object",
+                        "properties": {
+                          "retries": {
+                            "attempts": {
+                              "type": "number"
+                            },
+                            "perTryTimeout": {
+                              "type": "string"
+                            },
+                            "retryOn": {
+                              "type": "string"
+                            }
+                          },
+                          "timeout": {
+                            "type": "string",
+                            "default": "300s"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                          "timeout"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "virtualservice"
+                ]
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "environment",
+              "entry"
+            ]
+          }
+        },
+        "additionalUrls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "environment": {
+                "type": "string",
+                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+              },
+              "entries": {
+                "type": "array"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "environment",
+              "entries"
+            ]
+          }
         }
       },
       "additionalProperties": false,
@@ -511,45 +710,45 @@
           "items": {
             "type": "object",
             "properties": {
-              "value": {
-                "type": "string"
+              "environment": {
+                "type": "string",
+                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
               },
-              "protocol": {
-                "enum": [
-                  "http",
-                  "https",
-                  "tcp"
-                ],
-                "type": "string"
-              },
-              "type": {
-                "enum": [
-                  "external",
-                  "service"
-                ],
-                "type": "string"
-              },
-              "port": {
-                "type": "number"
-              },
-              "retryAttempts": {
-                "type": "number"
-              },
-              "retryTimeout": {
-                "type": "string"
-              },
-              "activateCircuitbreaker": {
-                "type": "boolean"
-              },
-              "name": {
-                "type": "string"
+              "entries": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    },
+                    "protocol": {
+                      "enum": [
+                        "http",
+                        "https",
+                        "tcp"
+                      ],
+                      "type": "string"
+                    },
+                    "type": {
+                      "enum": [
+                        "external",
+                        "service"
+                      ],
+                      "type": "string"
+                    },
+                    "port": {
+                      "type": "number"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                }
               }
-            },
-            "additionalProperties": false,
-            "required": [
-              "type",
-              "value"
-            ]
+            }
           }
         },
         "timeout": {
@@ -576,9 +775,20 @@
           "type": "string"
         },
         "internal": {
-          "description": "Is only available inside private network",
-          "default": false,
-          "type": "boolean"
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "environment": {
+                "type": "string",
+                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+              },
+              "entry": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          }
         },
         "type": {
           "enum": [
@@ -593,75 +803,87 @@
           "items": {
             "type": "object",
             "properties": {
-              "provider": {
-                "enum": [
-                  "cdk-service",
-                  "dms-drive",
-                  "fortellis",
-                  "iam",
-                  "none"
-                ],
-                "type": "string"
+              "environment": {
+                "type": "string",
+                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
               },
-              "configuration": {
-                "anyOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "jwksuri": {
-                        "type": "string"
-                      },
-                      "issuer": {
-                        "type": "string"
-                      },
-                      "audience": {
-                        "type": "string"
-                      }
+              "entries": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "provider": {
+                      "enum": [
+                        "cdk-service",
+                        "dms-drive",
+                        "fortellis",
+                        "iam",
+                        "none"
+                      ],
+                      "type": "string"
                     },
-                    "additionalProperties": false,
-                    "required": [
-                      "audience",
-                      "issuer",
-                      "jwksuri"
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "jwksuri": {
-                        "type": "string"
-                      },
-                      "issuer": {
-                        "type": "string"
-                      },
-                      "audience": {
-                        "type": "string"
-                      }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                      "audience",
-                      "issuer",
-                      "jwksuri"
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "callbackPath": {
-                        "type": "string"
-                      }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                      "callbackPath"
-                    ]
+                    "configuration": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "jwksuri": {
+                              "type": "string"
+                            },
+                            "issuer": {
+                              "type": "string"
+                            },
+                            "audience": {
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "audience",
+                            "issuer",
+                            "jwksuri"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "jwksuri": {
+                              "type": "string"
+                            },
+                            "issuer": {
+                              "type": "string"
+                            },
+                            "audience": {
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "audience",
+                            "issuer",
+                            "jwksuri"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "callbackPath": {
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "callbackPath"
+                          ]
+                        }
+                      ]
+                    }
                   }
-                ]
+                }
               }
             },
             "additionalProperties": false,
@@ -726,6 +948,81 @@
         "description": {
           "description": "Description of the entity",
           "type": "string"
+        },
+        "istio": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "environment": {
+                "type": "string",
+                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+              },
+              "entry": {
+                "type": "object",
+                "properties": {
+                  "virtualservice": {
+                    "type": "object",
+                    "properties": {
+                      "http": {
+                        "type": "object",
+                        "properties": {
+                          "retries": {
+                            "attempts": {
+                              "type": "number"
+                            },
+                            "perTryTimeout": {
+                              "type": "string"
+                            },
+                            "retryOn": {
+                              "type": "string"
+                            }
+                          },
+                          "timeout": {
+                            "type": "string",
+                            "default": "300s"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                          "timeout"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "virtualservice"
+                ]
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "environment",
+              "entry"
+            ]
+          }
+        },
+        "additionalUrls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "environment": {
+                "type": "string",
+                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+              },
+              "entries": {
+                "type": "array"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "environment",
+              "entries"
+            ]
+          }
         }
       },
       "additionalProperties": false,

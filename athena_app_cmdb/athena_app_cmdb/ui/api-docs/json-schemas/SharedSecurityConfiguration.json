@@ -1,80 +1,95 @@
 {
-  "type": "object",
-  "properties": {
-    "provider": {
-      "enum": [
-        "cdk-service",
-        "dms-drive",
-        "fortellis",
-        "iam",
-        "none"
-      ],
-      "type": "string"
-    },
-    "configuration": {
-      "anyOf": [
-        {
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "environment": {
+        "type": "string",
+        "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+      },
+      "entries": {
+        "type": "array",
+        "items": {
           "type": "object",
           "properties": {
-            "jwksuri": {
+            "provider": {
+              "enum": [
+                "cdk-service",
+                "dms-drive",
+                "fortellis",
+                "iam",
+                "none"
+              ],
               "type": "string"
             },
-            "issuer": {
-              "type": "string"
-            },
-            "audience": {
-              "type": "string"
+            "configuration": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "jwksuri": {
+                      "type": "string"
+                    },
+                    "issuer": {
+                      "type": "string"
+                    },
+                    "audience": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "audience",
+                    "issuer",
+                    "jwksuri"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "jwksuri": {
+                      "type": "string"
+                    },
+                    "issuer": {
+                      "type": "string"
+                    },
+                    "audience": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "audience",
+                    "issuer",
+                    "jwksuri"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "callbackPath": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "callbackPath"
+                  ]
+                }
+              ]
             }
-          },
-          "additionalProperties": false,
-          "required": [
-            "audience",
-            "issuer",
-            "jwksuri"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
-            "jwksuri": {
-              "type": "string"
-            },
-            "issuer": {
-              "type": "string"
-            },
-            "audience": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false,
-          "required": [
-            "audience",
-            "issuer",
-            "jwksuri"
-          ]
-        },
-        {
-          "type": "object",
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "properties": {
-            "callbackPath": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false,
-          "required": [
-            "callbackPath"
-          ]
+          }
         }
-      ]
-    }
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "provider"
+    ]
   },
-  "additionalProperties": false,
-  "required": [
-    "provider"
-  ],
   "$schema": "http://json-schema.org/draft-07/schema#"
 }
