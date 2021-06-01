@@ -1,4 +1,5 @@
 response:
+
   x-item-count:
     description: Number of items in the response
     schema:

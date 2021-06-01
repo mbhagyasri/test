@@ -4,7 +4,7 @@
 # Copyright (c) 2021 =================================================
 
 import re
-
+import os
 import logging
 import jsonpatch
 import json
@@ -27,6 +27,8 @@ from rest_framework.settings import api_settings
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.reverse import reverse
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt import authentication
 
 from rest_framework.response import Response
 from . import models, serializers
@@ -35,6 +37,7 @@ from .paginator import MyPaginationMixin
 from .middleware import ViewException
 from .utils.helper_methods import check_value
 from libs.utility.config_parsers import get_config
+from copy import deepcopy
 
 logger = logging.getLogger(__name__)
 config = get_config()
@@ -45,6 +48,14 @@ CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
 FILTER_FIELDS = {"environment_name": "environment.name", "location_name": "location.name",
                  }
+# Allow to turn Auth on or off in Dev environment
+AUTH_CLASS = [authentication.JWTAuthentication]
+PERM_CLASS = [IsAuthenticated]
+if int(os.getenv('ENABLE_AUTH', 1)) == 0 and os.getenv('DJANGO_SETTINGS_MODULE',
+                                                       'app_registry.settings.prod') == 'CDBApp.settings.dev':
+    AUTH_CLASS = []
+    PERM_CLASS = []
+
 
 @api_view(['GET'])
 def monitor(request):
@@ -74,6 +85,26 @@ def get_model(objname):
     obj = models.models_class_lookup[objname]
 
     return obj
+
+
+def reformat_properties(data):
+    return_list = []
+    logger.info('I GOT HERE')
+    for item in data:
+        logger.info('HERE \n {}'.format(item))
+        if 'properties' in item:
+            new_dict = deepcopy(item)
+            properties = new_dict.pop('properties')
+            for key in new_dict:
+                if key in properties:
+                    properties.pop(key)
+            if not properties:
+                logger.info ('EMPTY')
+                item.pop('properties')
+            else:
+                item['properties'] = properties
+        return_list.append(item)
+    return return_list
 
 
 def get_item(objname, obj, item):
@@ -202,7 +233,7 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
             raise ViewException(FORMAT, "No {} found.".format(objname), 404)
         serializer_class = serializers.serializer_class_lookup_read[objname]
         # do not show pagination if query result is less than page size
-        logger.info('count %s' % data.count())
+        logger.debug('count %s' % data.count())
 
         try:
             if data.count() <= int(page_size):
@@ -211,11 +242,11 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
             if page is not None:
                 obj_serializer = serializer_class(page, many=True)
                 decrypt_data = obj_serializer.data
-                return self.get_paginated_response(decrypt_data, objname)
+                return self.get_paginated_response(reformat_properties(decrypt_data), objname)
             else:
                 obj_serializer = serializer_class(data, many=True)
                 decrypt_data = obj_serializer.data
-                return Response(decrypt_data)
+                return Response(reformat_properties(decrypt_data))
         except rest_exceptions.NotFound:
             raise ViewException(FORMAT, 'Not found.', 404)
         except Exception as e:
@@ -732,3 +763,47 @@ class athena_app_cmdbBulkUpdate(APIView, MyPaginationMixin):
         return Response({objname: return_data}, status.HTTP_200_OK)
 
 
+@method_decorator(never_cache, name='dispatch')
+class AssetEnvironments(APIView, MyPaginationMixin):
+
+    pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
+    path = ''
+#    authentication_classes = AUTH_CLASS
+#    permission_classes = PERM_CLASS
+
+    def get(self, request, objname, item):
+        page_size = api_settings.PAGE_SIZE
+        obj = get_model('tasks')
+        kwarg = {'model': objname, 'item': item}
+        data = obj.objects.all()
+        data = data.filter(**kwarg)
+        data, page_size = filter_get_request(request, data, page_size)
+        if not data.exists():
+            raise_for_error(404, "No tasks for {} {} found.".format(objname, item))
+        serializer_class = serializers.serializer_class_lookup_read['tasks']
+        # do not show pagination if query result is less than page size
+        logger.info('count %s' % data.count())
+
+        try:
+            if data.count() <= int(page_size):
+                self.pagination_class = None
+            page = self.paginate_queryset(data, self.request)
+            if page is not None:
+                obj_serializer = serializer_class(page, many=True)
+                decrypt_data = obj_serializer.data
+                if 'HTTP_X_SKIP_DECRYPT_DATA' not in request.META or \
+                        request.META['HTTP_X_SKIP_DECRYPT_DATA'] != "true":
+                    decrypt_data = VaultProcessing().read(decrypt_data)
+
+
+                return self.get_paginated_response(decrypt_data, objname)
+            else:
+                obj_serializer = serializer_class(data, many=True)
+                decrypt_data = obj_serializer.data
+                if 'HTTP_X_SKIP_DECRYPT_DATA' not in request.META or \
+                        request.META['HTTP_X_SKIP_DECRYPT_DATA'] != "true":
+                    decrypt_data = VaultProcessing().read(decrypt_data)
+                return Response({'tasks': decrypt_data})
+        except Exception as e:
+            logger.exception(e)
+            raise_for_error(500, 'Server Exception')

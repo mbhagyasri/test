@@ -34,7 +34,7 @@ services:
     command: postgres -c 'config_file=/etc/postgresql.conf'
     restart: always
     ports:
-      - "5430:5432"
+      - "5432:5432"
     volumes:
       - /docker/gfs_data/athena_app_cmdb/postgresql:/var/lib/postgresql/data
       - /docker/gfs_data/athena_app_cmdb/config/postgresql.conf:/etc/postgresql.conf

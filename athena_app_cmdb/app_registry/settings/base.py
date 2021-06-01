@@ -93,6 +93,8 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEFAULT_DB_CONFIG = '{"endpoint": "postgres:5432", "username": "postgres", "password": "postgres"}'
 DB_CONFIG = json.loads(os.getenv('DB_CONFIG', DEFAULT_DB_CONFIG))
+DB_HOST = "postgres"
+DB_PORT = "5432"
 if 'endpoint' in DB_CONFIG and DB_CONFIG.get('endpoint', "") != "":
     array = DB_CONFIG.get('endpoint').split(':')
     DB_HOST = array[0]
@@ -109,10 +111,16 @@ DATABASES = {
 }
 DEFAULT_REDIS_CONFIG = '{"endpoint": "", "username": "", "password": ""}'
 REDIS_CONFIG = json.loads(os.getenv('REDIS_CONFIG', DEFAULT_REDIS_CONFIG))
+REDIS_HOST = "redis"
+REDIS_PORT = "6379"
+if 'endpoint' in REDIS_CONFIG and REDIS_CONFIG.get('endpoint', "") != "":
+    array = REDIS_CONFIG.get('endpoint').split(':')
+    REDIS_HOST = array[0]
+    REDIS_PORT = array[1]
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://{}:{}/0".format(os.getenv('REDIS_HOST', 'athena_app_cmdb-redis'), os.getenv('REDIS_PORT', '6379')),
+        "LOCATION": "redis://{}:{}/0".format(REDIS_HOST, REDIS_PORT),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },

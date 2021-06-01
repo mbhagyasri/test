@@ -22,8 +22,6 @@ from athena_app_cmdb import excel_upload_views
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView)
 from django.contrib.auth import views as auth_views
 
-app_name = 'app-registry'
-
 urlpatterns = [
     path('', include('athena_app_cmdb.ui.urls')),
     path('/', include('athena_app_cmdb.ui.urls')),

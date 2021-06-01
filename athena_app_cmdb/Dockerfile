@@ -58,8 +58,8 @@ RUN set -ex \
     && apk del .build-deps
 # copy project source code
 COPY . /opt/athena_app_cmdb/
-COPY --from=node-tmp /opt/athena_app_cmdb/athena_app_cmdb/ui/openapi.yaml /opt/athena_app_cmdb/athena_app_cmdb/ui/
-RUN cp /opt/athena_app_cmdb/athena_app_cmdb/ui/openapi.yaml /root/openapi_2.yaml
+COPY --from=node-tmp /opt/athena_app_cmdb/athena_app_cmdb/ui/openapi.yaml /openapi.yaml
+
 # download AWS RDS SSL certificate to /opt/athena_app_cmdb/etc
 RUN cd /opt/athena_app_cmdb \
     && wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem \

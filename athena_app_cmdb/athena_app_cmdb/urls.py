@@ -20,7 +20,6 @@ from .ui.views import Swagger
 from . import excel_upload_views
 
 
-app_name = 'app-registry'
 urlpatterns = [
     path('', Swagger.as_view(), name='api-doc'),
     path('/load-from-excel', excel_upload_views.LoadFromExcel.as_view(), name='api-load-from-excel'),

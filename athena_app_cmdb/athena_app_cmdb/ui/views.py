@@ -25,6 +25,7 @@ def redirect_admin(request, format=None):
     response = redirect('/admin/')
     return response
 
+
 class Home(LoginRequiredMixin, TemplateView):
     """Renders the home page."""
     template_name = 'index.html'
@@ -69,9 +70,7 @@ class Swagger(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        __location__ = os.path.realpath(
-            os.path.join(os.getcwd(), os.path.dirname(__file__)))
-        filename = os.path.join(__location__, "openapi.yaml")
+        filename = "/openapi.yaml"
         try:
             with open(filename) as f:
                 content = yaml.safe_load(f)

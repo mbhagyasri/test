@@ -12,7 +12,81 @@ from . import models
 from requests.structures import CaseInsensitiveDict
 
 logger = logging.getLogger(__name__)
-athena_app_cmdb_API_PATH = '/api/athena_app_cmdb'
+
+
+class AssetSerializer(serializers.ModelSerializer):
+    cicd = serializers.CharField(required=False)
+    attaches = serializers.JSONField(required=False)
+    consumes = serializers.JSONField(required=False)
+    internal = serializers.JSONField(required=False)
+    security = serializers.JSONField(required=False)
+    description = serializers.CharField(required=False)
+
+    class Meta:
+        model = models.Asset
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        return AssetGetSerializer(instance).data
+
+    def process_validated_data(self, properties, validated_data):
+        if 'cicd' in validated_data:
+            properties['cicd'] = validated_data.get('cicd')
+        if 'attaches' in validated_data:
+            properties['region'] = validated_data.get('attaches')
+        if 'consumes' in validated_data:
+            properties['consumes'] = validated_data.get('consumes')
+        if 'internal' in validated_data:
+            properties['internal'] = validated_data.get('internal')
+        if 'security' in validated_data:
+            properties['security'] = validated_data.get('security')
+        if 'description' in validated_data:
+            properties['description'] = validated_data.get('description')
+        return properties
+
+    def create(self, validated_data):
+        properties = validated_data.get('properties', {})
+        # backward compatible to app registry v1
+        properties = self.process_validated_data(properties, validated_data)
+        validated_data['properties'] = properties
+        resource = models.Asset.objects.create(**validated_data)
+        return resource
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.product = validated_data.get('product', instance.product)
+        instance.team = validated_data.get('team', instance.team)
+        instance.type = validated_data.get('type', instance.type)
+        instance.appLanguage = validated_data.get('appLanguage', instance.appLanguage)
+        instance.repo = validated_data.get('repo', instance.repo)
+        instance.assetMasterId = validated_data.get('assetMasterId', instance.assetMasterId)
+        properties = validated_data.get('properties', instance.properties)
+        instance.deleted = validated_data.get('deleted', instance.deleted)
+        instance.created_at = validated_data.get('created_at', instance.created_at)
+        instance.updated_at = validated_data.get('updated_at', timezone.now())
+        properties = self.process_validated_data(properties, validated_data)
+        instance.properties = properties
+        instance.save()
+        return instance
+
+
+class AssetGetSerializer(serializers.ModelSerializer):
+    cicd = serializers.CharField(source='properties.cicd', required=False)
+    attaches = serializers.JSONField(source='properties.attaches', required=False)
+    consumes = serializers.JSONField(source='properties.consumes', required=False)
+    internal = serializers.JSONField(source='properties.internal', required=False)
+    security = serializers.JSONField(source='properties.security', required=False)
+    description = serializers.CharField(source='properties.description', required=False)
+
+    class Meta:
+        model = models.Asset
+        fields = ('id', 'cicd', 'name', 'repo', 'team', 'type',
+                  'product', 'attaches', 'consumes', 'internal', 'security',
+                  'appLanguage', 'description', 'assetMasterId', 'properties')
+
+    def get_links(self, instance):
+        lks = {'_self': instance.self_links}
+        return lks
 
 
 class LocationSerializer(serializers.ModelSerializer):
@@ -30,7 +104,6 @@ class LocationSerializer(serializers.ModelSerializer):
         return LocationGetSerializer(instance).data
 
     def process_validated_data(self, properties, validated_data):
-        logger.info(validated_data)
         if 'domain' in validated_data:
             properties['domain'] = validated_data.get('domain')
         if 'region' in validated_data:
@@ -94,8 +167,6 @@ class LocationGetSerializer(serializers.ModelSerializer):
         return lks
 
 
-
-
 class ClusterSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Cluster
@@ -106,18 +177,16 @@ class ClusterSerializer(serializers.ModelSerializer):
 
 
 class ClusterGetSerializer(serializers.ModelSerializer):
-    links = serializers.SerializerMethodField()
-    uri = serializers.ReadOnlyField(source='properties.uri', required=False)
 
     class Meta:
         model = models.Cluster
-        fields = ('id', 'name', 'uri', 'properties',
-                  'links', 'updated_at', 'updated_by',
-                  'created_at', 'created_by', 'deleted',)
+        fields = ('id', 'uri', 'properties',)
 
     def get_links(self, instance):
         lks = {'_self': instance.self_links}
         return lks
+
+
 
 
 class TeamSerializer(serializers.ModelSerializer):
@@ -196,11 +265,15 @@ class AssetType(serializers.ModelSerializer):
         model = models.AssetType
         fields = '__all__'
 
-serializers_mapping = {'locations': LocationSerializer, 'asset_types': AssetType,
-                       'clusters': ClusterSerializer, 'teams': TeamSerializer
-                       }
+
+serializers_mapping = {
+    'assets': AssetSerializer,
+    'locations': LocationSerializer, 'asset_types': AssetType,
+    'clusters': ClusterSerializer, 'teams': TeamSerializer
+    }
 
 serializers_mapping_read = {
+    'assets': AssetGetSerializer,
     'locations': LocationGetSerializer,
     'clusters': ClusterGetSerializer,
     'teams': TeamGetSerializer,
