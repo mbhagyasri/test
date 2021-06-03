@@ -1,9 +1,17 @@
 response:
 
-  x-item-count:
+  x-page-size:
     description: Number of items in the response
     schema:
       type: number
+
+  x-include-deleted:
+    description: Include deleted resources in the response.  Default to not show deleted items.
+    schema:
+      type: string
+      enum:
+        - true
+        - false
 
   content-length:
     description: size of the entity-body

@@ -199,6 +199,8 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
         else:
             data = obj.objects.exclude(deleted=1)
         data, page_size = filter_get_request(request, data, page_size)
+        if 'HTTP_X_PAGE-SIZE' in request.META:
+            page_size = request.META['HTTP_X_PAGE-SIZE']
         try:
             if data:
                 pass

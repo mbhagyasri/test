@@ -27,7 +27,7 @@ ARG requirements=requirements/prod.txt
 COPY requirements/ /opt/athena_app_cmdb/requirements/
 # Installing client libraries and any other package you need
 # These are packages that are needed during runtime
-RUN apk add --update --no-cache python3 libpq bash expat-dev libffi curl py-pip ca-certificates
+RUN apk add --update --no-cache python3 libpq bash expat-dev libffi curl py-pip ca-certificates postgresql-client
 # Install build deps, then run `pip install`, then remove unneeded build deps all in a single step. Correct the path to your production requirements file, if needed.
 RUN set -ex \
     && apk add --update --no-cache --virtual .build-deps \
