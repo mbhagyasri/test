@@ -61,10 +61,10 @@ COPY . /opt/athena_app_cmdb/
 COPY --from=node-tmp /opt/athena_app_cmdb/athena_app_cmdb/ui/openapi.yaml /openapi.yaml
 
 # download AWS RDS SSL certificate to /opt/athena_app_cmdb/etc
-RUN cd /opt/athena_app_cmdb/etc \
-    && wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem \
-    && cp /opt/athena_app_cmdb/etc/rds-combined-ca-bundle.pem /usr/local/share/ca-certificates/rds-combined-ca-bundle.pem \
-    && update-ca-certificates
+RUN wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem \
+    && cp /opt/athena_app_cmdb/rds-combined-ca-bundle.pem /usr/local/share/ca-certificates/rds-combined-ca-bundle.pem \
+    && update-ca-certificates \
+    && mv /opt/athena_app_cmdb/rds-combined-ca-bundle.pem /opt/athena_app_cmdb/rds-combined-ca-bundle.pem
 RUN chmod +x /opt/athena_app_cmdb/scripts/entrypoint.sh
 ENTRYPOINT ["/opt/athena_app_cmdb/scripts/entrypoint.sh"]
 
