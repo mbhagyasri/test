@@ -106,9 +106,9 @@ DATABASES = {
         'USER': DB_CONFIG.get('username', 'postgres'),
         'PASSWORD': DB_CONFIG.get('password', 'password'),
         'HOST': DB_HOST,
-        'PORT': DB_PORT,
-        'OPTIONS': {'sslmode': 'verify-full',
-                    'sslrootcert': os.path.join(PROJECT_DIR, '../etc/rds-combined-ca-bundle.pem')}
+        'PORT': DB_PORT
+        #'OPTIONS': {'sslmode': 'verify-full',
+        #            'sslrootcert': os.path.join(PROJECT_DIR, '../etc/rds-combined-ca-bundle.pem')}
     }
 }
 DEFAULT_REDIS_CONFIG = '{"endpoint": "", "username": "", "password": ""}'
