@@ -152,7 +152,7 @@ fi
 
 echo "Installing athena-app-cmdb to cluster - $EKS_CLUSTER_NAME"
 echo "Installing frontend"
-if ! [ "$(helm upgrade --install --force athena-app-cmdb-nginx ./helm/charts/nginx \
+if ! [ "$(helm upgrade --install athena-app-cmdb-nginx ./helm/charts/nginx \
   -n cdk-athena-app-cmdb -f ./helm/charts/nginx/Values.yaml -f ./helm/values/nginx/Values."${region}-${IQR_ENVIRONMENT}".yaml \
   --set domain="${APP_DOMAIN}" --set location_id="location-${region}-${IQR_ENVIRONMENT}" \
   --set image=artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb-nginx:"$BAMBOO_BUILD_ID" )" ]; then
@@ -160,7 +160,7 @@ if ! [ "$(helm upgrade --install --force athena-app-cmdb-nginx ./helm/charts/ngi
 	exit 1
 fi
 echo "Installing backend"
-if ! [ "$(helm upgrade --install --force athena-app-cmdb ./helm/charts/cmdb \
+if ! [ "$(helm upgrade --install athena-app-cmdb ./helm/charts/cmdb \
   -n cdk-athena-app-cmdb -f ./helm/charts/cmdb/Values.yaml -f ./helm/values/cmdb/Values."${region}-${IQR_ENVIRONMENT}".yaml \
   --set domain="${APP_DOMAIN}" --set location_id="location-${region}-${IQR_ENVIRONMENT}" \
   --set image=artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb:"$BAMBOO_BUILD_ID" \
