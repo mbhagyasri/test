@@ -3,20 +3,56 @@
 # Copying or reproduction without prior written approval is prohibited.
 # Copyright (c) 2021 =================================================
 import uuid
+import os
+import json
+import logging
+import jsonschema
 from django.db import models
 from requests.structures import CaseInsensitiveDict
 from django.core.exceptions import FieldDoesNotExist
+from .softdelete.models import SoftDeleteModel
 
+
+logger = logging.getLogger(__name__)
 athena_app_cmdb_API_PATH = ''
 
 
-class AppLanguage(models.Model):
+def validate_json(objname, instance):
+    mapping = {
+        "locations": 'Location.json', "products": 'Product.json', "resources": "Resource.json",
+        "assets": 'Asset.json', "teams": 'Team.json',
+        "clusters": 'Cluster.json'
+    }
+    filename = mapping.get(objname, None)
+    if not filename:
+        # ignore schema validations
+        return True, 'Ignore'
+    __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    file_path = str(os.path.join(__location__, "ui/api-docs/json-schemas", filename))
+
+    try:
+        with open(file_path) as data_file:
+            json_schema = json.load(data_file)
+    except Exception as e:
+        logger.exception(e)
+        error_message = "Failed to read json-schemas for validation."
+        pass
+        return False, error_message
+
+    try:
+        jsonschema.validate(instance=instance, schema=json_schema)
+    except jsonschema.exceptions.ValidationError as err:
+        return False, str(err)
+    return True, 'OK'
+
+
+class AppLanguage(SoftDeleteModel):
     id = models.CharField(db_column='id', primary_key=True, max_length=100)
     name = models.CharField(db_column='name', max_length=100)
-    created_at = models.DateTimeField(db_column='ins_gmt_ts', blank=True, null=True, auto_now_add=True)
-    created_by = models.CharField(db_column='created_by')
-    updated_at = models.DateTimeField(db_column='upd_gmt_ts', blank=True, null=True, auto_now=True)
-    deleted = models.CharField(db_column='del_ind', max_length=1, blank=True, null=True)
+    created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
+    created_by = models.CharField(db_column='created_by', max_length=100, blank=True, null=True)
+    updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
+    deleted = models.BooleanField(db_column='deleted', default='f')
 
     class Meta:
         managed = True
@@ -27,12 +63,12 @@ class AppLanguage(models.Model):
         return self.name
 
 
-class AssetType(models.Model):
+class AssetType(SoftDeleteModel):
     id = models.CharField(db_column='id', primary_key=True, max_length=100)
     name = models.CharField(db_column='name', max_length=100)
-    deleted = models.CharField(db_column='del_ind', max_length=1, blank=True, null=True)
-    created_at = models.DateTimeField(db_column='ins_gmt_ts', blank=True, null=True, auto_now_add=True)
-    updated_at = models.DateTimeField(db_column='upd_gmt_ts', blank=True, null=True, auto_now=True)
+    deleted = models.BooleanField(db_column='deleted', default='f')
+    created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
+    updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
 
     class Meta:
         db_table = 'asset_type'
@@ -40,14 +76,18 @@ class AssetType(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def need_merge_properties(self):
+        return False
 
-class Cluster(models.Model):
+
+class Cluster(SoftDeleteModel):
     id = models.CharField(db_column='id', primary_key=True, max_length=100)
     uri = models.CharField(db_column='uri', max_length=100)
     properties = models.JSONField(db_column='json', blank=True, null=True)
-    deleted = models.CharField(db_column='del_ind', max_length=1, blank=True, null=True)
-    created_at = models.DateTimeField(db_column='ins_gmt_ts', blank=True, null=True, auto_now_add=True)
-    updated_at = models.DateTimeField(db_column='upd_gmt_ts', blank=True, null=True, auto_now=True)
+    deleted = models.BooleanField(db_column='deleted', default='f')
+    created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
+    updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
 
     class Meta:
         managed = True
@@ -61,8 +101,11 @@ class Cluster(models.Model):
         links = '%s/clusters/%s' % (athena_app_cmdb_API_PATH, self.id)
         return links
 
-    def __str__(self):
-        return self.name
+
+
+    @property
+    def need_merge_properties(self):
+        return True
 
 
 class DatabaseChangeLog(models.Model):
@@ -85,8 +128,10 @@ class DatabaseChangeLog(models.Model):
         db_table = 'databasechangelog'
         verbose_name = 'Database Change Log'
 
-    def __str__(self):
-        return self.name
+
+    @property
+    def need_merge_properties(self):
+        return False
 
 
 class DatabaseChangeLogLock(models.Model):
@@ -99,16 +144,18 @@ class DatabaseChangeLogLock(models.Model):
         db_table = 'databasechangeloglock'
         verbose_name = 'Database Change Log Lock'
 
-    def __str__(self):
-        return self.name
+
+    @property
+    def need_merge_properties(self):
+        return False
 
 
-class EnvType(models.Model):
+class EnvType(SoftDeleteModel):
     id = models.CharField(db_column='id', primary_key=True, max_length=50)
     name = models.CharField(db_column='name', max_length=50)
-    deleted = models.CharField(db_column='del_ind', max_length=1, blank=True, null=True)
-    created_at = models.DateTimeField(db_column='ins_gmt_ts', blank=True, null=True, auto_now_add=True)
-    updated_at = models.DateTimeField(db_column='upd_gmt_ts', blank=True, null=True, auto_now=True)
+    deleted = models.BooleanField(db_column='deleted', default='f')
+    created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
+    updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
 
     class Meta:
         db_table = 'env_type'
@@ -117,13 +164,17 @@ class EnvType(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def need_merge_properties(self):
+        return False
 
-class LocationRegion(models.Model):
+
+class LocationRegion(SoftDeleteModel):
     id = models.CharField(db_column='id', primary_key=True, max_length=50)
     name = models.CharField(db_column='name', max_length=50)
-    deleted = models.CharField(db_column='del_ind', max_length=1, blank=True, null=True)
-    created_at = models.DateTimeField(db_column='ins_gmt_ts', blank=True, null=True, auto_now_add=True)
-    updated_at = models.DateTimeField(db_column='upd_gmt_ts', blank=True, null=True, auto_now=True)
+    deleted = models.BooleanField(db_column='deleted', default='f')
+    created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
+    updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
 
     class Meta:
         db_table = 'location_region'
@@ -132,13 +183,17 @@ class LocationRegion(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def need_merge_properties(self):
+        return False
 
-class LocationStatus(models.Model):
+
+class LocationStatus(SoftDeleteModel):
     id = models.CharField(db_column='id', primary_key=True, max_length=50)
     name = models.CharField(db_column='name', max_length=50)
-    deleted = models.CharField(db_column='del_ind', max_length=1, blank=True, null=True)
-    created_at = models.DateTimeField(db_column='ins_gmt_ts', blank=True, null=True, auto_now_add=True)
-    updated_at = models.DateTimeField(db_column='upd_gmt_ts', blank=True, null=True, auto_now=True)
+    deleted = models.BooleanField(db_column='deleted', default='f')
+    created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
+    updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
 
     class Meta:
         db_table = 'location_status'
@@ -147,19 +202,22 @@ class LocationStatus(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def need_merge_properties(self):
+        return False
 
-class Location(models.Model):
+
+class Location(SoftDeleteModel):
     id = models.CharField(db_column='id', max_length=100, primary_key=True)
     name = models.CharField(db_column='name', max_length=100, unique=True)
     env_type = models.ForeignKey(EnvType, db_column='env_type_id', blank=True, null=True, on_delete=models.SET_NULL)
     domain = models.CharField(db_column='domain', max_length=100)
     status = models.ForeignKey(LocationStatus, db_column='status', blank=True, null=True, on_delete=models.SET_NULL)
     region = models.ForeignKey(LocationRegion, db_column='region', blank=True, null=True, on_delete=models.SET_NULL)
-    parameters = models.TextField(db_column='parameters')
     properties = models.JSONField(db_column='json', blank=True, null=True)
-    deleted = models.CharField(db_column='del_ind', max_length=1, blank=True, null=True)
-    created_at = models.DateTimeField(db_column='ins_gmt_ts', blank=True, null=True, auto_now_add=True)
-    updated_at = models.DateTimeField(db_column='upd_gmt_ts', blank=True, null=True, auto_now=True)
+    deleted = models.BooleanField(db_column='deleted', default='f')
+    created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
+    updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
 
     class Meta:
         managed = True
@@ -172,20 +230,24 @@ class Location(models.Model):
         links = '%s/locations/%s' % (athena_app_cmdb_API_PATH, self.id)
         return links
 
+    @property
+    def need_merge_properties(self):
+        return True
+
     def __str__(self):
         return self.name
 
 
-class Team(models.Model):
+class Team(SoftDeleteModel):
     id = models.CharField(db_column='id', max_length=100, primary_key=True)
     name = models.CharField(db_column='name', max_length=100, unique=True)
     email = models.CharField(db_column='email', max_length=255)
     ad_group = models.CharField(db_column='ad_group', max_length=255)
     notification = models.CharField(db_column='notification', max_length=255)
     properties = models.JSONField(db_column='json', blank=True, null=True)
-    deleted = models.CharField(db_column='del_ind', max_length=1, blank=True, null=True)
-    created_at = models.DateTimeField(db_column='ins_gmt_ts', blank=True, null=True, auto_now_add=True)
-    updated_at = models.DateTimeField(db_column='upd_gmt_ts', blank=True, null=True, auto_now=True)
+    deleted = models.BooleanField(db_column='deleted', default='f')
+    created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
+    updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
 
     class Meta:
         managed = True
@@ -201,16 +263,17 @@ class Team(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def need_merge_properties(self):
+        return True
 
-class Product(models.Model):
+
+class Product(SoftDeleteModel):
     id = models.CharField(db_column='id', max_length=100, primary_key=True)
-    external_ids = models.JSONField(db_column='external_ids')
-    environments = models.JSONField(db_column='environments')
-    security = models.JSONField(db_column='security')
     properties = models.JSONField(db_column='json', blank=True, null=True)
-    deleted = models.CharField(db_column='del_ind', max_length=1, blank=True, null=True)
-    created_at = models.DateTimeField(db_column='ins_gmt_ts', blank=True, null=True, auto_now_add=True)
-    updated_at = models.DateTimeField(db_column='upd_gmt_ts', blank=True, null=True, auto_now=True)
+    deleted = models.BooleanField(db_column='deleted', default='f')
+    created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
+    updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
 
     class Meta:
         managed = True
@@ -223,13 +286,14 @@ class Product(models.Model):
         links = '%s/products/%s' % (athena_app_cmdb_API_PATH, self.id)
         return links
 
-    def __str__(self):
-        return self.name
+    @property
+    def need_merge_properties(self):
+        return True
 
 
-class Asset(models.Model):
+class Asset(SoftDeleteModel):
     id = models.CharField(db_column='id', max_length=100, primary_key=True)
-    name = models.CharField(db_column='app_name', max_length=255, unique=True)
+    name = models.CharField(db_column='app_name', max_length=255)
     product = models.ForeignKey(Product, db_column='product_id', on_delete=models.CASCADE)
     team = models.ForeignKey(Team, db_column='team_id', on_delete=models.CASCADE)
     type = models.ForeignKey(AssetType, db_column='asset_type_id', on_delete=models.CASCADE)
@@ -238,17 +302,17 @@ class Asset(models.Model):
     repo = models.CharField(db_column='repo', max_length=200)
     assetMasterId = models.IntegerField(db_column='asset_master_id', blank=True, null=True)
     properties = models.JSONField(db_column='json', blank=True, null=True)
-    deleted = models.CharField(db_column='del_ind', max_length=1, blank=True, null=True)
-    created_at = models.DateTimeField(db_column='ins_gmt_ts', blank=True, null=True, auto_now_add=True)
-    updated_at = models.DateTimeField(db_column='upd_gmt_ts', blank=True, null=True, auto_now=True)
+    deleted = models.BooleanField(db_column='deleted', default='f')
+    created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
+    updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
 
 
     class Meta:
         managed = True
         db_table = 'asset'
         verbose_name = 'Asset'
+        unique_together = ("id", "name")
         ordering = ['-updated_at', '-created_at', ]
-
 
     @property
     def self_links(self):
@@ -258,8 +322,12 @@ class Asset(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def need_merge_properties(self):
+        return True
 
-class AssetBackup(models.Model):
+
+class AssetBackup(SoftDeleteModel):
     id = models.CharField(db_column='id', primary_key=True, max_length=100)
     name = models.CharField(db_column='app_name', max_length=255, unique=True)
     product = models.ForeignKey(Product, db_column='product_id', on_delete=models.CASCADE)
@@ -269,9 +337,9 @@ class AssetBackup(models.Model):
     properties = models.JSONField(db_column='json', blank=True, null=True)
     repo = models.CharField(db_column='repo', max_length=200, blank=True, null=True)
     assetMasterId = models.IntegerField(db_column='asset_master_id')
-    deleted = models.CharField(db_column='del_ind', max_length=1, blank=True, null=True)
-    created_at = models.DateTimeField(db_column='ins_gmt_ts', blank=True, null=True, auto_now_add=True)
-    updated_at = models.DateTimeField(db_column='upd_gmt_ts', blank=True, null=True, auto_now=True)
+    deleted = models.BooleanField(db_column='deleted', default='f')
+    created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
+    updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
 
     class Meta:
         managed = True
@@ -279,16 +347,20 @@ class AssetBackup(models.Model):
         verbose_name = 'Asset Backup'
         ordering = ['-updated_at', '-created_at', ]
 
+    @property
+    def need_merge_properties(self):
+        return True
 
-class Resource(models.Model):
+
+class Resource(SoftDeleteModel):
     id = models.CharField(db_column='id', max_length=100, primary_key=True)
     type = models.CharField(db_column='type', max_length=100)
     owner = models.ForeignKey(Team, db_column='owner', blank=True, null=True, on_delete=models.SET_NULL)
     location = models.ForeignKey(Location, db_column='location', blank=True, null=True, on_delete=models.SET_NULL)
     properties = models.JSONField(db_column='json', blank=True, null=True)
-    deleted = models.CharField(db_column='del_ind', max_length=1, blank=True, null=True)
-    created_at = models.DateTimeField(db_column='ins_gmt_ts', blank=True, null=True, auto_now_add=True)
-    updated_at = models.DateTimeField(db_column='upd_gmt_ts', blank=True, null=True, auto_now=True)
+    deleted = models.BooleanField(db_column='deleted', default='f')
+    created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
+    updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
 
     class Meta:
         managed = True
@@ -301,46 +373,39 @@ class Resource(models.Model):
         links = '%s/resources/%s' % (athena_app_cmdb_API_PATH, self.id)
         return links
 
-    def __str__(self):
-        return self.name
+
+    @property
+    def need_merge_properties(self):
+        return True
 
 
-class SecurityProvider(models.Model):
+class SecurityProvider(SoftDeleteModel):
     id = models.CharField(db_column='id', primary_key=True, max_length=100)
     schemes = models.CharField(db_column='schemes', max_length=30)
     properties = models.JSONField(db_column='json', blank=True, null=True)
-    created_at = models.DateTimeField(db_column='ins_gmt_ts', blank=True, null=True, auto_now_add=True)
-    updated_at = models.DateTimeField(db_column='upd_gmt_ts', blank=True, null=True, auto_now=True)
-    deleted = models.CharField(db_column='del_ind', max_length=1, blank=True, null=True)
+    created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
+    updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
+    deleted = models.BooleanField(db_column='deleted', default='f')
 
     class Meta:
         managed = True
         db_table = 'securityprovider'
         verbose_name = 'Security Provider'
 
-    def __str__(self):
-        return self.name
 
-
-@classmethod
-def model_field_exists(cls, field):
-    try:
-        cls._meta.get_field(field)
+    @property
+    def need_merge_properties(self):
         return True
-    except FieldDoesNotExist:
-        return False
 
 
-models_mapping = {'locations': Location,  'teams': Team,
+models_mapping = {'locations': Location,  'teams': Team, 'securityProviders': SecurityProvider,
                   'clusters': Cluster, 'products': Product, 'assets': Asset, 'resources': Resource,
                   'asset_types': AssetType
                   }
-models_name_mapping = {'locations': 'Location', 'teams': 'Team',
+models_name_mapping = {'locations': 'Location', 'teams': 'Team', 'securityProviders': SecurityProvider,
                        'clusters': 'Cluster', 'products': 'Product', 'assets': 'Asset', 'resources': 'Resource',
                        'asset_types': AssetType
                        }
 
 models_class_lookup = CaseInsensitiveDict(models_mapping)
 models_name_lookup = CaseInsensitiveDict(models_name_mapping)
-models.Model.field_exists = model_field_exists
-

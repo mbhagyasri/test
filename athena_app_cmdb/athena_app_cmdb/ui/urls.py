@@ -24,6 +24,7 @@ from django.contrib.auth import views as auth_views
 app_name = 'app-registry'
 urlpatterns = [
     path('', views.redirect_admin, name='home', ),
+    path('/', views.redirect_admin, name='home', ),
     path('contact', views.Contact.as_view(), name='contact'),
     path('about', views.About.as_view(), name='about'),
     path('docs/swagger-ui.html', views.Swagger.as_view(), name='api-doc'),
@@ -37,3 +38,4 @@ urlpatterns = [
 
 
 ]
+admin.site.login_form = BootstrapAuthenticationForm

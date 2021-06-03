@@ -27,3 +27,4 @@ django-json-widget
 django-currentuser
 django-admin-autocomplete-filter
 jsonformatter
+jsonschema

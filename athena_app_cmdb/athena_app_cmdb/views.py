@@ -30,6 +30,7 @@ from rest_framework.reverse import reverse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt import authentication
 
+
 from rest_framework.response import Response
 from . import models, serializers
 from .operators import Validators
@@ -83,31 +84,13 @@ def get_model(objname):
         logger.error(resp)
         raise ViewException(FORMAT, resp, 404)
     obj = models.models_class_lookup[objname]
-
     return obj
 
 
-def reformat_properties(data):
-    return_list = []
-    logger.info('I GOT HERE')
-    for item in data:
-        logger.info('HERE \n {}'.format(item))
-        if 'properties' in item:
-            new_dict = deepcopy(item)
-            properties = new_dict.pop('properties')
-            for key in new_dict:
-                if key in properties:
-                    properties.pop(key)
-            if not properties:
-                logger.info ('EMPTY')
-                item.pop('properties')
-            else:
-                item['properties'] = properties
-        return_list.append(item)
-    return return_list
 
 
-def get_item(objname, obj, item):
+
+def get_item(request, obj, item, ):
     """
     For backward compatible with old App Registry id, we will search both uuid format and old format
     :param objname: string value of the uri resource
@@ -117,18 +100,11 @@ def get_item(objname, obj, item):
     """
     got_data = False
     data = None
-    valid = check_value({'type': 'uuid'}, item)
-    if not valid:
-        q = {'properties__old_version_id': item}
-        data = obj.filter(**q)
-        if data.count() > 0:
-            got_data = True
-            data = data[:1].get()
-    elif obj.filter(id=item).exists:
-        data = obj.get(id=item)
+
+    if obj.objects.filter(id=item).exists:
+        data = obj.objects.get(id=item)
         got_data = True
     if not got_data:
-        logger.info('NOT FOUND')
         raise ViewException(FORMAT, '{} not found.'.format(item), 404)
     return data
 
@@ -242,11 +218,11 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
             if page is not None:
                 obj_serializer = serializer_class(page, many=True)
                 decrypt_data = obj_serializer.data
-                return self.get_paginated_response(reformat_properties(decrypt_data), objname)
+                return self.get_paginated_response(decrypt_data)
             else:
                 obj_serializer = serializer_class(data, many=True)
                 decrypt_data = obj_serializer.data
-                return Response(reformat_properties(decrypt_data))
+                return Response(decrypt_data)
         except rest_exceptions.NotFound:
             raise ViewException(FORMAT, 'Not found.', 404)
         except Exception as e:
@@ -255,13 +231,21 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
 
     def post(self, request, objname):
         path = '/%s' % objname
-        logger.info("Processing POST for %s" % objname)
         # check to make sure the model exists
         obj = get_model( objname)
-        # pulling mappings config
-        method = 'post'
-        logger.debug('path %s method: %s request: %s' % (path, method, request.data))
-        data = Validators().parse_mappings(path=path, method=method, data=request.data)
+
+        data = request.data
+        # Validation
+        valid, errors = models.validate_json(objname, data)
+        if not valid:
+            raise ViewException(FORMAT, errors, 400)
+        if objname == 'products':
+            new_dict = deepcopy(data)
+            for key in ['created_at', 'deleted', 'deleted_at', 'created_by', 'updated_at', 'updated_by']:
+                if key in new_dict:
+                    del new_dict[key]
+            data = {'id': new_dict['id'], 'properties': new_dict}
+
         # payload is valid .
         serializer_class = serializers.serializer_class_lookup[objname]
         if 'associations' in data:
@@ -284,10 +268,10 @@ class athena_app_cmdbListDetail(APIView, MyPaginationMixin):
         page_size = api_settings.PAGE_SIZE
 
         obj = get_model(objname)
-        if 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
-            data = obj.objects.all()
+        if objname == 'tasks' or 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
+            data = obj.raw_objects.all()
         else:
-            data = obj.objects.exclude(deleted=1)
+            data = obj.objects.all()
         data, page_size = filter_get_request(request, data, page_size)
         try:
             if data:
@@ -331,10 +315,10 @@ class athena_app_cmdbItem(APIView):
     def get(self, request, objname, item):
         obj = get_model(objname)
         if objname == 'tasks' or 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
-            obj = obj.objects.all()
+            data = obj.raw_objects.all()
         else:
-            obj = obj.objects.exclude(deleted=1)
-        data = get_item(objname, obj, item)
+            data = obj.objects.all()
+        data = get_item(request, obj, item)
         serializer_class = serializers.serializer_class_lookup_read[objname]
         obj_serializer = serializer_class(data)
         decrypt_data = obj_serializer.data
@@ -342,36 +326,41 @@ class athena_app_cmdbItem(APIView):
 
     def delete(self, request, objname, item):
         obj = get_model(objname)
-        data = get_item(objname, obj, item)
-        serializer_class = serializers.serializer_class_lookup_read[objname]
-        obj_serializer = serializer_class(data)
-        if 'HTTP_X_FORCE_DELETE' in request.META and \
-                request.META['HTTP_X_FORCE_DELETE'].lower() == 'true':
-            logger.info('Deleting %s against %s' % (item, objname))
+        if objname == 'tasks' or 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
+            data = obj.raw_objects.all()
+        else:
+            data = obj.objects.all()
+        data = get_item(request, obj, item)
+        if 'HTTP_X_FORCE_DELETE' in request.META and request.META['HTTP_X_FORCE_DELETE'].lower() == 'true':
+            try:
+                data.hard_delete()
+            except Exception as e:
+                logger.exception(e)
+                raise ViewException(FORMAT, "Invalid request.", 400)
+        else:
+            logger.info('HERE SOFT DELETE')
             try:
                 data.delete()
             except Exception as e:
                 logger.exception(e)
                 raise ViewException(FORMAT, "Invalid request.", 400)
-        else:
-            data.name = '{} DELETED {}'.format(data.name, timezone.now())
-            data.deleted = True
-            data.deleted_at = datetime.now()
-            data.save()
         return Response("Done", status.HTTP_204_NO_CONTENT)
 
     def put(self, request, objname, item):
         path = '/{0}'.format(objname)
         obj = get_model(objname)
         if objname == 'tasks' or 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
-            obj = obj.objects.all()
+            data = obj.raw_objects.all()
         else:
-            obj = obj.objects.exclude(deleted=1)
-        obj = get_item(objname, obj, item)
-        method = 'post'
-        logger.debug('path %s method: %s request: %s' % (path, method, request.data))
-        data = Validators().parse_mappings(data=request.data, path=path, method=method)
-        # payload is valid .
+            data = obj.objects.all()
+        obj = get_item(request, obj, item)
+        data = request.data
+        if objname == 'products':
+            new_dict = deepcopy(data)
+            for key in ['created_at', 'deleted', 'deleted_at', 'created_by', 'updated_at', 'updated_by']:
+                if key in new_dict:
+                    del new_dict[key]
+            data = {'id': new_dict['id'], 'properties': new_dict}
         serializer_class = serializers.serializer_class_lookup[objname]
         if 'associations' in data:
             del data['associations']
@@ -392,10 +381,10 @@ class athena_app_cmdbItem(APIView):
             raise ViewException(FORMAT, 'PATCH method expects application/json-patch+json Content-Type.', 406)
         obj = get_model(objname)
         if objname == 'tasks' or 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
-            obj = obj.objects.all()
+            data = obj.raw_objects.all()
         else:
-            obj = obj.objects.exclude(deleted=1)
-        obj = get_item(objname, obj, item)
+            data = obj.objects.all()
+        obj = get_item(request, obj, item)
         serializer_class = serializers.serializer_class_lookup[objname]
         obj_serializer = serializer_class(obj)
         current_data = obj_serializer.data
@@ -421,10 +410,10 @@ class athena_app_cmdbItemDetail(APIView):
 
     def get(self, request, objname, item):
         obj = get_model(objname)
-        if 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
-            data = obj.objects.all()
+        if objname == 'tasks' or 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
+            data = obj.raw_objects.all()
         else:
-            data = obj.objects.exclude(deleted=1)
+            data = obj.objects.all()
         data = get_object_or_404(data, id=item)
         serializer_class = serializers.serializer_class_lookup_detail[objname]
         obj_serializer = serializer_class(data)
@@ -764,46 +753,58 @@ class athena_app_cmdbBulkUpdate(APIView, MyPaginationMixin):
 
 
 @method_decorator(never_cache, name='dispatch')
-class AssetEnvironments(APIView, MyPaginationMixin):
-
-    pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
-    path = ''
+class AssetEnvironmentItem(APIView):
+    request_type = 'environment'
 #    authentication_classes = AUTH_CLASS
 #    permission_classes = PERM_CLASS
 
-    def get(self, request, objname, item):
-        page_size = api_settings.PAGE_SIZE
-        obj = get_model('tasks')
-        kwarg = {'model': objname, 'item': item}
-        data = obj.objects.all()
-        data = data.filter(**kwarg)
-        data, page_size = filter_get_request(request, data, page_size)
-        if not data.exists():
-            raise_for_error(404, "No tasks for {} {} found.".format(objname, item))
-        serializer_class = serializers.serializer_class_lookup_read['tasks']
-        # do not show pagination if query result is less than page size
-        logger.info('count %s' % data.count())
-
-        try:
-            if data.count() <= int(page_size):
-                self.pagination_class = None
-            page = self.paginate_queryset(data, self.request)
-            if page is not None:
-                obj_serializer = serializer_class(page, many=True)
-                decrypt_data = obj_serializer.data
-                if 'HTTP_X_SKIP_DECRYPT_DATA' not in request.META or \
-                        request.META['HTTP_X_SKIP_DECRYPT_DATA'] != "true":
-                    decrypt_data = VaultProcessing().read(decrypt_data)
-
-
-                return self.get_paginated_response(decrypt_data, objname)
+    def get(self, request, item, env=None):
+        obj = get_model('assets')
+        if 'HTTP_X_INCLUDE_DELETED' in request.META:
+            data = obj.raw_objects.all()
+        else:
+            data = obj.objects.all()
+        serializer_class = serializers.serializer_class_lookup_read['assetsEnvironments']
+        data = get_object_or_404(data, id=item)
+        obj_serializer = serializer_class(data)
+        decrypt_data = obj_serializer.data
+        return_data = decrypt_data
+        if not env and self.request_type == 'environment':
+            # List environments
+            return_data = return_data.get('environments')
+            return Response(return_data)
+        for each in decrypt_data.get('environments'):
+            if isinstance(each, dict) and each.get('id', "") == env:
+                return_data = each
+                break
+        if self.request_type == 'deploymentLocation':
+            loc_obj = get_model('locations')
+            if 'HTTP_X_INCLUDE_DELETED' in request.META:
+                loc_obj = loc_obj.raw_objects.all()
             else:
-                obj_serializer = serializer_class(data, many=True)
-                decrypt_data = obj_serializer.data
-                if 'HTTP_X_SKIP_DECRYPT_DATA' not in request.META or \
-                        request.META['HTTP_X_SKIP_DECRYPT_DATA'] != "true":
-                    decrypt_data = VaultProcessing().read(decrypt_data)
-                return Response({'tasks': decrypt_data})
-        except Exception as e:
-            logger.exception(e)
-            raise_for_error(500, 'Server Exception')
+                loc_obj = loc_obj.objects.all()
+            data = get_object_or_404(loc_obj, id=return_data.get('location', ""))
+            serializer_class = serializers.serializer_class_lookup_read['locations']
+            obj_serializer = serializer_class(data)
+            return_data = obj_serializer.data
+        return Response(return_data)
+
+
+@method_decorator(never_cache, name='dispatch')
+class AssetUrlsItem(APIView):
+
+#    authentication_classes = AUTH_CLASS
+#    permission_classes = PERM_CLASS
+
+    def get(self, request, item, ):
+        obj = get_model('assets')
+        if 'HTTP_X_INCLUDE_DELETED' in request.META:
+            data = obj.raw_objects.all()
+        else:
+            data = obj.objects.all()
+        serializer_class = serializers.serializer_class_lookup_read['assetsUrls']
+        data = get_object_or_404(data, id=item)
+        obj_serializer = serializer_class(data)
+        decrypt_data = obj_serializer.data
+        return_data = decrypt_data.get('urls')
+        return Response(return_data)

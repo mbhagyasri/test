@@ -33,7 +33,7 @@ put:
       description: Create a set of items.
       required: true
       schema:
-        $ref: "#components/schemas/BulkChange"
+        $ref: "#/components/schemas/BulkChange"
   responses:
     "200":
       description: records updated
@@ -61,3 +61,7 @@ components:
             type: array
             items:
               $ref: "./products-all.yaml#/components/schemas/Product"
+        - teams:
+            type: array
+            items:
+              $ref: "./teams-all.yaml#/components/schemas/Team"

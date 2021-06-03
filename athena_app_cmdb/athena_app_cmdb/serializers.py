@@ -5,13 +5,19 @@
 import pydash
 import logging
 
-from django.utils import timezone
-
+from collections import OrderedDict
 from rest_framework import serializers
 from . import models
+from copy import deepcopy
 from requests.structures import CaseInsensitiveDict
 
 logger = logging.getLogger(__name__)
+
+
+class AssetTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AssetType
+        fields = '__all__'
 
 
 class AssetSerializer(serializers.ModelSerializer):
@@ -29,48 +35,21 @@ class AssetSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         return AssetGetSerializer(instance).data
 
-    def process_validated_data(self, properties, validated_data):
-        if 'cicd' in validated_data:
-            properties['cicd'] = validated_data.get('cicd')
-        if 'attaches' in validated_data:
-            properties['region'] = validated_data.get('attaches')
-        if 'consumes' in validated_data:
-            properties['consumes'] = validated_data.get('consumes')
-        if 'internal' in validated_data:
-            properties['internal'] = validated_data.get('internal')
-        if 'security' in validated_data:
-            properties['security'] = validated_data.get('security')
-        if 'description' in validated_data:
-            properties['description'] = validated_data.get('description')
-        return properties
-
-    def create(self, validated_data):
-        properties = validated_data.get('properties', {})
-        # backward compatible to app registry v1
-        properties = self.process_validated_data(properties, validated_data)
-        validated_data['properties'] = properties
-        resource = models.Asset.objects.create(**validated_data)
-        return resource
-
-    def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
-        instance.product = validated_data.get('product', instance.product)
-        instance.team = validated_data.get('team', instance.team)
-        instance.type = validated_data.get('type', instance.type)
-        instance.appLanguage = validated_data.get('appLanguage', instance.appLanguage)
-        instance.repo = validated_data.get('repo', instance.repo)
-        instance.assetMasterId = validated_data.get('assetMasterId', instance.assetMasterId)
-        properties = validated_data.get('properties', instance.properties)
-        instance.deleted = validated_data.get('deleted', instance.deleted)
-        instance.created_at = validated_data.get('created_at', instance.created_at)
-        instance.updated_at = validated_data.get('updated_at', timezone.now())
-        properties = self.process_validated_data(properties, validated_data)
-        instance.properties = properties
-        instance.save()
-        return instance
+    def to_internal_value(self, data):
+        fields = [f.name for f in models.Asset._meta.fields + models.Asset._meta.many_to_many]
+        properties = data.get('properties', {})
+        data_copy = deepcopy(data)
+        for key in data_copy:
+            if key == 'env-type':
+                key = 'env_type'
+            if key not in fields:
+                properties[key] = data[key]
+                del data[key]
+        data['properties'] = properties
+        return super(AssetSerializer, self).to_internal_value(data)
 
 
-class AssetGetSerializer(serializers.ModelSerializer):
+class AssetGetDetailSerializer(serializers.ModelSerializer):
     cicd = serializers.CharField(source='properties.cicd', required=False)
     attaches = serializers.JSONField(source='properties.attaches', required=False)
     consumes = serializers.JSONField(source='properties.consumes', required=False)
@@ -80,21 +59,107 @@ class AssetGetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Asset
-        fields = ('id', 'cicd', 'name', 'repo', 'team', 'type',
-                  'product', 'attaches', 'consumes', 'internal', 'security',
-                  'appLanguage', 'description', 'assetMasterId', 'properties')
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        properties = data.pop('properties', None)
+        data.update(properties)
+        return data
 
     def get_links(self, instance):
         lks = {'_self': instance.self_links}
         return lks
 
 
+class AssetGetSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Asset
+        fields = ('id', 'name', 'repo', 'team', 'type',
+                  'product',
+                  'appLanguage',  'assetMasterId', 'properties', 'deleted')
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        properties = data.pop('properties', None)
+        data.update(properties)
+        return data
+
+    def get_links(self, instance):
+        lks = {'_self': instance.self_links}
+        return lks
+
+
+class AssetGetEnvironmentSerializer(serializers.ModelSerializer):
+    environments = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Asset
+        fields = ('environments',)
+
+    def get_environments(self, instance):
+        product = ProductGetSerializer(instance.product).data
+        data = product.get('environments', [])
+        return data
+
+
+class AssetGetUrlSerializer(serializers.ModelSerializer):
+    locations = serializers.SerializerMethodField()
+    environments = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Asset
+        fields = ('id', 'name', 'environments', 'locations', 'properties', 'type', 'product')
+
+    def get_environments(self, instance):
+        product = ProductGetSerializer(instance.product).data
+        data = product.get('environments', [])
+        return data
+
+    def get_locations(self, instance):
+        data = []
+        product = ProductGetSerializer(instance.product).data
+        environments = product.get('environments', [])
+        if environments:
+            for env in environments:
+                if models.Location.objects.filter(id=env.get('location')).exists():
+                    loc = models.Location.objects.get(id=env.get('location'))
+                    location = LocationGetSerializer(loc).data
+                    data.append(location)
+        return data
+
+    def to_representation(self, instance):
+        return_data = []
+        data = super().to_representation(instance)
+        environments = data.get('environments', [])
+        locations = data.get('locations', [])
+        if not environments:
+            return {}
+        for env in environments:
+            tmp_data = OrderedDict([('environment_id', env['id']), ('type', env['type'])])
+            prefix = "" if env['type'] == 'prod' else env['id'] + '-'
+            hostname = data['name'] if data['type'] != 'bff' else '{}-{}.sd'.format(data['product'],
+                                                                                    data['id'])
+
+            additional_urls = []
+            if locations:
+                for loc in locations:
+                    if loc.get('id') == env['location']:
+                        url = 'https://{}{}.{}'.format(prefix, hostname, loc.get('domain', ""))
+                        tmp_data['url'] = url
+            if pydash.objects.has(data, 'properties.additionalUrls'):
+                for url in pydash.objects.get(data, 'properties.additionalUrls', []):
+                    if url.get('environment') == env['id']:
+                        additional_urls = url.get('entries', [])
+            tmp_data['additionalUrls'] = additional_urls
+            return_data.append(tmp_data)
+        return {'urls': return_data}
+
+
+
+
 class LocationSerializer(serializers.ModelSerializer):
-    domain = serializers.CharField(required=False)
-    region = serializers.CharField(required=False)
-    status = serializers.CharField(required=False)
-    parameters = serializers.JSONField(required=False)
-    description = serializers.CharField(required=False)
 
     class Meta:
         model = models.Location
@@ -103,68 +168,40 @@ class LocationSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         return LocationGetSerializer(instance).data
 
-    def process_validated_data(self, properties, validated_data):
-        if 'domain' in validated_data:
-            properties['domain'] = validated_data.get('domain')
-        if 'region' in validated_data:
-            properties['region'] = validated_data.get('region')
-        if 'status' in validated_data:
-            properties['status'] = validated_data.get('status')
-        if 'parameters' in validated_data:
-            properties['parameters'] = validated_data.get('parameters')
-        if 'description' in validated_data:
-            properties['description'] = validated_data.get('description')
-        return properties
-
-    def create(self, validated_data):
-        properties = validated_data.get('properties', {})
-        # backward compatible to app registry v1
-        properties = self.process_validated_data(properties, validated_data)
-        validated_data['properties'] = properties
-        resource = models.Location.objects.create(**validated_data)
-        return resource
-
-    def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
-        properties = validated_data.get('properties', instance.properties)
-        instance.deleted = validated_data.get('deleted', instance.deleted)
-        instance.created_at = validated_data.get('created_at', instance.created_at)
-        instance.created_by = validated_data.get('created_by', instance.created_by)
-        instance.updated_at = validated_data.get('updated_at', timezone.now())
-        instance.updated_by = validated_data.get('updated_by', instance.updated_by)
-        instance.deleted_at = validated_data.get('deleted_at', instance.deleted_at)
-        logger.info('----')
-        logger.info('BEFORE')
-        logger.info(properties)
-        properties = self.process_validated_data(properties, validated_data)
-        logger.info('------')
-        logger.info('AFTER')
-        logger.info(properties)
-        instance.properties = properties
-        instance.save()
-        return instance
+    def to_internal_value(self, data):
+        fields = [f.name for f in models.Location._meta.fields + models.Location._meta.many_to_many]
+        properties = data.get('properties', {})
+        data_copy = deepcopy(data)
+        for key in data_copy:
+            if key == 'env-type':
+                key = 'env_type'
+            if key not in fields:
+                properties[key] = data[key]
+                del data[key]
+        data['properties'] = properties
+        return super(LocationSerializer, self).to_internal_value(data)
 
 
 class LocationGetSerializer(serializers.ModelSerializer):
-    domain = serializers.ReadOnlyField(source='properties.domain', required=False)
-    region = serializers.ReadOnlyField(source='properties.region', required=False)
-    status = serializers.ReadOnlyField(source='properties.status', required=False)
-    parameters = serializers.ReadOnlyField(source='properties.parameters', required=False)
-    environment_name = serializers.ReadOnlyField(source='environment.name', required=False)
-    description = serializers.ReadOnlyField(source='properties.description', required=False)
-    links = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Location
         fields = ('id', 'name', 'domain', 'region', 'status',
-                  'environment_name', 'parameters',
-                  'description', 'properties',
-                  'links', 'updated_at', 'updated_by',
-                  'created_at', 'created_by', 'deleted',)
+                  'env_type', 'properties',
+                  )
 
     def get_links(self, instance):
         lks = {'_self': instance.self_links}
         return lks
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if 'env_type' in data:
+            env_type = data.pop('env_type')
+            data['env-type'] = env_type
+        properties = data.pop('properties', None)
+        data.update(properties)
+        return data
 
 
 class ClusterSerializer(serializers.ModelSerializer):
@@ -174,6 +211,19 @@ class ClusterSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         return ClusterGetSerializer(instance).data
+
+    def to_internal_value(self, data):
+        fields = [f.name for f in models.Cluster._meta.fields + models.Cluster._meta.many_to_many]
+        properties = data.get('properties', {})
+        data_copy = deepcopy(data)
+        for key in data_copy:
+            if key == 'env-type':
+                key = 'env_type'
+            if key not in fields:
+                properties[key] = data[key]
+                del data[key]
+        data['properties'] = properties
+        return super(ClusterSerializer, self).to_internal_value(data)
 
 
 class ClusterGetSerializer(serializers.ModelSerializer):
@@ -186,7 +236,105 @@ class ClusterGetSerializer(serializers.ModelSerializer):
         lks = {'_self': instance.self_links}
         return lks
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if 'env_type' in data:
+            env_type = data.pop('env_type')
+            data['env-type'] = env_type
+        properties = data.pop('properties', None)
+        data.update(properties)
+        return data
 
+
+class ProductSerializer(serializers.ModelSerializer):
+    attaches = serializers.JSONField(required=False)
+    consumes = serializers.JSONField(required=False)
+    internal = serializers.JSONField(required=False)
+    security = serializers.JSONField(required=False)
+    description = serializers.CharField(required=False)
+    class Meta:
+        model = models.Product
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        return ProductGetSerializer(instance).data
+    
+    def to_internal_value(self, data):
+        fields = [f.name for f in models.Product._meta.fields + models.Product._meta.many_to_many]
+        properties = data.get('properties', {})
+        data_copy = deepcopy(data)
+        for key in data_copy:
+            if key == 'env-type':
+                key = 'env_type'
+            if key not in fields:
+                properties[key] = data[key]
+                del data[key]
+        data['properties'] = properties
+        return super(ProductSerializer, self).to_internal_value(data)
+
+
+class ProductGetSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Product
+        fields = ('id', 'properties')
+
+    def get_links(self, instance):
+        lks = {'_self': instance.self_links}
+        return lks
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if 'env_type' in data:
+            env_type = data.pop('env_type')
+            data['env-type'] = env_type
+        properties = data.pop('properties', None)
+        data.update(properties)
+        return data
+
+
+class ResourceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Resource
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        return ResourceGetSerializer(instance).data
+
+    def to_internal_value(self, data):
+        fields = [f.name for f in models.Resource._meta.fields + models.Resource._meta.many_to_many]
+        properties = data.get('properties', {})
+        data_copy = deepcopy(data)
+        for key in data_copy:
+            if key == 'env-type':
+                key = 'env_type'
+            if key not in fields:
+                properties[key] = data[key]
+                del data[key]
+        data['properties'] = properties
+        return super(ResourceSerializer, self).to_internal_value(data)
+
+
+class ResourceGetSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Resource
+        fields = ('id', 'type', 'owner', 'location', 'properties',
+                  )
+
+    def get_links(self, instance):
+        lks = {'_self': instance.self_links}
+        return lks
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if 'env_type' in data:
+            env_type = data.pop('env_type')
+            data['env-type'] = env_type
+        properties = data.pop('properties', None)
+        data.update(properties)
+        return data
 
 
 class TeamSerializer(serializers.ModelSerializer):
@@ -201,39 +349,63 @@ class TeamSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         return TeamGetSerializer(instance).data
 
-    def process_validated_data(self, properties, validated_data):
-        if 'ad-group' in validated_data:
-            properties['ad-group'] = validated_data.get('ad-group')
-        if 'description' in validated_data:
-            properties['description'] = validated_data.get('description')
-        if 'notification' in validated_data:
-            properties['notification'] = validated_data.get('notification')
-        if 'email' in validated_data:
-            properties['email'] = validated_data.get('email')
-        return properties
-
-    def create(self, validated_data):
-        properties = validated_data.get('properties', {})
-        # backward compatible to app registry v1
-        properties = self.process_validated_data(properties, validated_data)
-        validated_data['properties'] = properties
-        team = models.Team.objects.create(**validated_data)
-        return team
+    def to_internal_value(self, data):
+        fields = [f.name for f in models.Team._meta.fields + models.Team._meta.many_to_many]
+        properties = data.get('properties', {})
+        data_copy = deepcopy(data)
+        for key in data_copy:
+            if key == 'env-type':
+                key = 'env_type'
+            if key not in fields:
+                properties[key] = data[key]
+                del data[key]
+        data['properties'] = properties
+        return super(TeamSerializer, self).to_internal_value(data)
 
 
-def update(self, instance, validated_data):
-    instance.name = validated_data.get('name', instance.name)
-    properties = validated_data.get('properties', instance.properties)
-    instance.deleted = validated_data.get('deleted', instance.deleted)
-    instance.created_at = validated_data.get('created_at', instance.created_at)
-    instance.created_by = validated_data.get('created_by', instance.created_by)
-    instance.updated_at = validated_data.get('updated_at', timezone.now())
-    instance.updated_by = validated_data.get('updated_by', instance.updated_by)
-    instance.deleted_at = validated_data.get('deleted_at', instance.deleted_at)
-    properties = self.process_validated_data(properties, validated_data)
-    instance.properties = properties
-    instance.save()
-    return instance
+
+class SecurityProviderSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.SecurityProvider
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        return SecurityProviderGetSerializer(instance).data
+
+    def to_internal_value(self, data):
+        fields = [f.name for f in models.SecurityProvider._meta.fields + models.SecurityProvider._meta.many_to_many]
+        properties = data.get('properties', {})
+        data_copy = deepcopy(data)
+        for key in data_copy:
+            if key == 'env-type':
+                key = 'env_type'
+            if key not in fields:
+                properties[key] = data[key]
+                del data[key]
+        data['properties'] = properties
+        return super(SecurityProviderSerializer, self).to_internal_value(data)
+
+
+class SecurityProviderGetSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.SecurityProvider
+        fields = ('id', 'schemes', 'properties',
+                  )
+
+    def get_links(self, instance):
+        lks = {'_self': instance.self_links}
+        return lks
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if 'env_type' in data:
+            env_type = data.pop('env_type')
+            data['env-type'] = env_type
+        properties = data.pop('properties', None)
+        data.update(properties)
+        return data
 
 
 class TeamGetSerializer(serializers.ModelSerializer):
@@ -246,7 +418,7 @@ class TeamGetSerializer(serializers.ModelSerializer):
         model = models.Team
         fields = ('id', 'name',
                   'email', 'description', 'notification', 'properties',
-                  'links', 'updated_at', 'updated_by',
+                    'updated_at', 'updated_by',
                   'created_at', 'created_by', 'deleted',)
 
     def get_links(self, instance):
@@ -255,21 +427,19 @@ class TeamGetSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        if pydash.objects.has(data, 'properties.ad-group'):
-            data['ad-group'] = pydash.objects.get(data, 'properties.ad-group', None)
+        if 'env_type' in data:
+            env_type = data.pop('env_type')
+            data['env-type'] = env_type
+        properties = data.pop('properties', None)
+        data.update(properties)
         return data
-
-
-class AssetType(serializers.ModelSerializer):
-    class Meta:
-        model = models.AssetType
-        fields = '__all__'
 
 
 serializers_mapping = {
     'assets': AssetSerializer,
-    'locations': LocationSerializer, 'asset_types': AssetType,
-    'clusters': ClusterSerializer, 'teams': TeamSerializer
+    'locations': LocationSerializer, 'asset_types': AssetTypeSerializer, 'resources': ResourceSerializer,
+    'clusters': ClusterSerializer, 'teams': TeamSerializer, 'securityProviders': SecurityProviderSerializer,
+    'products': ProductSerializer
     }
 
 serializers_mapping_read = {
@@ -277,7 +447,12 @@ serializers_mapping_read = {
     'locations': LocationGetSerializer,
     'clusters': ClusterGetSerializer,
     'teams': TeamGetSerializer,
-    'asset_types': AssetType
+    'asset_types': AssetTypeSerializer,
+    'products': ProductGetSerializer,
+    'resources': ResourceGetSerializer,
+    'securityProviders': SecurityProviderGetSerializer,
+    'assetsEnvironments': AssetGetEnvironmentSerializer,
+    'assetsUrls': AssetGetUrlSerializer,
 }
 
 serializers_mapping_associations = {
@@ -285,7 +460,7 @@ serializers_mapping_associations = {
 }
 
 serializers_mapping_detail = {
-
+    'assets': AssetGetDetailSerializer
 }
 
 serializer_class_lookup = CaseInsensitiveDict(serializers_mapping)

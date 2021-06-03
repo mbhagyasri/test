@@ -59,7 +59,12 @@
               ]
             }
           }
-        }
+        },
+                "additionalProperties": false,
+        "required": [
+          "environment",
+          "entries"
+        ]
       }
     },
     "team": {
@@ -95,7 +100,12 @@
             "type": "boolean",
             "default": false
           }
-        }
+        },
+                "additionalProperties": false,
+        "required": [
+          "environment",
+          "entries"
+        ]
       }
     },
     "type": {
@@ -196,7 +206,8 @@
         },
         "additionalProperties": false,
         "required": [
-          "provider"
+          "environment",
+          "entries"
         ]
       }
     },
@@ -322,7 +333,10 @@
             "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
           },
           "entries": {
-            "type": "array"
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "additionalProperties": false,
@@ -333,7 +347,7 @@
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
     "appLanguage",
     "assetMasterId",

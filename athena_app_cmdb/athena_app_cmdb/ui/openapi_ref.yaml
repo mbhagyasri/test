@@ -2,12 +2,16 @@ openapi: 3.0.0
 info:
   description: |
     App Registry
+
+
     
     The following rules are applicable to all paths below:
     <H3>Validation against Model:</H3>
     <ul><li>Validation against fields will only be applicable to fields listed in the model.
-    <li>To include additional attribute to the particular resource, those these attribute inside properties field.  Additional data pushed to <b>properties</b> object field that are not listed will be accepted but will not have any validation performed against them.
-    <li>Try to create an object to store similar / functionality instead of adding all attributes as key/value at the first level of properties.
+    <li>To include additional attribute to the particular resource, check that json-schema additionalProperties is set to true
+    <li>No Validation of data type will be enforce on additional attributes.
+    <li>Do not store secrets or sensitive data.  No encryption is currently available.  (TO-DO: ability to feed sensitive data for encryption)
+    <li>When adding addtional attributes, use objects or array of objects instead of just key/value pair if data can be grouped.
     </ul>
     
     <H3>Filtering Capabilities is applicable to all paths making GET calls.</H3>
@@ -82,7 +86,7 @@ servers:
     description: Production
   - url: https://stage-app-registry.athena-nonprod.connectcdk.com/
     description: Stage
-  - url: https://dev-app-registry.athena-nonprod.connectcdk.com/
+  - url: https://dev-athena_app_cmdb.athena-nonprod.connectcdk.com/
     description: Development
   - url: http://localhost:8000/
     description: local environment

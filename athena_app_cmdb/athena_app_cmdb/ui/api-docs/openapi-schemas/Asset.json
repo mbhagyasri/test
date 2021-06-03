@@ -1,697 +1,716 @@
 {
   "anyOf": [
     {
-      "description": "UI application.",
-      "type": "object",
-      "properties": {
-        "id": {
-          "description": "Id of the client application",
-          "pattern": "^app-[a-z0-9-]{0,61}[a-z0-9]$",
-          "minLength": 5,
-          "maxLength": 32,
-          "type": "string"
-        },
-        "icon": {
-          "type": "string"
-        },
-        "color": {
-          "type": "string"
-        },
-        "consumes": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "environment": {
-                "type": "string",
-                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+  "description": "UI application.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Id of the client application",
+      "pattern": "^app-[a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 5,
+      "maxLength": 32,
+      "type": "string"
+    },
+    "icon": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "consumes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "environment": {
+            "type": "string",
+            "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                },
+                "protocol": {
+                  "enum": [
+                    "http",
+                    "https",
+                    "tcp"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "enum": [
+                    "external",
+                    "service"
+                  ],
+                  "type": "string"
+                },
+                "port": {
+                  "type": "number"
+                }
               },
-              "entries": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "value": {
-                      "type": "string"
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "value"
+              ]
+            }
+          }
+        },
+        "required": [
+          "environment", "entries"
+        ]
+      }
+    },
+    "team": {
+      "description": "team id",
+      "pattern": "^team-[a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 5,
+      "type": "string"
+    },
+    "product": {
+      "description": "product id",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 3,
+      "type": "string"
+    },
+    "repo": {
+      "description": "git repo URL",
+      "type": "string"
+    },
+    "cicd": {
+      "description": "bamboo url",
+      "type": "string"
+    },
+    "internal": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "environment": {
+            "type": "string",
+            "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+          },
+          "entries": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "environment",
+          "entries"
+        ]
+      }
+    },
+    "type": {
+      "enum": [
+        "app",
+        "bff",
+        "svc"
+      ],
+      "type": "string"
+    },
+    "security": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "environment": {
+            "type": "string",
+            "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "enum": [
+                    "cdk-service",
+                    "dms-drive",
+                    "fortellis",
+                    "iam",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "configuration": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "jwksuri": {
+                          "type": "string"
+                        },
+                        "issuer": {
+                          "type": "string"
+                        },
+                        "audience": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "audience",
+                        "issuer",
+                        "jwksuri"
+                      ]
                     },
-                    "protocol": {
-                      "enum": [
-                        "http",
-                        "https",
-                        "tcp"
-                      ],
-                      "type": "string"
+                    {
+                      "type": "object",
+                      "properties": {
+                        "jwksuri": {
+                          "type": "string"
+                        },
+                        "issuer": {
+                          "type": "string"
+                        },
+                        "audience": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "audience",
+                        "issuer",
+                        "jwksuri"
+                      ]
                     },
-                    "type": {
-                      "enum": [
-                        "external",
-                        "service"
-                      ],
-                      "type": "string"
+                    {
+                      "type": "object",
+                      "additionalProperties": false
                     },
-                    "port": {
-                      "type": "number"
+                    {
+                      "type": "object",
+                      "properties": {
+                        "callbackPath": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "callbackPath"
+                      ]
                     }
-                  },
-                  "additionalProperties": false,
-                  "required": [
-                    "type",
-                    "value"
                   ]
                 }
               }
             }
           }
         },
-        "team": {
-          "description": "team id",
-          "pattern": "^team-[a-z0-9-]{0,61}[a-z0-9]$",
-          "minLength": 5,
-          "type": "string"
-        },
-        "product": {
-          "description": "product id",
-          "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
-          "minLength": 3,
-          "type": "string"
-        },
-        "repo": {
-          "description": "git repo URL",
-          "type": "string"
-        },
-        "cicd": {
-          "description": "bamboo url",
-          "type": "string"
-        },
-        "internal": {
+        "additionalProperties": false,
+        "required": [
+          "environment",
+          "entries"
+        ]
+      }
+    },
+    "assetMasterId": {
+      "description": "Application ID from Asset Master",
+      "type": "number"
+    },
+    "appLanguage": {
+      "description": "Application Code Language",
+      "enum": [
+        "dotnetcore",
+        "java",
+        "nodejs",
+        "reactjs"
+      ],
+      "type": "string"
+    },
+    "attaches": {
+      "description": "Generic Attachment Point",
+      "type": "object",
+      "properties": {
+        "resources": {
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
-              "environment": {
-                "type": "string",
-                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+              "name": {
+                "description": "Unique resource identifier",
+                "type": "string"
               },
-              "entry": {
-                "type": "boolean",
-                "default": false
-              }
-            }
-          }
-        },
-        "type": {
-          "enum": [
-            "app",
-            "bff",
-            "svc"
-          ],
-          "type": "string"
-        },
-        "security": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "environment": {
-                "type": "string",
-                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
-              },
-              "entries": {
+              "environments": {
                 "type": "array",
                 "items": {
-                  "type": "object",
-                  "properties": {
-                    "provider": {
-                      "enum": [
-                        "cdk-service",
-                        "dms-drive",
-                        "fortellis",
-                        "iam",
-                        "none"
-                      ],
-                      "type": "string"
-                    },
-                    "configuration": {
-                      "anyOf": [
-                        {
-                          "type": "object",
-                          "properties": {
-                            "jwksuri": {
-                              "type": "string"
-                            },
-                            "issuer": {
-                              "type": "string"
-                            },
-                            "audience": {
-                              "type": "string"
-                            }
-                          },
-                          "additionalProperties": false,
-                          "required": [
-                            "audience",
-                            "issuer",
-                            "jwksuri"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "properties": {
-                            "jwksuri": {
-                              "type": "string"
-                            },
-                            "issuer": {
-                              "type": "string"
-                            },
-                            "audience": {
-                              "type": "string"
-                            }
-                          },
-                          "additionalProperties": false,
-                          "required": [
-                            "audience",
-                            "issuer",
-                            "jwksuri"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "additionalProperties": false
-                        },
-                        {
-                          "type": "object",
-                          "properties": {
-                            "callbackPath": {
-                              "type": "string"
-                            }
-                          },
-                          "additionalProperties": false,
-                          "required": [
-                            "callbackPath"
-                          ]
-                        }
-                      ]
-                    }
-                  }
+                  "type": "string"
                 }
               }
             },
             "additionalProperties": false,
             "required": [
-              "provider"
-            ]
-          }
-        },
-        "assetMasterId": {
-          "description": "Application ID from Asset Master",
-          "type": "number"
-        },
-        "appLanguage": {
-          "description": "Application Code Language",
-          "enum": [
-            "dotnetcore",
-            "java",
-            "nodejs",
-            "reactjs"
-          ],
-          "type": "string"
-        },
-        "attaches": {
-          "description": "Generic Attachment Point",
-          "type": "object",
-          "properties": {
-            "resources": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "description": "Unique resource identifier",
-                    "type": "string"
-                  },
-                  "environments": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "environments",
-                  "name"
-                ]
-              }
-            }
-          },
-          "additionalProperties": false,
-          "required": [
-            "resources"
-          ]
-        },
-        "name": {
-          "description": "Name of the entity",
-          "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
-          "minLength": 3,
-          "type": "string"
-        },
-        "description": {
-          "description": "Description of the entity",
-          "type": "string"
-        },
-        "istio": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "environment": {
-                "type": "string",
-                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
-              },
-              "entry": {
-                "type": "object",
-                "properties": {
-                  "virtualservice": {
-                    "type": "object",
-                    "properties": {
-                      "http": {
-                        "type": "object",
-                        "properties": {
-                          "retries": {
-                            "attempts": {
-                              "type": "number"
-                            },
-                            "perTryTimeout": {
-                              "type": "string"
-                            },
-                            "retryOn": {
-                              "type": "string"
-                            }
-                          },
-                          "timeout": {
-                            "type": "string",
-                            "default": "300s"
-                          }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                          "timeout"
-                        ]
-                      }
-                    }
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "virtualservice"
-                ]
-              }
-            },
-            "additionalProperties": false,
-            "required": [
-              "environment",
-              "entry"
-            ]
-          }
-        },
-        "additionalUrls": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "environment": {
-                "type": "string",
-                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
-              },
-              "entries": {
-                "type": "array"
-              }
-            },
-            "additionalProperties": false,
-            "required": [
-              "environment",
-              "entries"
+              "environments",
+              "name"
             ]
           }
         }
       },
       "additionalProperties": false,
       "required": [
-        "appLanguage",
-        "assetMasterId",
-        "color",
-        "icon",
-        "id",
-        "name",
-        "product",
-        "repo",
-        "team",
-        "type"
+        "resources"
       ]
     },
-    {
-      "description": "Backend for front end service - specialized service that is directly coupled to a frontend application",
-      "type": "object",
-      "properties": {
-        "id": {
-          "description": "Id of the service",
-          "pattern": "^bff-[a-z0-9-]{0,61}[a-z0-9]$",
-          "minLength": 5,
-          "maxLength": 32,
-          "type": "string"
-        },
-        "consumes": {
-          "type": "array",
-          "items": {
+    "name": {
+      "description": "Name of the entity",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 3,
+      "type": "string"
+    },
+    "description": {
+      "description": "Description of the entity",
+      "type": "string"
+    },
+    "istio": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "environment": {
+            "type": "string",
+            "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+          },
+          "entries": {
             "type": "object",
             "properties": {
-              "environment": {
-                "type": "string",
-                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+              "virtualservice": {
+                "type": "object",
+                "properties": {
+                  "http": {
+                    "type": "object",
+                    "properties": {
+                      "retries": {
+                        "attempts": {
+                          "type": "number"
+                        },
+                        "perTryTimeout": {
+                          "type": "string"
+                        },
+                        "retryOn": {
+                          "type": "string"
+                        }
+                      },
+                      "timeout": {
+                        "type": "string",
+                        "default": "300s"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "timeout"
+                    ]
+                  }
+                }
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "virtualservice"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "environment",
+          "entries"
+        ]
+      }
+    },
+    "additionalUrls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "environment": {
+            "type": "string",
+            "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+          },
+          "entries": {
+            "type": "array"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "environment",
+          "entries"
+        ]
+      }
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "appLanguage",
+    "assetMasterId",
+    "color",
+    "icon",
+    "id",
+    "name",
+    "product",
+    "repo",
+    "team",
+    "type"
+  ]
+},
+    {
+  "description": "Backend for front end service - specialized service that is directly coupled to a frontend application",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Id of the service",
+      "pattern": "^bff-[a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 5,
+      "maxLength": 32,
+      "type": "string"
+    },
+    "consumes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "environment": {
+            "type": "string",
+            "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                },
+                "protocol": {
+                  "enum": [
+                    "http",
+                    "https",
+                    "tcp"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "enum": [
+                    "external",
+                    "service"
+                  ],
+                  "type": "string"
+                },
+                "port": {
+                  "type": "number"
+                }
               },
-              "entries": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "value": {
-                      "type": "string"
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "value"
+              ]
+            }
+          }
+        },
+                "additionalProperties": false,
+        "required": [
+          "environment",
+          "entries"
+        ]
+      }
+    },
+    "timeout": {
+      "type": "number"
+    },
+    "team": {
+      "description": "team id",
+      "pattern": "^team-[a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 5,
+      "type": "string"
+    },
+    "product": {
+      "description": "product id",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 3,
+      "type": "string"
+    },
+    "repo": {
+      "description": "git repo URL",
+      "type": "string"
+    },
+    "cicd": {
+      "description": "bamboo url",
+      "type": "string"
+    },
+    "internal": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "environment": {
+            "type": "string",
+            "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+          },
+          "entries": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+                "additionalProperties": false,
+        "required": [
+          "environment",
+          "entries"
+        ]
+      }
+    },
+    "type": {
+      "enum": [
+        "app",
+        "bff",
+        "svc"
+      ],
+      "type": "string"
+    },
+    "security": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "environment": {
+            "type": "string",
+            "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "enum": [
+                    "cdk-service",
+                    "dms-drive",
+                    "fortellis",
+                    "iam",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "configuration": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "jwksuri": {
+                          "type": "string"
+                        },
+                        "issuer": {
+                          "type": "string"
+                        },
+                        "audience": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "audience",
+                        "issuer",
+                        "jwksuri"
+                      ]
                     },
-                    "protocol": {
-                      "enum": [
-                        "http",
-                        "https",
-                        "tcp"
-                      ],
-                      "type": "string"
+                    {
+                      "type": "object",
+                      "properties": {
+                        "jwksuri": {
+                          "type": "string"
+                        },
+                        "issuer": {
+                          "type": "string"
+                        },
+                        "audience": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "audience",
+                        "issuer",
+                        "jwksuri"
+                      ]
                     },
-                    "type": {
-                      "enum": [
-                        "external",
-                        "service"
-                      ],
-                      "type": "string"
+                    {
+                      "type": "object",
+                      "additionalProperties": false
                     },
-                    "port": {
-                      "type": "number"
+                    {
+                      "type": "object",
+                      "properties": {
+                        "callbackPath": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "callbackPath"
+                      ]
                     }
-                  },
-                  "additionalProperties": false,
-                  "required": [
-                    "type",
-                    "value"
                   ]
                 }
               }
             }
           }
         },
-        "timeout": {
-          "type": "number"
-        },
-        "team": {
-          "description": "team id",
-          "pattern": "^team-[a-z0-9-]{0,61}[a-z0-9]$",
-          "minLength": 5,
-          "type": "string"
-        },
-        "product": {
-          "description": "product id",
-          "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
-          "minLength": 3,
-          "type": "string"
-        },
-        "repo": {
-          "description": "git repo URL",
-          "type": "string"
-        },
-        "cicd": {
-          "description": "bamboo url",
-          "type": "string"
-        },
-        "internal": {
+                "additionalProperties": false,
+        "required": [
+          "environment",
+          "entries"
+        ]
+      }
+    },
+    "assetMasterId": {
+      "description": "Application ID from Asset Master",
+      "type": "number"
+    },
+    "appLanguage": {
+      "description": "Application Code Language",
+      "enum": [
+        "dotnetcore",
+        "java",
+        "nodejs",
+        "reactjs"
+      ],
+      "type": "string"
+    },
+    "attaches": {
+      "description": "Generic Attachment Point",
+      "type": "object",
+      "properties": {
+        "resources": {
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
-              "environment": {
-                "type": "string",
-                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+              "name": {
+                "description": "Unique resource identifier",
+                "type": "string"
               },
-              "entry": {
-                "type": "boolean",
-                "default": false
-              }
-            }
-          }
-        },
-        "type": {
-          "enum": [
-            "app",
-            "bff",
-            "svc"
-          ],
-          "type": "string"
-        },
-        "security": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "environment": {
-                "type": "string",
-                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
-              },
-              "entries": {
+              "environments": {
                 "type": "array",
                 "items": {
-                  "type": "object",
-                  "properties": {
-                    "provider": {
-                      "enum": [
-                        "cdk-service",
-                        "dms-drive",
-                        "fortellis",
-                        "iam",
-                        "none"
-                      ],
-                      "type": "string"
-                    },
-                    "configuration": {
-                      "anyOf": [
-                        {
-                          "type": "object",
-                          "properties": {
-                            "jwksuri": {
-                              "type": "string"
-                            },
-                            "issuer": {
-                              "type": "string"
-                            },
-                            "audience": {
-                              "type": "string"
-                            }
-                          },
-                          "additionalProperties": false,
-                          "required": [
-                            "audience",
-                            "issuer",
-                            "jwksuri"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "properties": {
-                            "jwksuri": {
-                              "type": "string"
-                            },
-                            "issuer": {
-                              "type": "string"
-                            },
-                            "audience": {
-                              "type": "string"
-                            }
-                          },
-                          "additionalProperties": false,
-                          "required": [
-                            "audience",
-                            "issuer",
-                            "jwksuri"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "additionalProperties": false
-                        },
-                        {
-                          "type": "object",
-                          "properties": {
-                            "callbackPath": {
-                              "type": "string"
-                            }
-                          },
-                          "additionalProperties": false,
-                          "required": [
-                            "callbackPath"
-                          ]
-                        }
-                      ]
-                    }
-                  }
+                  "type": "string"
                 }
               }
             },
             "additionalProperties": false,
             "required": [
-              "provider"
-            ]
-          }
-        },
-        "assetMasterId": {
-          "description": "Application ID from Asset Master",
-          "type": "number"
-        },
-        "appLanguage": {
-          "description": "Application Code Language",
-          "enum": [
-            "dotnetcore",
-            "java",
-            "nodejs",
-            "reactjs"
-          ],
-          "type": "string"
-        },
-        "attaches": {
-          "description": "Generic Attachment Point",
-          "type": "object",
-          "properties": {
-            "resources": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "description": "Unique resource identifier",
-                    "type": "string"
-                  },
-                  "environments": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "environments",
-                  "name"
-                ]
-              }
-            }
-          },
-          "additionalProperties": false,
-          "required": [
-            "resources"
-          ]
-        },
-        "name": {
-          "description": "Name of the entity",
-          "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
-          "minLength": 3,
-          "type": "string"
-        },
-        "description": {
-          "description": "Description of the entity",
-          "type": "string"
-        },
-        "istio": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "environment": {
-                "type": "string",
-                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
-              },
-              "entry": {
-                "type": "object",
-                "properties": {
-                  "virtualservice": {
-                    "type": "object",
-                    "properties": {
-                      "http": {
-                        "type": "object",
-                        "properties": {
-                          "retries": {
-                            "attempts": {
-                              "type": "number"
-                            },
-                            "perTryTimeout": {
-                              "type": "string"
-                            },
-                            "retryOn": {
-                              "type": "string"
-                            }
-                          },
-                          "timeout": {
-                            "type": "string",
-                            "default": "300s"
-                          }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                          "timeout"
-                        ]
-                      }
-                    }
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "virtualservice"
-                ]
-              }
-            },
-            "additionalProperties": false,
-            "required": [
-              "environment",
-              "entry"
-            ]
-          }
-        },
-        "additionalUrls": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "environment": {
-                "type": "string",
-                "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
-              },
-              "entries": {
-                "type": "array"
-              }
-            },
-            "additionalProperties": false,
-            "required": [
-              "environment",
-              "entries"
+              "environments",
+              "name"
             ]
           }
         }
       },
       "additionalProperties": false,
       "required": [
-        "appLanguage",
-        "assetMasterId",
-        "id",
-        "name",
-        "product",
-        "repo",
-        "team",
-        "type"
+        "resources"
       ]
     },
-    {
+    "name": {
+      "description": "Name of the entity",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 3,
+      "type": "string"
+    },
+    "description": {
+      "description": "Description of the entity",
+      "type": "string"
+    },
+    "istio": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "environment": {
+            "type": "string",
+            "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+          },
+          "entries": {
+            "type": "object",
+            "properties": {
+              "virtualservice": {
+                "type": "object",
+                "properties": {
+                  "http": {
+                    "type": "object",
+                    "properties": {
+                      "retries": {
+                        "attempts": {
+                          "type": "number"
+                        },
+                        "perTryTimeout": {
+                          "type": "string"
+                        },
+                        "retryOn": {
+                          "type": "string"
+                        }
+                      },
+                      "timeout": {
+                        "type": "string",
+                        "default": "300s"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "timeout"
+                    ]
+                  }
+                }
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "virtualservice"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "environment",
+          "entries"
+        ]
+      }
+    },
+    "additionalUrls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "environment": {
+            "type": "string",
+            "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+          },
+          "entries": {
+            "type": "array"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "environment",
+          "entries"
+        ]
+      }
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "appLanguage",
+    "assetMasterId",
+    "id",
+    "name",
+    "product",
+    "repo",
+    "team",
+    "type"
+  ]
+},
+        {
       "description": "Generic Service",
       "type": "object",
       "properties": {
@@ -780,7 +799,7 @@
                 "type": "string",
                 "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
               },
-              "entry": {
+              "entries": {
                 "type": "boolean",
                 "default": false
               }
@@ -955,7 +974,7 @@
                 "type": "string",
                 "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
               },
-              "entry": {
+              "entries": {
                 "type": "object",
                 "properties": {
                   "virtualservice": {
@@ -997,7 +1016,7 @@
             "additionalProperties": false,
             "required": [
               "environment",
-              "entry"
+              "entries"
             ]
           }
         },

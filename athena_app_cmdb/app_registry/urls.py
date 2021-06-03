@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include
 from athena_app_cmdb.ui.forms import BootstrapAuthenticationForm
+from athena_app_cmdb.ui.views import redirect_admin
 from athena_app_cmdb import views as api_views
 from athena_app_cmdb import excel_upload_views
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView)
@@ -24,7 +25,7 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('', include('athena_app_cmdb.ui.urls')),
-    path('/', include('athena_app_cmdb.ui.urls')),
+    #path('/', include('athena_app_cmdb.ui.urls')),
     path('token/create', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh', TokenRefreshView.as_view(), name='token_refresh'),
     path('monitor', api_views.monitor, name='monitor'),
@@ -32,20 +33,28 @@ urlpatterns = [
         template_name='login.html', authentication_form=BootstrapAuthenticationForm,
         extra_context={'message': ''}, ), name='login'),
     path('admin/', admin.site.urls, name='admin'),
+    path('admin', redirect_admin),
     path('load-from-excel', excel_upload_views.LoadFromExcel.as_view(), name='api-load-from-excel'),
     path('bulk-update', api_views.athena_app_cmdbBulkUpdate.as_view(), name='api-bulk-update'),
     path('<slug:objname>', api_views.athena_app_cmdbList.as_view(), name='athena_app_cmdb-list'),
     path('<slug:objname>/detail', api_views.athena_app_cmdbListDetail.as_view(), name='athena_app_cmdb-list-detail'),
     path('<slug:objname>/sync-update', api_views.athena_app_cmdbBulkSyncUpdate.as_view(), name='item-sync-update'),
     path('<slug:objname>/<slug:item>', api_views.athena_app_cmdbItem.as_view(), name='api-item'),
-    path('<slug:objname>/<uuid:item>/detail', api_views.athena_app_cmdbItemDetail.as_view(), name='api-item-detail'),
-    path('<slug:parentobjname>/<uuid:parent>/associations',
+    path('<slug:objname>/<slug:item>/detail', api_views.athena_app_cmdbItemDetail.as_view(), name='api-item-detail'),
+    path('<slug:parentobjname>/<slug:parent>/associations',
          api_views.athena_app_cmdbAssociationsList.as_view(), name='athena_app_cmdb-associations-list'),
     path('<slug:parentobjname>/<uuid:parent>/associations/<slug:childobjname>',
          api_views.athena_app_cmdbAssociationsChildList.as_view(), name='athena_app_cmdb-associations-child-list'),
     path('<slug:parentobjname>/<uuid:parent>/associations/<slug:childobjname>/<uuid:child>',
          api_views.athena_app_cmdbAssociationsChildCreateDestroy.as_view(),
          name='athena_app_cmdb-associations-child-createdestroy'),
+    path('assets/<slug:item>/environments', api_views.AssetEnvironmentItem.as_view(),
+         name='athena_app_cmdb-environment-list'),
+    path('assets/<slug:item>/environments/<slug:env>', api_views.AssetEnvironmentItem.as_view(),
+         name='athena_app_cmdb-environment-item'),
+    path('assets/<slug:item>/deploymentLocation/<slug:env>', api_views.AssetEnvironmentItem.as_view(
+        request_type='deploymentLocation'), name='athena_app_cmdb-environment-deploymentLocation-item'),
+    path('assets/<slug:item>/urls', api_views.AssetUrlsItem.as_view(), name='athena_app_cmdb-environment-urls-item'),
 ]
-
 admin.site.login_form = BootstrapAuthenticationForm
+

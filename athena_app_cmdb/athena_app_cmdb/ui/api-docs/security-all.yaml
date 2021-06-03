@@ -18,6 +18,27 @@ get:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
+post:
+  summary: Create new security provider
+  tags:
+    - security
+  operationId: createSecurityProvider
+  consumes:
+    - application/json
+  produces:
+    - application/json
+  parameters:
+    - in: "body"
+      name: "body"
+      description: Create a new security Provider within app-registry
+      required: true
+      schema:
+        $ref: "./json-schemas/SecurityProvider.json"
+  responses:
+    "200":
+      description: Resource data has been inserted
+    default:
+      description: Failed to insert the resource data
 components:            
   schemas:
     SecurityProvider:

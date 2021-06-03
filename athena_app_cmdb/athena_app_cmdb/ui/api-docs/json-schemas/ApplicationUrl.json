@@ -10,6 +10,15 @@
     "url": {
       "type": "string",
       "pattern": "^(http?|https?)://"
+    },
+    "additionalUrls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
-  }
+  },
+  "required": [
+    "environment_id", "type", "url"
+  ]
 }

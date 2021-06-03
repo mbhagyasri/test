@@ -13,6 +13,7 @@ from libs.utility.config_parsers import get_config
 from django.utils.module_loading import import_string
 from django.core.serializers.json import DjangoJSONEncoder
 
+
 logger = logging.getLogger(__name__)
 config = get_config()
 
@@ -146,5 +147,6 @@ def output_json(out, code=200):
         response['Access-Control-Allow-Origin'] = '*'
 
         return response
+
 
 

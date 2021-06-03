@@ -52,7 +52,12 @@
               ]
             }
           }
-        }
+        },
+                "additionalProperties": false,
+        "required": [
+          "environment",
+          "entries"
+        ]
       }
     },
     "timeout": {
@@ -87,11 +92,16 @@
             "type": "string",
             "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
           },
-          "entry": {
+          "entries": {
             "type": "boolean",
             "default": false
           }
-        }
+        },
+                "additionalProperties": false,
+        "required": [
+          "environment",
+          "entries"
+        ]
       }
     },
     "type": {
@@ -192,7 +202,8 @@
         },
         "additionalProperties": false,
         "required": [
-          "provider"
+          "environment",
+          "entries"
         ]
       }
     },
@@ -262,7 +273,7 @@
             "type": "string",
             "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
           },
-          "entry": {
+          "entries": {
             "type": "object",
             "properties": {
               "virtualservice": {
@@ -304,7 +315,7 @@
         "additionalProperties": false,
         "required": [
           "environment",
-          "entry"
+          "entries"
         ]
       }
     },
@@ -329,7 +340,7 @@
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
     "appLanguage",
     "assetMasterId",

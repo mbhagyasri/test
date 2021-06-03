@@ -25,7 +25,7 @@ services:
     networks:
       - public
     ports:
-      - "6380:6379"
+      - "6379:6379"
 
   postgres:
     container_name: "postgres"

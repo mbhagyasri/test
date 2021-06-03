@@ -26,7 +26,41 @@ get:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
-
+put:
+  summary: Update a specific security provider
+  operationId: updateSecurityProvider
+  tags:
+    - security
+  parameters:
+    - name: body
+      in: body
+      required: true
+      description: The id determines the security provider
+      schema:
+        $ref: "./json-schemas/SecurityProvider.json"
+  responses:
+    "200":
+      description:  record updated
+    default:
+      description:  update failed
+delete:
+  summary: Delete a specific item
+  operationId: deleteSecurityProvider
+  tags:
+    - security
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the securityProvider to delete (caution)
+      schema:
+        type: string
+      example: "athena-example-delete"
+  responses:
+    "200":
+      description: record deleted
+    default:
+      description: delete failed
 components:
   schemas:
     SecurityProviders:
