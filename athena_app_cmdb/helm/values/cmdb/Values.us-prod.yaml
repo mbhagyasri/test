@@ -48,3 +48,4 @@ crdProvider: kubernetes
 app_domain: athena.connectcdk.com
 externalSecretVars:
 hasRdsDatabase: true
+hasElasticCache: true
