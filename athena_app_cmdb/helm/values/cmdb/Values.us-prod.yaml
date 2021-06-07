@@ -17,7 +17,7 @@ env:
   bamboo_password: PASSWORD
   bamboo_resources_plan: ENVMGR
   bamboo_resources_secret_plan: PLREEXS
-  django_settings_module: app_registry.settings.dev
+  django_settings_module: app_registry.settings.prod
 
 # The number of seconds the Deployment controller waits before indicating
 # that the Deployment progress has stalled.
@@ -48,3 +48,4 @@ crdProvider: kubernetes
 app_domain: athena.connectcdk.com
 externalSecretVars:
 hasRdsDatabase: true
+hasElasticCache: true

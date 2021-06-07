@@ -150,6 +150,16 @@ if [ -z "${rds_host}" ] || [ -z "${rds_port}" ]; then
   exit 1
 fi
 
+# rds
+echo "Getting ElastiCache url from secret"
+redis="$(kubectl -n cdk-athena-app-cmdb get secret athena-app-cmdb-redis-secret -o jsonpath='{.data.redis-config}' | base64 -d | jq -r .endpoint)"
+redis_host=${redis%:*}
+redis_port=${redis#*:}
+if [ -z "${redis_host}" ] || [ -z "${redis_port}" ]; then
+  echo "Unable to retrieve ElastiCache info from athena-app-cmdb-redis-secret"
+  exit 1
+fi
+
 echo "Installing athena-app-cmdb to cluster - $EKS_CLUSTER_NAME"
 echo "Installing frontend"
 if ! [ "$(helm upgrade --install athena-app-cmdb-nginx ./helm/charts/nginx \
@@ -165,6 +175,7 @@ if ! [ "$(helm upgrade --install athena-app-cmdb ./helm/charts/cmdb \
   --set domain="${APP_DOMAIN}" --set location_id="location-${region}-${IQR_ENVIRONMENT}" \
   --set image=artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb:"$BAMBOO_BUILD_ID" \
   --set rds_host="${rds_host}" --set rds_port="${rds_port}" \
+  --set redis_host="${redis_host}" --set redis_port="${redis_port}" \
   --set secret_key="${secret_key}" )" ]; then
 	echo "Err: unable to install athena-app-cmdb into cluster - $EKS_CLUSTER_NAME"
 	exit 1

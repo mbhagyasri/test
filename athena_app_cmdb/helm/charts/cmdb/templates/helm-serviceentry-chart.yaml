@@ -1,3 +1,4 @@
+---
 apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
@@ -7,6 +8,21 @@ spec:
   - {{ .Values.rds_host }}
   ports:
   - number: {{ .Values.rds_port }}
+    name: tcp
+    protocol: TCP
+  resolution: DNS
+  location: MESH_EXTERNAL
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: athena-cmdb-redis
+spec:
+  hosts:
+  - {{ .Values.redis_host }}
+  ports:
+  - number: {{ .Values.redis_port }}
     name: tcp
     protocol: TCP
   resolution: DNS
