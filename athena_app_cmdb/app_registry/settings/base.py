@@ -99,6 +99,12 @@ if 'endpoint' in DB_CONFIG and DB_CONFIG.get('endpoint', "") != "":
     array = DB_CONFIG.get('endpoint').split(':')
     DB_HOST = array[0]
     DB_PORT = array[1]
+ssl_options = {'sslmode': 'verify-full',
+                    'sslrootcert': os.path.join(PROJECT_DIR, '../etc/rds-combined-ca-bundle.pem'),
+                    'ssl_min_protocol_version': 'TLSv1.2'}
+if os.getenv('env_type', '') == 'local':
+    ssl_options = {}
+
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('SQL_ENGINE', 'django.db.backends.postgresql'),
@@ -107,9 +113,7 @@ DATABASES = {
         'PASSWORD': DB_CONFIG.get('password', 'password'),
         'HOST': DB_HOST,
         'PORT': DB_PORT,
-        'OPTIONS': {'sslmode': 'verify-full',
-                    'sslrootcert': os.path.join(PROJECT_DIR, '../etc/rds-combined-ca-bundle.pem'),
-                    'ssl_min_protocol_version': 'TLSv1.2'}
+        'OPTIONS': ssl_options
     }
 }
 DEFAULT_REDIS_CONFIG = '{"endpoint": "", "username": "", "password": ""}'

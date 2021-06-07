@@ -98,7 +98,7 @@
             "type": "string",
             "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
           },
-          "entry": {
+          "entries": {
             "type": "boolean",
             "default": false
           }
@@ -202,7 +202,8 @@
                     }
                   ]
                 }
-              }
+              },
+              "required": ["provider"]
             }
           }
         },
@@ -279,7 +280,7 @@
             "type": "string",
             "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
           },
-          "entry": {
+          "entries": {
             "type": "object",
             "properties": {
               "virtualservice": {
@@ -321,7 +322,7 @@
         "additionalProperties": false,
         "required": [
           "environment",
-          "entry"
+          "entries"
         ]
       }
     },
@@ -454,7 +455,7 @@
             "type": "string",
             "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
           },
-          "entry": {
+          "entries": {
             "type": "boolean",
             "default": false
           }
@@ -553,13 +554,15 @@
                     }
                   ]
                 }
-              }
+              },
+                      "required": ["provider"]
             }
           }
         },
         "additionalProperties": false,
         "required": [
-          "provider"
+          "environment",
+          "entries"
         ]
       }
     },
@@ -629,7 +632,7 @@
             "type": "string",
             "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
           },
-          "entry": {
+          "entries": {
             "type": "object",
             "properties": {
               "virtualservice": {
@@ -671,7 +674,7 @@
         "additionalProperties": false,
         "required": [
           "environment",
-          "entry"
+          "entries"
         ]
       }
     },
@@ -699,7 +702,7 @@
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
     "appLanguage",
     "assetMasterId",
@@ -712,7 +715,7 @@
   ],
   "$schema": "http://json-schema.org/draft-07/schema#"
 },
-    {
+   {
   "description": "Generic Service",
   "type": "object",
   "properties": {
@@ -802,7 +805,7 @@
             "type": "string",
             "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
           },
-          "entry": {
+          "entries": {
             "type": "boolean",
             "default": false
           }
@@ -901,13 +904,15 @@
                     }
                   ]
                 }
-              }
+              },
+              "required": ["provider"]
             }
           }
         },
         "additionalProperties": false,
         "required": [
-          "provider"
+          "environment",
+          "entries"
         ]
       }
     },
@@ -977,7 +982,7 @@
             "type": "string",
             "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
           },
-          "entry": {
+          "entries": {
             "type": "object",
             "properties": {
               "virtualservice": {
@@ -1019,7 +1024,7 @@
         "additionalProperties": false,
         "required": [
           "environment",
-          "entry"
+          "entries"
         ]
       }
     },
@@ -1047,7 +1052,7 @@
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
     "appLanguage",
     "assetMasterId",

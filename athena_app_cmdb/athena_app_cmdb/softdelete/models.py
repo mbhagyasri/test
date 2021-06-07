@@ -23,6 +23,8 @@ class SoftDeleteModel(models.Model):
     raw_objects = models.Manager()
 
     deleted = models.BooleanField(db_column='deleted', default='f')
+    deleted_at = models.DateTimeField(db_column='deleted_at', blank=True, null=True)
+    original_id = models.CharField(db_column='original_id', blank=True, null=True, max_length=255)
 
     class Meta(object):
         abstract = True
@@ -40,15 +42,17 @@ class SoftDeleteModel(models.Model):
         self.deleted_at = timezone.now()
         self.deleted = True
         current_time = timezone.now()
-        if hasattr(self, 'deleted_at'):
-            self.deleted_at = current_time
-        if hasattr(self, 'deletedAt'):
-            self.deletedAt = current_time
+        self.deleted_at = current_time
+        if hasattr(self, 'refid'):
+            current_id = self.refid
+            self.original_id = current_id
+            self.refid = '{} DELETED at {}'.format(current_id, current_time)
+
         self.save()
 
     def soft_undelete(self):
         self.deleted_at = None
-        self.id = self.original_id
+        self.refid = self.original_id
         self.original_id = None
         self.deleted = False
         self.save()
