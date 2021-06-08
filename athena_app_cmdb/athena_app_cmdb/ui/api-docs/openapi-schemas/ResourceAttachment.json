@@ -1,0 +1,49 @@
+{
+  "description": "Resource Attachment.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Id of the resource",
+      "type": "string"
+    },
+    "attaches": {
+      "description": "Generic Attachment Point",
+      "type": "object",
+      "properties": {
+        "assets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "Asset Id",
+                "type": "string",
+                "example": "svc-demo-app"
+              },
+              "environment": {
+                "description": "Environment Id",
+                "type": "string",
+                "example": "us-dev"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "environment"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "resources"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "environment",
+    "attaches"
+  ]
+}

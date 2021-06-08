@@ -1,0 +1,54 @@
+get:
+  summary: Get all environments used by the products
+  operationId: getEnvironmentsByProduct
+  tags:
+    - environments
+  responses:
+    "200":
+      description: An array of environments
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/EnvironmentsByProduc"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+post:
+  summary: Create environment entry for a product
+  tags:
+    - environments
+  operationId: createEnvironmentByProduct
+  consumes:
+    - application/json
+  produces:
+    - application/json
+  parameters:
+    - in: "body"
+      name: "body"
+      description: Create a new environment entry for a product
+      required: true
+      schema:
+        $ref: "./json-schemas/EnvironmentByProduct.json"
+  responses:
+    "200":
+      description: Asset record inserted
+    default:
+      description: Asset insert failed
+
+components:
+  schemas:
+    EnvironmentsByProduct:
+      type: array
+      items:
+        $ref: "#/components/schemas/EnvironmentByProduct"
+    Environment:
+      type: object
+      $ref: "./openapi-schemas/EnvironmentByProduct.json"
+    Error:
+      type: object
+      $ref: "Error.yaml"

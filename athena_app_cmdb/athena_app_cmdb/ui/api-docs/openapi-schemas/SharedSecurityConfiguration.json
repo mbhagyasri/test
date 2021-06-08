@@ -1,87 +1,75 @@
 {
   "type": "object",
   "properties": {
-    "environment": {
-      "type": "string",
-      "pattern": "^[a-z]{2,3}-[a-z0-9-]{0,61}[a-z0-9]$"
+    "provider": {
+      "enum": [
+        "cdk-service",
+        "dms-drive",
+        "fortellis",
+        "iam",
+        "none"
+      ],
+      "type": "string"
     },
-    "entries": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "provider": {
-            "enum": [
-              "cdk-service",
-              "dms-drive",
-              "fortellis",
-              "iam",
-              "none"
-            ],
-            "type": "string"
+    "configuration": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jwksuri": {
+              "type": "string"
+            },
+            "issuer": {
+              "type": "string"
+            },
+            "audience": {
+              "type": "string"
+            }
           },
-          "configuration": {
-            "anyOf": [
-              {
-                "type": "object",
-                "properties": {
-                  "jwksuri": {
-                    "type": "string"
-                  },
-                  "issuer": {
-                    "type": "string"
-                  },
-                  "audience": {
-                    "type": "string"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "audience",
-                  "issuer",
-                  "jwksuri"
-                ]
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "jwksuri": {
-                    "type": "string"
-                  },
-                  "issuer": {
-                    "type": "string"
-                  },
-                  "audience": {
-                    "type": "string"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "audience",
-                  "issuer",
-                  "jwksuri"
-                ]
-              },
-              {
-                "type": "object",
-                "additionalProperties": false
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "callbackPath": {
-                    "type": "string"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "callbackPath"
-                ]
-              }
-            ]
-          }
+          "additionalProperties": false,
+          "required": [
+            "audience",
+            "issuer",
+            "jwksuri"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jwksuri": {
+              "type": "string"
+            },
+            "issuer": {
+              "type": "string"
+            },
+            "audience": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "audience",
+            "issuer",
+            "jwksuri"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "callbackPath": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "callbackPath"
+          ]
         }
-      }
+      ]
     }
   },
   "additionalProperties": false,

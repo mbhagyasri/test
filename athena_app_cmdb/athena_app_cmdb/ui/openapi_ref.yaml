@@ -82,11 +82,11 @@ info:
 servers:
   - url: /
     description: Default
-  - url: https://app-registry.athena.connectcdk.com/
+  - url: https://athena-app-cmdb.athena.connectcdk.com/
     description: Production
-  - url: https://stage-app-registry.athena-nonprod.connectcdk.com/
+  - url: https://athena-app-cmdb.athena-nonprod.connectcdk.com/
     description: Stage
-  - url: https://dev-athena_app_cmdb.athena-nonprod.connectcdk.com/
+  - url: https://athena-app-cmdb.athena-dev.connectcdk.com/
     description: Development
   - url: http://localhost:8000/
     description: local environment
@@ -102,12 +102,20 @@ paths:
     $ref: "./api-docs/environment-of-asset-by-id.yaml"
   /assets/{id}/deploymentLocation/{environmentId}:
     $ref: "./api-docs/deploymentlocation-of-asset-by-environment-id.yaml"
-  /assets/{id}/securityConfiguration:
+  /assets/{id}/securityConfiguration/{environmentId}:
     $ref: "./api-docs/securityConfiguration-of-asset.yaml"
   /assets/{id}/urls:
     $ref: "./api-docs/urls-of-asset.yaml"
   /assets/{id}/rds:
     $ref: "./api-docs/rds-of-asset.yaml"
+  /assetsByEnvironment/{id}/environments:
+    $ref: "./api-docs/asset-by-environments-all.yaml"
+  /assetsByEnvironment/{id}/environments/{environmentId}:
+    $ref: "./api-docs/asset-by-environments.yaml"
+  /assetsByEnvironment/{id}/environments/{environmentId}/attaches:
+    $ref: "./api-docs/asset-attaches-all.yaml"
+  /assetsByEnvironment/{id}/environments/{environmentId}/attaches/{resourceId}:
+    $ref: "./api-docs/assets-attaches-create_delete.yaml"
   /clusters:
     $ref: "./api-docs/clusters-all.yaml"
   /clusters/{id}:

@@ -1,0 +1,72 @@
+post:
+  summary: Attach an existing resource to this asset on this environment
+  tags:
+    - assets
+  operationId: createAsset
+  consumes:
+    - application/json
+  produces:
+    - application/json
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the asset
+      schema:
+        type: string
+      example: "svc-demo-svc"
+    - name: environment_id
+      in: path
+      required: true
+      description: The id of the enviroment
+      schema:
+        type: string
+      example: "us-prod"
+    - name: resource_id
+      in: path
+      required: true
+      description: The id of the resource to attach to
+      schema:
+        type: string
+      example: "us-dev-svc-demo-svc-database"
+  responses:
+    "201":
+      description: attachment created
+    default:
+      description: attachment failed
+delete:
+  summary: Remove an attachment of an existing resource to this asset on this environment
+  tags:
+    - assets
+  operationId: deleteAssetAttachment
+  consumes:
+    - application/json
+  produces:
+    - application/json
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the asset
+      schema:
+        type: string
+      example: "svc-demo-svc"
+    - name: environment_id
+      in: path
+      required: true
+      description: The id of the enviroment
+      schema:
+        type: string
+      example: "us-prod"
+    - name: resource_id
+      in: path
+      required: true
+      description: The id of the resource to attach to
+      schema:
+        type: string
+      example: "us-dev-svc-demo-svc-database"
+  responses:
+    "204":
+      description: attachment created
+    default:
+      description: attachment failed

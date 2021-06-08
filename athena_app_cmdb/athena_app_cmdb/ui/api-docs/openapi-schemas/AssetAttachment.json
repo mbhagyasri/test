@@ -1,0 +1,52 @@
+{
+  "description": "Asset Attachment.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Id of the asset",
+      "pattern": "^app-[a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 5,
+      "maxLength": 32,
+      "type": "string"
+    },
+    "icon": {
+      "description": "Environment Id",
+      "pattern": "^[a-z]{2,3}-[a-z0-9-]*$",
+      "minLength": 3,
+      "type": "string"
+    },
+    "attaches": {
+      "description": "Generic Attachment Point",
+      "type": "object",
+      "properties": {
+        "resources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "description": "Unique resource identifier",
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "environments",
+              "name"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "resources"
+      ]
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "id",
+    "environment",
+    "attaches"
+  ]
+}

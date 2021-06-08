@@ -1,8 +1,4 @@
 get:
-  summary: Security configuration for asset
-  operationId: getAssetSecurityConfiguration
-  tags:
-    - assets
   parameters:
     - name: id
       in: path
@@ -11,35 +7,39 @@ get:
       schema:
         type: string
       example: "svc-demo-svc"
-    - name: environmentId
+    - name: environment_id
       in: path
       required: true
-      description: The id of the asset to retrieve
+      description: The id of the environment
       schema:
         type: string
-      example: "us-prod"
+      example: "us-dev"
+  summary: An array of attaches data for an asset in an environment
+  operationId: listAttachesByAssetIdByEnvironment
+  tags:
+    - assets
   responses:
     "200":
-      description: Expected response to a valid request
+      description: An array of attachments
       headers:
         $ref: "./common-headers.yaml#/response"
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/AssetSecurityConfiguration"
+            $ref: "#/components/schemas/AssetsAttachment"
     default:
       description: unexpected error
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "./Error.yaml"
+
 components:
   schemas:
-    AssetSecurityConfiguration:
+    AssetsAttachment:
       type: array
       items:
-        type: object
-        $ref: "./openapi-schemas/SharedSecurityConfiguration.json"
-    Error:
+        $ref: "#/components/schemas/AssetAttachment"
+    AssetAttachment:
       type: object
-      $ref: "Error.yaml"
+      $ref: "./openapi-schemas/AssetAttachment.json"

@@ -1,0 +1,220 @@
+{
+  "description": "Environment Data for an Asset.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Name of the environment",
+      "pattern": "^[a-z]{2,3}-[a-z0-9-]*$",
+      "minLength": 3,
+      "type": "string"
+    },
+    "asset": {
+      "description": "Id of the asset",
+      "pattern": "^app-[a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 5,
+      "maxLength": 32,
+      "type": "string"
+    },
+    "consumes": {
+      "type": "array",
+      "items": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                },
+                "protocol": {
+                  "enum": [
+                    "http",
+                    "https",
+                    "tcp"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "enum": [
+                    "external",
+                    "service"
+                  ],
+                  "type": "string"
+                },
+                "port": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "value"
+              ]
+            },
+        "additionalProperties": false
+      }
+    },
+    "internal": {
+      "type": "boolean",
+      "default": false
+    },
+    "security": {
+      "type": "array",
+      "items": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "enum": [
+                    "cdk-service",
+                    "dms-drive",
+                    "fortellis",
+                    "iam",
+                    "none"
+                  ],
+                  "type": "string"
+                },
+                "configuration": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "jwksuri": {
+                          "type": "string"
+                        },
+                        "issuer": {
+                          "type": "string"
+                        },
+                        "audience": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "audience",
+                        "issuer",
+                        "jwksuri"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "jwksuri": {
+                          "type": "string"
+                        },
+                        "issuer": {
+                          "type": "string"
+                        },
+                        "audience": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "audience",
+                        "issuer",
+                        "jwksuri"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "callbackPath": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "callbackPath"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "required": ["provider"]
+            }
+    },
+    "attaches": {
+      "description": "Generic Attachment Point",
+      "type": "object",
+      "properties": {
+        "resources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "description": "Unique resource identifier",
+                "type": "string"
+              },
+              "environments": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "environments",
+              "name"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "resources"
+      ]
+    },
+    "istio": {
+      "type": "object",
+      "properties": {
+              "virtualservice": {
+                "type": "object",
+                "properties": {
+                  "http": {
+                    "type": "object",
+                    "properties": {
+                      "retries": {
+                        "attempts": {
+                          "type": "number"
+                        },
+                        "perTryTimeout": {
+                          "type": "string"
+                        },
+                        "retryOn": {
+                          "type": "string"
+                        }
+                      },
+                      "timeout": {
+                        "type": "string",
+                        "default": "300s"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "timeout"
+                    ]
+                  }
+                }
+              }
+            },
+      "additionalProperties": false,
+      "required": [
+              "virtualservice"
+            ]
+    },
+    "additionalUrls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+
+  },
+  "additionalProperties": true,
+  "required": [
+    "id",
+    "asset"
+  ]
+}

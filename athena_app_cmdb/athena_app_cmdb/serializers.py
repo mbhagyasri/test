@@ -11,9 +11,10 @@ from rest_framework import serializers
 from . import models
 from copy import deepcopy
 from requests.structures import CaseInsensitiveDict
+from .middleware import ViewException
 
 logger = logging.getLogger(__name__)
-
+FORMAT = 'json'
 
 
 class AssetTypeSerializer(serializers.ModelSerializer):
@@ -115,8 +116,7 @@ class AssetSerializer(serializers.ModelSerializer):
 
     def process_environments_data(self, data):
         key_list = []
-        environments_data = OrderedDict()
-
+        environments_data = {}
         for key in data:
             if isinstance(data[key], list):
                 for each in data[key]:
@@ -143,44 +143,41 @@ class AssetSerializer(serializers.ModelSerializer):
         attaches = properties.pop('attaches', [])
         validated_data['properties'] = properties
         asset = models.Asset.objects.create(**validated_data)
-        asset_id = asset.id
-        for key in environments_data:
-            if key != 'key_list':
+        product = ProductGetSerializer(asset.product).data
+        try:
+            for key in product['environments']:
+                env_id = key['id']
+                envobj = None
                 env = OrderedDict()
-                env['id'] = key
-                env['asset'] = asset_id
-                env['properties'] = environments_data[key]
+                env['refid'] = env_id
+                if env_id in environments_data:
+                    env['properties'] = environments_data[env_id]
                 if 'created_at' in validated_data:
-                    env['created_at'] = validated_data.get('created_at',)
+                    env['created_at'] = validated_data.get('created_at', )
                 if 'updated_at' in validated_data:
-                    env['updated_at'] = validated_data.get('updated_at',)
+                    env['updated_at'] = validated_data.get('updated_at', )
                 env['updated_by'] = validated_data.get('updated_by', "")
                 env['created_by'] = validated_data.get('created_by', "")
                 env['deleted'] = validated_data.get('deleted', 'f')
-                item_serializer = AssetEnvironmentSerializer(data=env)
-                if item_serializer.is_valid():
-                    item_serializer.save()
-                    item = item_serializer.data
-                else:
-                    errors = {'errors': ['Failed to save product environment data. ', item_serializer.errors]}
-                    return errors
+                env['asset'] = asset
+                envobj = models.AssetEnvironment.objects.create(**env)
                 # adding attaches
                 attaches_list = []
                 for resource in attaches.get('resources', []):
-                    logger.info('ATTACHES {}'.format(resource))
-                    if pydash.objects.get(resource, 'environments.0', '') == key:
+                    robj = None
+                    if pydash.objects.get(resource, 'environments.0', '') == env_id:
+                        logger.info(pydash.objects.get(resource, 'environments.0', 'NOT FOUND') + 'key {}'.format(key))
                         if models.Resource.objects.filter(refid=resource.get('name', '')).exists():
+                            logger.info('WE FOUND IT')
                             robj = models.Resource.objects.get(
                                 refid=resource.get('name', ''))
-                            envobj = models.AssetEnvironment.objects.get(id=item['id'])
                             logger.info('ADDING')
                             robj.assetEnvironments.add(envobj)
                             attaches_list.append(resource.get('name'))
                 # remove any attaches no longer
                 cdata = models.Resource.objects.raw_all()
                 pfiltername = 'assetEnvironments__id'
-                logger.info('REF {}'.format(item))
-                cfilter = {pfiltername: item['id']}
+                cfilter = {pfiltername: envobj.id}
                 cdata = cdata.filter(**cfilter)
                 for each in cdata:
                     properties = each.properties
@@ -188,7 +185,12 @@ class AssetSerializer(serializers.ModelSerializer):
                     robj = None
                     if name not in attaches_list:
                         robj = models.Resource.objects.get(refid=name)
-                        robj.assetEnvironments.delete(item.id)
+                        robj.assetEnvironments.delete(envobj)
+        except Exception as e:
+            logger.exception(e)
+            #roll back creation
+            asset.hard_delete()
+            raise ViewException(FORMAT, 'Invalid Request', 400)
         return asset
 
     def update(self, instance, validated_data):
@@ -206,62 +208,70 @@ class AssetSerializer(serializers.ModelSerializer):
         instance.updated_at = validated_data.get('updated_at', timezone.now())
         instance.updated_by = validated_data.get('updated_by', instance.updated_by)
         instance.deleted_at = validated_data.get('deleted_at', instance.deleted_at)
+        product = ProductGetSerializer(instance.product).data
         asset_id = instance.id
-        for key in environments_data:
-            if key != 'key_list':
-                env = OrderedDict
-                env['id'] = key
-                env['asset'] = asset_id
-                env['properties'] = environments_data[key]
-                if 'created_at' in validated_data:
-                    env['created_at'] = validated_data.get('created_at',)
-                if 'updated_at' in validated_data:
-                    env['updated_at'] = validated_data.get('updated_at',)
-                env['updated_by'] = validated_data.get('updated_by', "")
-                env['created_by'] = validated_data('created_by', "")
-                env['deleted'] = validated_data('deleted', 'f')
-                item_serializer = AssetEnvironmentSerializer(asset=instance, **env)
-                if item_serializer.is_valid():
-                    item_serializer.save()
-                else:
-                    errors = {'errors': ['Failed to save product environment data. ', item_serializer.errors]}
-                    return errors
+        try:
+            for key in product['environments']:
+                env_id = key['id']
+                logger.info('PROCESSING ENV {}'.format(env_id))
                 envobj = None
-                if models.AssetEnvironment.objects.filter(refid=env['id'], asset=asset_id).exists():
-                    envobj = models.AssetEnvironment.objects.get(refid=env['id'], asset=asset_id)
-                    env['id'] = str(envobj.values('id', flat=True))
-
+                env = OrderedDict()
+                env['refid'] = env_id
+                if env_id in environments_data:
+                    env['properties'] = environments_data[env_id]
+                if 'created_at' in validated_data:
+                    env['created_at'] = validated_data.get('created_at', )
+                if 'updated_at' in validated_data:
+                    env['updated_at'] = validated_data.get('updated_at', )
+                env['updated_by'] = validated_data.get('updated_by', "")
+                env['created_by'] = validated_data.get('created_by', "")
+                env['deleted'] = validated_data.get('deleted', 'f')
+                env['asset'] = instance
+                if models.AssetEnvironment.objects.filter(refid=env_id, asset=asset_id).exists():
+                    envobj = models.AssetEnvironment.objects.get(refid=env_id, asset=asset_id)
                 if envobj:
-                    item_serializer = AssetEnvironmentSerializer(envobj, data=env)
-                    if item_serializer.is_valid():
-                        item_serializer.save()
-                        item = item_serializer.data
-                    else:
-                        errors = {'errors': ['Failed to save product environment data. ', item_serializer.errors]}
-                        return errors
+                    envobj.properties = env.get('properties', envobj.properties)
+                    envobj.updated_by = env.get('updated_by', envobj.updated_by)
+                    envobj.deleted = env.get('deleted', envobj.deleted)
+                    envobj.created_by = env.get('created_by', envobj.created_by)
+                    envobj.updated_at = env.get('updated_at', envobj.updated_at)
+                    envobj.created_at = env.get('created_at', envobj.created_at)
+                    envobj.save()
                 else:
-                    item_serializer = AssetEnvironmentSerializer(data=env)
-                    if item_serializer.is_valid():
-                        item_serializer.save()
-                        item = item_serializer.data
-                    else:
-                        errors = {'errors': ['Failed to save product environment data. ', item_serializer.errors]}
-                        return errors
+                    envobj = models.AssetEnvironment.objects.create(**env)
                 # adding attaches
                 attaches_list = []
+                logger.info('PROCESSING {}'.format(env_id))
                 for resource in attaches.get('resources', []):
-                    if pydash.objects.get(resource, 'environments.0', '') == key:
-                        if models.Resource.objects.filter(properties__metadata__name=resource.get('name', '')).exists():
+                    robj = None
+                    name = resource['name']
+                    envs = resource['environments']
+                    env_resource = envs[0]
+                    logger.info('NAME {}, env[0] {}'.format(name, env_resource))
+                    if str(env_resource) == str(env_id):
+                        logger.info('found match')
+                        if models.Resource.objects.filter(refid=resource.get('name', '')).exists():
+                            logger.info('WE FOUND IT')
                             robj = models.Resource.objects.get(
-                                properties__metadata__name=resource.get('name', ''))
-                            robj.assetEnvironments.add(item.id)
+                                refid=resource.get('name', ''))
+                            logger.info('ADDING')
+                            robj.assetEnvironments.add(envobj)
                             attaches_list.append(resource.get('name'))
                 # remove any attaches no longer
-                resources = ResourceAssociationSerializer(item.resources, many=True).data
-                for name in resources:
-                    if name not in attaches_list:
-                        robj = models.Resource.objects.get(properties__metadata__name=name)
-                        robj.assetEnvironments.delete(item.id)
+                #cdata = models.Resource.objects.raw_all()
+                #pfiltername = 'assetEnvironments__id'
+                #cfilter = {pfiltername: envobj.id}
+                #cdata = cdata.filter(**cfilter)
+                #for each in cdata:
+                #    properties = each.properties
+                #    name = each.refid
+                #    robj = None
+                #    if name not in attaches_list:
+                #        robj = models.Resource.objects.get(refid=name)
+                #        robj.assetEnvironments.delete(envobj)
+        except Exception as e:
+            logger.exception(e)
+            raise ViewException(FORMAT, 'Invalid Request', 400)
         instance.save()
         return instance
 
@@ -292,9 +302,10 @@ class AssetGetDetailSerializer(serializers.ModelSerializer):
 class AssetGetEnvironmentSerializer(serializers.ModelSerializer):
     environments = serializers.SerializerMethodField()
 
+
     class Meta:
         model = models.Asset
-        fields = ('environments',)
+        fields = ('id', 'environments', 'product')
 
     def get_environments(self, instance):
         product = ProductGetSerializer(instance.product).data
@@ -305,10 +316,11 @@ class AssetGetEnvironmentSerializer(serializers.ModelSerializer):
 class AssetGetUrlSerializer(serializers.ModelSerializer):
     locations = serializers.SerializerMethodField()
     environments = serializers.SerializerMethodField()
+    additionalUrls = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Asset
-        fields = ('id', 'name', 'environments', 'locations', 'properties', 'type', 'product')
+        fields = ('id', 'name', 'environments', 'locations', 'properties', 'type', 'product', 'additionalUrls')
 
     def get_environments(self, instance):
         product = ProductGetSerializer(instance.product).data
@@ -321,11 +333,21 @@ class AssetGetUrlSerializer(serializers.ModelSerializer):
         environments = product.get('environments', [])
         if environments:
             for env in environments:
-                if models.Location.objects.filter(id=env.get('location')).exists():
-                    loc = models.Location.objects.get(id=env.get('location'))
+                if models.Location.objects.filter(refid=env.get('location')).exists():
+                    loc = models.Location.objects.get(refid=env.get('location'))
                     location = LocationGetSerializer(loc).data
                     data.append(location)
         return data
+
+    def get_additionalUrls(self, instance):
+        asset_environments = models.AssetEnvironment.objects.filter(asset=instance.id)
+        return_data = []
+        for env in asset_environments:
+            env_properties = env.properties
+            if 'additionalUrls' in env_properties:
+                env_data = {'environment': env.refid, 'entries': env_properties['additionalUrls']}
+                return_data.append(env_data)
+        return return_data
 
     def to_representation(self, instance):
         return_data = []
@@ -346,8 +368,8 @@ class AssetGetUrlSerializer(serializers.ModelSerializer):
                     if loc.get('id') == env['location']:
                         url = 'https://{}{}.{}'.format(prefix, hostname, loc.get('domain', ""))
                         tmp_data['url'] = url
-            if pydash.objects.has(data, 'properties.additionalUrls'):
-                for url in pydash.objects.get(data, 'properties.additionalUrls', []):
+            if 'additionalUrls' in data and data.get('additionalUrls', []) != []:
+                for url in pydash.objects.get(data, 'additionalUrls', []):
                     if url.get('environment') == env['id']:
                         additional_urls = url.get('entries', [])
             tmp_data['additionalUrls'] = additional_urls
@@ -775,6 +797,8 @@ class AssetEnvironmentAttachesSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         return_data = []
         for each in data.get('resources', []):
+            if not each:
+                continue
             tmp_data = {'name': str(each), 'environments': [data['refid'], ], }
             return_data.append(tmp_data)
         return return_data
@@ -789,19 +813,34 @@ class AssetGetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Asset
-        fields = ('id', 'name', 'repo', 'team', 'type',
+        fields = ('id', 'refid', 'name', 'repo', 'team', 'type',
                   'product', 'attaches',
                   'appLanguage',  'assetMasterId', 'properties', 'deleted')
 
     def get_attaches(self, instance):
         aobj = models.AssetEnvironment.objects.filter(asset=instance.id)
-        return AssetEnvironmentAttachesSerializer(aobj, many=True).data
+        data = AssetEnvironmentAttachesSerializer(aobj, many=True).data
+        return_data = []
+        for each in data:
+            if each:
+                return_data.append(each)
+        return return_data
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
+        data['id'] = data['refid']
+        del data['refid']
         # get all the environments data
         tmp_data = OrderedDict()
         key_list = []
+        attaches = data.pop('attaches')
+        resources = []
+        for each in attaches:
+            for item in each:
+                if item:
+                    resources.append(item)
+        if resources:
+            data.update({"attaches": {"resources": resources}})
         asset_environments = models.AssetEnvironment.objects.filter(asset=instance.id)
         for env in asset_environments:
             env_properties = env.properties

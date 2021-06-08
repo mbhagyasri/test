@@ -53,6 +53,8 @@ urlpatterns = [
          name='athena_app_cmdb-environment-item'),
     path('assets/<slug:item>/deploymentLocation/<slug:env>', api_views.AssetEnvironmentItem.as_view(
         request_type='deploymentLocation'), name='athena_app_cmdb-environment-deploymentLocation-item'),
+    path('assets/<slug:item>/securityConfiguration/<slug:env>', api_views.AssetEnvironmentItem.as_view(
+        request_type='securityConfiguration'), name='athena_app_cmdb-environment-securityConfiguration-item'),
     path('assets/<slug:item>/urls', api_views.AssetUrlsItem.as_view(), name='athena_app_cmdb-environment-urls-item'),
     path('assetsByEnvironment/<slug:item>/environments', api_views.AssetsByEnvironmentList.as_view()),
 ]

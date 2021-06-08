@@ -1,0 +1,38 @@
+get:
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the resource to retrieve all attachments
+      schema:
+        type: string
+      example: "us-dev-svc-demo-svc-database"
+  summary: An array of attaches data for the resource
+  operationId: listAttachesByResource
+  tags:
+    - resources
+  responses:
+    "200":
+      description: An array of attachments
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/AssetsAttachment"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "./Error.yaml"
+
+components:
+  schemas:
+    AssetsAttachment:
+      type: array
+      items:
+        $ref: "#/components/schemas/AssetAttachment"
+    AssetAttachment:
+      type: object
+      $ref: "./openapi-schemas/AssetAttachment.json"

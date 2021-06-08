@@ -497,28 +497,21 @@ class athena_app_cmdbBulkChange(APIView, MyPaginationMixin):
                 continue
             for each in content:
                 name = each['id'] if 'id' in each else None
-
-                if objname == 'assets':
-                    valid, data, error_message = common.process_product(request, data, method='post')
-                    if not valid:
-                        errors.append(error_message)
+                try:
+                    models.validate_json(objname, each)
+                    serializer_class = serializers.serializer_class_lookup[objname]
+                    serializer = serializer_class(data=each)
+                    if serializer.is_valid():
+                        serializer.save()
+                        data = serializer.data
+                    else:
+                        errors.append({'item': name, 'errors': serializer.errors})
                         continue
-                else:
-                    try:
-                        models.validate_json(objname, each)
-                        serializer_class = serializers.serializer_class_lookup[objname]
-                        serializer = serializer_class(data=each)
-                        if serializer.is_valid():
-                            serializer.save()
-                            data = serializer.data
-                        else:
-                            errors.append({'item': name, 'errors': serializer.errors})
-                            continue
-                    except Exception as e:
-                        logger.exception(e)
-                        pass
-                        errors.append({'item': name, 'errors': 'Invalid Request'})
-                        continue
+                except Exception as e:
+                    logger.exception(e)
+                    pass
+                    errors.append({'item': name, 'errors': 'Invalid Request'})
+                    continue
 
                 # We now need to encrypt vault data and save it back
                 return_content.append(data)
@@ -583,26 +576,46 @@ class AssetEnvironmentItem(APIView):
         serializer_class = serializers.serializer_class_lookup_read['assetsEnvironments']
         data = common.get_item(request, obj, item)
         obj_serializer = serializer_class(data)
-        decrypt_data = obj_serializer.data
-        return_data = decrypt_data
+        asset_data = obj_serializer.data
+        return_data = asset_data
         if not env and self.request_type == 'environment':
             # List environments
             return_data = return_data.get('environments')
             return Response(return_data)
-        for each in decrypt_data.get('environments'):
+        found = False
+        for each in asset_data.get('environments'):
             if isinstance(each, dict) and each.get('id', "") == env:
                 return_data = each
+                found = True
                 break
+        if not found:
+            raise ViewException(FORMAT, '{} for {} not found.'.format(env, item), 404)
         if self.request_type == 'deploymentLocation':
             loc_obj = common.get_model('locations')
-            if 'HTTP_X_INCLUDE_DELETED' in request.META:
-                loc_obj = loc_obj.raw_objects.all()
-            else:
-                loc_obj = loc_obj.objects.all()
-            data = get_object_or_404(loc_obj, id=return_data.get('location', ""))
+            data = common.get_item(request, loc_obj, return_data.get('location', ''))
             serializer_class = serializers.serializer_class_lookup_read['locations']
             obj_serializer = serializer_class(data)
             return_data = obj_serializer.data
+        elif self.request_type == 'securityConfiguration':
+            aobj = common.get_model('assetsByEnvironment')
+            aobj = common.get_model_all(request, 'assetsByEnvironment', aobj)
+            logger.info('ENV {}, asset {}'.format(env, asset_data['id']))
+            filter = {'refid': env, 'asset': return_data['id']}
+            if aobj.filter(**filter).exists():
+                data = aobj.get(asset=return_data['id'])
+            serializer_class = serializers.serializer_class_lookup_read['assetsByEnvironment']
+            obj_serializer = serializer_class(data)
+            asset_data = obj_serializer.data
+            product_obj = common.get_model('products')
+            product_data = common.get_item(request, product_obj, asset_data.get('product', ''))
+            product_serializer_class = serializers.serializer_class_lookup_read['products']
+            prod_serializer = product_serializer_class(product_data)
+            prod_data = prod_serializer.data
+            securityConfiguration = []
+            if 'security' in prod_data:
+                securityConfiguration.append(prod_data['security'])
+            if 'security' in asset_data:
+                securityConfiguration.append(asset_data['security'])
         return Response(return_data)
 
 
@@ -615,7 +628,7 @@ class AssetUrlsItem(APIView):
     def get(self, request, item, ):
         obj = common.get_model('assets')
         serializer_class = serializers.serializer_class_lookup_read['assetsUrls']
-        data = get_object_or_404(obj, id=item)
+        data = common.get_item(request, obj, item)
         obj_serializer = serializer_class(data)
         decrypt_data = obj_serializer.data
         return_data = decrypt_data.get('urls')
