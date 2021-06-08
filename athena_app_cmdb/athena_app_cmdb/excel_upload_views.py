@@ -24,7 +24,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from . import models, serializers
 from .operators import Validators
-from .views import get_model
+from .common import get_model
 
 from libs.utility.commands import Execute
 from libs.utility.config_parsers import get_config

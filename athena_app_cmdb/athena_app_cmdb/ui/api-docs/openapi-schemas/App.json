@@ -4,12 +4,12 @@
   "properties": {
     "id": {
       "description": "Id of the client application",
-      "pattern": "^app-[a-z0-9-]{0,61}[a-z0-9]$",
+      "pattern": "^[a-z]{3}-[a-z0-9-]{0,61}[a-z0-9]$",
       "minLength": 5,
-      "maxLength": 32,
+      "maxLength": 50,
       "type": "string"
     },
-    "icon": {
+    "environment": {
       "type": "string"
     },
     "color": {

@@ -32,23 +32,18 @@ from rest_framework_simplejwt import authentication
 
 
 from rest_framework.response import Response
-from . import models, serializers
+from . import models, serializers, common
 from .operators import Validators
 from .paginator import MyPaginationMixin
 from .middleware import ViewException
 from .utils.helper_methods import check_value
-from libs.utility.config_parsers import get_config
 from copy import deepcopy
 
 logger = logging.getLogger(__name__)
-config = get_config()
 
 FORMAT = 'json'
-IGNORE_FILTERS = ['page_size', 'page', 'order_by']
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
-FILTER_FIELDS = {"environment_name": "environment.name", "location_name": "location.name",
-                 }
 
 # Allow to turn Auth on or off in Dev environment
 AUTH_CLASS = [authentication.JWTAuthentication]
@@ -78,110 +73,6 @@ def api_root(request, format=None):
     return Response({'home': reverse('home', request=request, format=format)})
 
 
-def get_model(objname):
-
-    if objname not in models.models_class_lookup:
-        resp = "%s table can not be found." % objname
-        logger.error(resp)
-        raise ViewException(FORMAT, resp, 404)
-    obj = models.models_class_lookup[objname]
-    return obj
-
-
-def get_item(request, obj, item, raise_exception=True):
-    """
-    For backward compatible with old App Registry id, we will search both uuid format and old format
-    :param objname: string value of the uri resource
-    :param obj: model object
-    :param item: id to search
-    :return: data object
-    """
-    got_data = False
-    data = None
-    if check_value({'type': 'uuid'}, item):
-        if obj.objects.filter(id=item).exists():
-            data = obj.objects.get(id=item)
-            got_data = True
-    elif hasattr(obj, 'refid') and obj.objects.filter(refid=item).exists():
-        data = obj.objects.get(refid=item)
-        got_data = True
-    if not got_data and raise_exception:
-        raise ViewException(FORMAT, '{} not found.'.format(item), 404)
-    return data
-
-
-def filter_get_request(request, data, page_size):
-    order_by = None
-    # parsing filters
-    for query in request.query_params:
-        query_value = request.GET.getlist(query)
-        if query == 'page_size':
-            # set page_size to user param
-            page_size = query_value[0]
-        if query in IGNORE_FILTERS:
-            continue
-        if query == 'exclude':
-            for q in query_value:
-                ex = {}
-                if '=' in q:
-                    array = q.split('=')
-                    key = array[0]
-                    key_list = key.split('.')
-                    for num, name in enumerate(key_list):
-                        if name in FILTER_FIELDS:
-                            key_list[num] = FILTER_FIELDS[name]
-                    key = '.'.join(key_list)
-                    qf = re.sub(r'\.', "__", key)
-                    ex[qf] = array[1]
-                    if ex[qf].lower() == "true":
-                        ex[qf] = True
-                    elif ex[qf].lower() == "false":
-                        ex[qf] = False
-                    elif key_list[-1] == "in":
-                        values_list = array[1].split(',')
-                        ex[qf] = values_list
-                    try:
-                        data = data.exclude(**ex)
-                    except Exception as e:
-                        logger.exception(e)
-                        raise ViewException(FORMAT, 'Invalid filter request', 400)
-                else:
-                    qf = re.sub(r'\.', "__", q)
-                    # noinspection PyArgumentList
-                    try:
-                        logger.debug('exclude: {}'.format(qf))
-                        data = data.exclude(**qf)
-                    except Exception as e:
-                        logger.exception(e)
-                        raise ViewException(FORMAT, 'Invalid filter request', 400)
-
-        else:
-            for q in query_value:
-                ft = {}
-                key = query
-                key_list = key.split('.')
-                for num, name in enumerate(key_list):
-                    if name in FILTER_FIELDS:
-                        key_list[num] = FILTER_FIELDS[name]
-                key = '.'.join(key_list)
-                qf = re.sub(r'\.', "__", key)
-                ft[qf] = q
-                if ft[qf].lower() == "true":
-                    ft[qf] = True
-                elif ft[qf].lower() == "false":
-                    ft[qf] = False
-                elif key_list[-1] == "in":
-                    values_list = q.split(',')
-                    ft[qf] = values_list
-                try:
-                    logger.debug(ft)
-                    data = data.filter(**ft)
-                except Exception as e:
-                    logger.exception(e)
-                    raise ViewException(FORMAT, "Invalid filter request.", 400)
-    return data, page_size
-
-
 # -------------------------  View Classes ---------------------------------------
 
 
@@ -192,21 +83,14 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
     path = '/'
 
 
-    def get(self, request, objname, env=None):
+    def get(self, request, objname):
         page_size = api_settings.PAGE_SIZE
 
-        obj = get_model(objname)
-        if objname == 'tasks' or 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
-            if env:
-                data = obj.objects.filter(refid=env)
-            else:
-                data = obj.objects.all()
-        else:
-            if env:
-                data = obj.objects.filter(refid=env).exclude(deleted=1)
-            else:
-                data = obj.objects.exclude(deleted=1)
-        data, page_size = filter_get_request(request, data, page_size)
+        obj = common.get_model(objname)
+        obj = common.get_model_all(request, objname, obj)
+        logger.info(obj)
+        data, page_size = common.filter_get_request(request, obj, page_size)
+        logger.info(data)
         if 'HTTP_X_PAGE-SIZE' in request.META:
             page_size = request.META['HTTP_X_PAGE-SIZE']
         try:
@@ -241,15 +125,11 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
             raise ViewException(FORMAT, 'Server Exception', 500)
 
     def post(self, request, objname):
-        path = '/%s' % objname
         # check to make sure the model exists
-        obj = get_model(objname)
-
+        common.get_model(objname, request)
         data = request.data
         # Validation
-        valid, errors = models.validate_json(objname, data)
-        if not valid:
-            raise ViewException(FORMAT, errors, 400)
+        models.validate_json(objname, data)
         if objname == 'products':
             new_dict = deepcopy(data)
             for key in ['created_at', 'deleted', 'deleted_at', 'created_by', 'updated_at', 'updated_by']:
@@ -277,13 +157,8 @@ class athena_app_cmdbListDetail(APIView, MyPaginationMixin):
 
     def get(self, request, objname):
         page_size = api_settings.PAGE_SIZE
-
-        obj = get_model(objname)
-        if objname == 'tasks' or 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
-            data = obj.raw_objects.all()
-        else:
-            data = obj.objects.all()
-        data, page_size = filter_get_request(request, data, page_size)
+        obj = common.get_model(objname)
+        data, page_size = common.filter_get_request(request, obj, page_size)
         try:
             if data:
                 pass
@@ -324,24 +199,16 @@ class athena_app_cmdbItem(APIView):
         serializer.save(last_changed=timezone.now())
 
     def get(self, request, objname, item):
-        obj = get_model(objname)
-        if objname == 'tasks' or 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
-            data = obj.raw_objects.all()
-        else:
-            data = obj.objects.all()
-        data = get_item(request, obj, item)
+        obj = common.get_model(objname)
+        data = common.get_item(request, obj, item)
         serializer_class = serializers.serializer_class_lookup_read[objname]
         obj_serializer = serializer_class(data)
         decrypt_data = obj_serializer.data
         return Response(decrypt_data)
 
     def delete(self, request, objname, item):
-        obj = get_model(objname)
-        if objname == 'tasks' or 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
-            data = obj.raw_objects.all()
-        else:
-            data = obj.objects.all()
-        data = get_item(request, obj, item)
+        obj = common.get_model(objname)
+        data = common.get_item(request, obj, item)
         if 'HTTP_X_FORCE_DELETE' in request.META and request.META['HTTP_X_FORCE_DELETE'].lower() == 'true':
             try:
                 data.hard_delete()
@@ -358,13 +225,10 @@ class athena_app_cmdbItem(APIView):
         return Response("Done", status.HTTP_204_NO_CONTENT)
 
     def put(self, request, objname, item):
-        obj = get_model(objname)
-        if objname == 'tasks' or 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
-            obj = obj.raw_objects.all()
-        else:
-            obj = obj.objects.all()
-        obj = get_item(request, obj, item)
+        obj = common.get_model(objname)
+        obj = common.get_item(request, obj, item)
         data = request.data
+        models.validate_json(objname, data)
         serializer_class = serializers.serializer_class_lookup[objname]
         if 'associations' in data:
             del data['associations']
@@ -376,19 +240,11 @@ class athena_app_cmdbItem(APIView):
         return Response(serializer.data, status.HTTP_200_OK)
 
     def patch(self, request, objname, item):
-        
-        logger.info('Processing method: PATCH for {} with id: {}'.format(objname, item))
         # We don't support patch against deployment data
-        if objname == 'deployments':
-            raise ViewException(FORMAT, 'PATCH method is not supported.', 405)
         if request.META['CONTENT_TYPE'] != 'application/json-patch+json':
             raise ViewException(FORMAT, 'PATCH method expects application/json-patch+json Content-Type.', 406)
-        obj = get_model(objname)
-        if objname == 'tasks' or 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
-            obj = obj.raw_objects.all()
-        else:
-            obj = obj.objects.all()
-        data = get_item(request, obj, item)
+        obj = common.get_model(objname)
+        data = common.get_item(request, obj, item)
         serializer_class = serializers.serializer_class_lookup[objname]
         obj_serializer = serializer_class(data)
         current_data = obj_serializer.data
@@ -400,6 +256,7 @@ class athena_app_cmdbItem(APIView):
             merge_data = jsonpatch.apply_patch(current_data, request.body)
         except Exception as e:
             raise ViewException(FORMAT, "Invalid request. {}".format(e), 400)
+        models.validate_json(objname, merge_data)
         serializer = serializer_class(obj, data=merge_data, partial=False)
         if serializer.is_valid():
             serializer.update(obj, validated_data=serializer.validated_data)
@@ -413,12 +270,8 @@ class athena_app_cmdbItem(APIView):
 class athena_app_cmdbItemDetail(APIView):
 
     def get(self, request, objname, item):
-        obj = get_model(objname)
-        if objname == 'tasks' or 'HTTP_X_INCLUDE_DELETED' in request.META or 'history' in objname:
-            data = obj.raw_objects.all()
-        else:
-            data = obj.objects.all()
-        data = get_object_or_404(data, id=item)
+        obj = common.get_model(objname)
+        data = get_object_or_404(obj, id=item)
         serializer_class = serializers.serializer_class_lookup_detail[objname]
         obj_serializer = serializer_class(data)
         decrypt_data = obj_serializer.data
@@ -428,7 +281,7 @@ class athena_app_cmdbItemDetail(APIView):
 @method_decorator(never_cache, name='dispatch')
 class athena_app_cmdbAssociationsList(APIView):
     def get(self, request, parentobjname, parent,):
-        parentobj = get_model(parentobjname)
+        parentobj = common.get_model(parentobjname)
         path = '/%s/:id/associations' % parentobjname
         childobj_list = Validators().get_associations(path, parentobjname)
         pdata = parentobj.objects.exclude(deleted=1)
@@ -439,7 +292,7 @@ class athena_app_cmdbAssociationsList(APIView):
         associations = []
         if childobj_list:
             for childobjname in childobj_list:
-                childobj = get_model(childobjname)
+                childobj = common.get_model(childobjname)
                 cdata = childobj.objects.exclude(deleted=1)
                 pfiltername = '%s__id' % parentobjname
                 cfilter = {pfiltername: pdata.id}
@@ -454,8 +307,8 @@ class athena_app_cmdbAssociationsList(APIView):
 @method_decorator(never_cache, name='dispatch')
 class athena_app_cmdbAssociationsChildList(APIView):
     def get(self, request, parentobjname, parent, childobjname):
-        parentobj = get_model( parentobjname)
-        childobj = get_model( childobjname)
+        parentobj = common.get_model( parentobjname)
+        childobj = common.get_model( childobjname)
         pdata = parentobj.objects.exclude(deleted=1)
         pdata = get_object_or_404(pdata, id=parent)
         parent_serializer_class = serializers.serializer_class_lookup_associations[parentobjname]
@@ -477,8 +330,8 @@ class athena_app_cmdbAssociationsChildCreateDestroy(APIView):
     childobj = None
 
     def post(self, request, parentobjname, parent, childobjname, child):
-        self.parentobj = get_model(parentobjname)
-        self.childobj = get_model(childobjname)
+        self.parentobj = common.get_model(parentobjname)
+        self.childobj = common.get_model(childobjname)
         path = '/%s/:id/associations/%s/:id' % (parentobjname, childobjname)
         method = 'post'
         logger.debug('path %s method: %s request: %s' % (path, method, request.data))
@@ -501,11 +354,11 @@ class athena_app_cmdbAssociationsChildCreateDestroy(APIView):
         return Response(data, status.HTTP_200_OK)
 
     def delete(self, request, parentobjname, parent, childobjname, child):
-        self.parentobj = get_model( parentobjname)
-        self.childobj = get_model( childobjname)
+        self.parentobj = common.get_model( parentobjname)
+        self.childobj = common.get_model( childobjname)
         # Validation to make sure parent and child exists
-        get_model(parentobjname)
-        get_model(childobjname)
+        common.get_model(parentobjname)
+        common.get_model(childobjname)
         pdata = self.parentobj.objects.all()
         pdata = get_object_or_404(pdata, id=parent)
         cdata = self.childobj.objects.all()
@@ -524,14 +377,14 @@ class athena_app_cmdbItemHistory(APIView, MyPaginationMixin):
         page_size = api_settings.PAGE_SIZE
 
         history_objname = '{0}_history'.format(objname)
-        obj = get_model(history_objname)
+        obj = common.get_model(history_objname)
         if history_objname not in models.models_name_lookup:
             raise ViewException(FORMAT, "This model {} does not store history.".format(objname), 404)
         model_name = models.models_name_lookup[objname]
         kwarg = {model_name: item}
         data = obj.objects.all()
         data = data.filter(**kwarg)
-        data, page_size = filter_get_request(request, data, page_size)
+        data, page_size = common.filter_get_request(request, data, page_size)
         if not data.exists():
             raise ViewException(FORMAT, "No {} found.".format(history_objname), 404)
         serializer_class = serializers.serializer_class_lookup_read[history_objname]
@@ -561,7 +414,7 @@ class athena_app_cmdbItemHistory(APIView, MyPaginationMixin):
 class athena_app_cmdbItemHistoryDetail(APIView):
 
     def get(self, request, objname, history_item):
-        obj = get_model('{}_history'.format(objname))
+        obj = common.get_model('{}_history'.format(objname))
         data = obj.objects.all()
         data = get_object_or_404(data, id=history_item)
         serializer_class = serializers.serializer_class_lookup_read['{}_history'.format(objname)]
@@ -570,7 +423,7 @@ class athena_app_cmdbItemHistoryDetail(APIView):
 
     def delete(self, request, objname, history_item):
         logger.info('DELETE {} history: {}'.format(objname, history_item))
-        obj = get_model('{}_history'.format(objname))
+        obj = common.get_model('{}_history'.format(objname))
         data = get_object_or_404(obj, id=history_item)
         data.delete()
         return Response("Done", status.HTTP_204_NO_CONTENT)
@@ -579,7 +432,7 @@ class athena_app_cmdbItemHistoryDetail(APIView):
 @method_decorator(never_cache, name='dispatch')
 class athena_app_cmdbItemHistorySync(APIView):
     def post(self, request, objname, history_item):
-        obj = get_model('{}_history'.format(objname))
+        obj = common.get_model('{}_history'.format(objname))
         data = get_object_or_404(obj, id=history_item)
         logger.info('Setting Sync_status to True for {}'.format(history_item))
         data.sync_status = True
@@ -587,7 +440,7 @@ class athena_app_cmdbItemHistorySync(APIView):
         return Response(status.HTTP_200_OK)
 
     def delete(self, request, objname, history_item):
-        obj = get_model('{}_history'.format(objname))
+        obj = common.get_model('{}_history'.format(objname))
         data = get_object_or_404(obj, id=history_item)
         logger.info('Setting Sync_status to True for {}'.format(history_item))
         data.sync_status = False
@@ -607,12 +460,8 @@ class athena_app_cmdbBulkChange(APIView, MyPaginationMixin):
             request_data = request.data
         for objname, content in request_data.items():
             return_content = []
-            # We don't support patch against deployment data
-            if objname == 'deployments':
-                raise ViewException(FORMAT, 'PATCH method is not supported.', 405)
 
-            obj = get_model(objname)
-            obj = obj.objects.all()
+            obj = common.get_model(objname)
             serializer_class = serializers.serializer_class_lookup[objname]
             if not isinstance(content, list):
                 raise ViewException(FORMAT, {"error": "Expect a list of resources"}, 406)
@@ -642,27 +491,38 @@ class athena_app_cmdbBulkChange(APIView, MyPaginationMixin):
             errors = []
             success = []
             return_content = []
+            valid = common.get_model(objname, raise_exception=False)
+            if not valid:
+                errors.append("Table {} not found ".format(objname))
+                continue
             for each in content:
                 name = each['id'] if 'id' in each else None
-                try:
-                    if objname in models.UUID_MODELS:
-                        if 'refid' not in each and 'id' in each and not check_value({'type':'uuid'}, each['id']) :
-                            # remap id to refid
-                            each['refid'] = each['id']
-                            del each['id']
-                    serializer_class = serializers.serializer_class_lookup[objname]
-                    serializer = serializer_class(data=each)
-                    if serializer.is_valid():
-                        serializer.save()
-                    else:
-                        errors.append({'item': name, 'errors': serializer.errors})
-                    # We now need to encrypt vault data and save it back
-                    return_content.append(serializer.data)
-                    success.append({'item': name, 'status': 'Item created successfully.'})
-                except Exception as e:
-                    logger.exception(e)
-                    pass
-                    errors.append({'item': name, 'errors': 'Invalid Request'})
+
+                if objname == 'assets':
+                    valid, data, error_message = common.process_product(request, data, method='post')
+                    if not valid:
+                        errors.append(error_message)
+                        continue
+                else:
+                    try:
+                        models.validate_json(objname, each)
+                        serializer_class = serializers.serializer_class_lookup[objname]
+                        serializer = serializer_class(data=each)
+                        if serializer.is_valid():
+                            serializer.save()
+                            data = serializer.data
+                        else:
+                            errors.append({'item': name, 'errors': serializer.errors})
+                            continue
+                    except Exception as e:
+                        logger.exception(e)
+                        pass
+                        errors.append({'item': name, 'errors': 'Invalid Request'})
+                        continue
+
+                # We now need to encrypt vault data and save it back
+                return_content.append(data)
+                success.append({'item': name, 'status': 'Item created successfully.'})
             if errors:
                 return_data[objname] = {"code": 400, "errors": errors, 'succeed': success}
             else:
@@ -674,7 +534,7 @@ class athena_app_cmdbBulkChange(APIView, MyPaginationMixin):
         for objname, content in request.data.items():
             errors = []
             success = []
-            obj = get_model(objname)
+            obj = common.get_model(objname)
             return_content = []
             for each in content:
                 item_id = None
@@ -688,7 +548,7 @@ class athena_app_cmdbBulkChange(APIView, MyPaginationMixin):
                             item_id = each['refid']
                     else:
                         item_id = id
-                    robj = get_item(request, obj, item_id, raise_exception=False)
+                    robj = common.get_item(request, obj, item_id, raise_exception=False)
                     if not robj:
                         errors.append({'item': name, 'errors': 'Item not found.'})
                     serializer_class = serializers.serializer_class_lookup[objname]
@@ -719,13 +579,9 @@ class AssetEnvironmentItem(APIView):
 #    permission_classes = PERM_CLASS
 
     def get(self, request, item, env=None):
-        obj = get_model('assets')
-        if 'HTTP_X_INCLUDE_DELETED' in request.META:
-            data = obj.raw_objects.all()
-        else:
-            data = obj.objects.all()
+        obj = common.get_model('assets')
         serializer_class = serializers.serializer_class_lookup_read['assetsEnvironments']
-        data = get_object_or_404(data, id=item)
+        data = common.get_item(request, obj, item)
         obj_serializer = serializer_class(data)
         decrypt_data = obj_serializer.data
         return_data = decrypt_data
@@ -738,7 +594,7 @@ class AssetEnvironmentItem(APIView):
                 return_data = each
                 break
         if self.request_type == 'deploymentLocation':
-            loc_obj = get_model('locations')
+            loc_obj = common.get_model('locations')
             if 'HTTP_X_INCLUDE_DELETED' in request.META:
                 loc_obj = loc_obj.raw_objects.all()
             else:
@@ -757,15 +613,86 @@ class AssetUrlsItem(APIView):
 #    permission_classes = PERM_CLASS
 
     def get(self, request, item, ):
-        obj = get_model('assets')
-        if 'HTTP_X_INCLUDE_DELETED' in request.META:
-            data = obj.raw_objects.all()
-        else:
-            data = obj.objects.all()
+        obj = common.get_model('assets')
         serializer_class = serializers.serializer_class_lookup_read['assetsUrls']
-        data = get_object_or_404(data, id=item)
+        data = get_object_or_404(obj, id=item)
         obj_serializer = serializer_class(data)
         decrypt_data = obj_serializer.data
         return_data = decrypt_data.get('urls')
         return Response(return_data)
 
+
+class AssetsByEnvironmentList(APIView, MyPaginationMixin):
+
+    # authentication_classes = AUTH_CLASS
+    #    permission_classes = PERM_CLASS
+    pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
+
+    def get(self, request, item, ):
+        page_size = api_settings.PAGE_SIZE
+        objname = 'assetsByEnviroment'
+        obj = common.get_model(objname)
+
+        valid, errors = models.validate_json(objname, obj)
+        if not valid:
+            raise ViewException(FORMAT, errors, 400)
+        data, page_size = common.filter_get_request(request, obj, page_size)
+        if 'HTTP_X_PAGE-SIZE' in request.META:
+            page_size = request.META['HTTP_X_PAGE-SIZE']
+        try:
+            if data:
+                pass
+            else:
+                raise ViewException(FORMAT, "No {} found.".format(objname), 404)
+        except Exception as e:
+            logger.exception(e)
+            raise ViewException(FORMAT, "No {} found.".format(objname), 404)
+
+        serializer_class = serializers.serializer_class_lookup_read[objname]
+        # do not show pagination if query result is less than page size
+        logger.debug('count %s' % data.count())
+
+        try:
+            if data.count() <= int(page_size):
+                self.pagination_class = None
+            page = self.paginate_queryset(data, self.request)
+            if page is not None:
+                obj_serializer = serializer_class(page, many=True)
+                decrypt_data = obj_serializer.data
+                return self.get_paginated_response(decrypt_data)
+            else:
+                obj_serializer = serializer_class(data, many=True)
+                decrypt_data = obj_serializer.data
+                return Response(decrypt_data)
+        except rest_exceptions.NotFound:
+            raise ViewException(FORMAT, 'Not found.', 404)
+        except Exception as e:
+            logger.exception(e)
+            raise ViewException(FORMAT, 'Server Exception', 500)
+
+    def post(self, request, objname):
+        path = '/%s' % objname
+        # check to make sure the model exists
+        obj = common.get_model(objname)
+
+        data = request.data
+        # Validation
+        models.validate_json(objname, data)
+        if objname == 'products':
+            new_dict = deepcopy(data)
+            for key in ['created_at', 'deleted', 'deleted_at', 'created_by', 'updated_at', 'updated_by']:
+                if key in new_dict:
+                    del new_dict[key]
+            data = {'id': new_dict['id'], 'properties': new_dict}
+
+        # payload is valid .
+        serializer_class = serializers.serializer_class_lookup[objname]
+        if 'associations' in data:
+            del data['associations']
+        serializer = serializer_class(data=data)
+        if serializer.is_valid():
+            serializer.save()
+        else:
+            return Response(serializer.errors, status=400)
+        content = serializer.data
+        return Response(content, status.HTTP_201_CREATED)

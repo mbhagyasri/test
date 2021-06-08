@@ -20,7 +20,6 @@ class ViewExceptionMiddleware(object):
         return response
 
 
-
     def process_exception(self, request, exception):
         if not isinstance(exception, ViewException):
             return None

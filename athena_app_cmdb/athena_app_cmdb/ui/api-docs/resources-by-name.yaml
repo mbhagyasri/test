@@ -54,7 +54,9 @@ delete:
     - name: id
       in: path
       required: true
-      description: The name of the resource to delete (caution)
+      description: |
+        The name of the resource to delete (caution).  Deletion will fail if this resource is being
+        attached to an asset
       schema:
         type: string
       example: "svc-example-delete"

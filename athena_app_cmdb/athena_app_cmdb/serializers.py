@@ -15,6 +15,7 @@ from requests.structures import CaseInsensitiveDict
 logger = logging.getLogger(__name__)
 
 
+
 class AssetTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.AssetType
@@ -28,11 +29,51 @@ class AssetEnvironmentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def to_internal_value(self, data):
-        logger.info('ASSET ENV : {}'.format(data))
         if 'refid' not in data:
             data['refid'] = data['id']
             del data['id']
         return super(AssetEnvironmentSerializer, self).to_internal_value(data)
+
+
+class AssetByEnvironmentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.AssetEnvironment
+        fields = '__all_all'
+
+    def to_internal_value(self, data):
+        if 'refid' not in data:
+            data['refid'] = data['id']
+            del data['id']
+        fields = [f.name for f in models.Asset._meta.fields + models.Asset._meta.many_to_many]
+        properties = data.get('properties', {})
+        data_copy = deepcopy(data)
+        for key in data_copy:
+            if key == 'env-type':
+                key = 'env_type'
+            if key not in fields:
+                properties[key] = data[key]
+                del data[key]
+        data['properties'] = properties
+        return super(AssetByEnvironmentSerializer, self).to_internal_value(data)
+
+    def to_representation(self, instance):
+        return AssetByEnvironmentGetSerializer(instance.data)
+
+
+class AssetByEnvironmentGetSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source='refid')
+
+    class Meta:
+        model = models.AssetEnvironment
+        fields = ('id', 'asset', 'properties')
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        properties = data.pop('properties', None)
+        data.update(properties)
+        return data
+
 
 
 class AssetSerializer(serializers.ModelSerializer):
@@ -341,6 +382,7 @@ class LocationSerializer(serializers.ModelSerializer):
 
 
 class LocationGetSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source='refid')
 
     class Meta:
         model = models.Location
@@ -388,6 +430,7 @@ class ClusterSerializer(serializers.ModelSerializer):
 
 
 class ClusterGetSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source='refid')
 
     class Meta:
         model = models.Cluster
@@ -407,19 +450,20 @@ class ClusterGetSerializer(serializers.ModelSerializer):
         return data
 
 
-class ProductEnvironmentSerializer(serializers.ModelSerializer):
-
+class ProductEnvironmentGetSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source='refid')
+    location = serializers.ReadOnlyField(source='location.refid')
     class Meta:
         model = models.ProductEnvironment
-        fields = '__all__'
+        fields = ('id', 'type', 'prefix', 'location')
 
-    def to_internal_value(self, data):
-        if models.Location.objects.filter(refid=data['location']).exists():
-            obj = models.Location.objects.get(refid=data['location'])
-            data['location'] = obj.id
-        data['refid'] = data['id']
-        del data['id']
-        return super(ProductEnvironmentSerializer, self).to_internal_value(data)
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        copy_data = deepcopy(data)
+        for each in copy_data:
+            if not copy_data.get(each, None):
+                del data[each]
+        return data
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -442,8 +486,15 @@ class ProductSerializer(serializers.ModelSerializer):
         if 'environments' in validated_data:
             environments = validated_data.pop('environments')
         product = models.Product.objects.create(**validated_data)
+        prod_id = str(product.id)
         if environments:
             for env in environments:
+                if models.Location.objects.filter(refid=env['location']).exists():
+                    loc = models.Location.objects.get(refid=env['location'])
+                    env['location'] = loc
+                if models.EnvType.objects.filter(id=env['type']).exists():
+                    type = models.EnvType.objects.get(id=env['type'])
+                    env['type'] = type
                 if 'created_at' in validated_data:
                     env['created_at'] = validated_data.get('created_at',)
                 if 'updated_at' in validated_data:
@@ -451,14 +502,9 @@ class ProductSerializer(serializers.ModelSerializer):
                 env['updated_by'] = validated_data.get('updated_by', "")
                 env['created_by'] = validated_data.get('created_by', "")
                 env['deleted'] = validated_data.get('deleted', 'f')
-                prod_id = str(product.id)
-                env['product'] = prod_id
-                product_environment_serializer = ProductEnvironmentSerializer(product=product, **env)
-                if product_environment_serializer.is_valid():
-                    product_environment_serializer.save()
-                else:
-                    logger.error('Failed to save product environment data. '
-                                 '{}'.format(product_environment_serializer.errors))
+                env['product'] = product
+                env['refid'] = env.pop('id')
+                models.ProductEnvironment.objects.create(**env)
         return product
 
     def update(self, instance, validated_data):
@@ -473,11 +519,11 @@ class ProductSerializer(serializers.ModelSerializer):
         instance.updated_at = validated_data.get('updated_at', timezone.now())
         instance.updated_by = validated_data.get('updated_by', instance.updated_by)
         instance.deleted_at = validated_data.get('deleted_at', instance.deleted_at)
-
+        prod_id = str(instance.id)
         if environments:
             for env in environments:
-                prod_id = str(instance.id)
-                env['product'] = prod_id
+
+                env['product'] = instance
                 envobj = None
                 if 'created_at' in validated_data:
                     env['created_at'] = validated_data.get('created_at')
@@ -486,23 +532,27 @@ class ProductSerializer(serializers.ModelSerializer):
                 env['updated_by'] = validated_data.get('updated_by', "")
                 env['created_by'] = validated_data.get('created_by', "")
                 env['deleted'] = validated_data.get('deleted', 'f')
-                if models.ProductEnvironment.objects.filter(refid=env['id'], product=instance.id).exists():
-                    envobj = models.ProductEnvironment.objects.get(refid=env['id'], product=instance.id)
-                    env['id'] = str(envobj.values('id', flat=True))
+                env['refid'] = env.pop('id')
+                if models.Location.objects.filter(refid=env['location']).exists():
+                    loc = models.Location.objects.get(refid=env['location'])
+                    env['location'] = loc
+                if models.EnvType.objects.filter(id=env['type']).exists():
+                    type = models.EnvType.objects.get(id=env['type'])
+                    env['type'] = type
+                if models.ProductEnvironment.objects.filter(refid=env['refid'], product=instance.id).exists():
+                    envobj = models.ProductEnvironment.objects.get(refid=env['refid'], product=instance.id)
                 if envobj:
-                    product_environment_serializer = ProductEnvironmentSerializer(envobj, data=env)
-                    if product_environment_serializer.is_valid():
-                        product_environment_serializer.save()
-                    else:
-                        logger.error('Failed to save product environment data. '
-                                     '{}'.format(product_environment_serializer.errors))
+                    envobj.type = env.get('type', envobj.type)
+                    envobj.prefix = env.get('prefix', envobj.prefix)
+                    envobj.location = env.get('location', envobj.location)
+                    envobj.updated_by = env.get('updated_by', envobj.updated_by)
+                    envobj.deleted = env.get('deleted', envobj.deleted)
+                    envobj.created_by = env.get('created_by', envobj.created_by)
+                    envobj.updated_at = env.get('updated_at', envobj.updated_at)
+                    envobj.created_at = env.get('created_at', envobj.created_at)
+                    envobj.save()
                 else:
-                    product_environment_serializer = ProductEnvironmentSerializer(data=env)
-                    if product_environment_serializer.is_valid():
-                        product_environment_serializer.save()
-                    else:
-                        logger.error('Failed to save product environment data. '
-                                     '{}'.format(product_environment_serializer.errors))
+                    models.ProductEnvironment.objects.create(**env)
         instance.save()
         return instance
 
@@ -524,7 +574,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class ProductGetSerializer(serializers.ModelSerializer):
-    environments = serializers.SlugRelatedField(many=True, slug_field='refid', read_only=True)
+    environments = ProductEnvironmentGetSerializer(many=True, read_only=True)
     id = serializers.ReadOnlyField(source='refid')
 
     class Meta:
@@ -534,6 +584,9 @@ class ProductGetSerializer(serializers.ModelSerializer):
     def get_links(self, instance):
         lks = {'_self': instance.self_links}
         return lks
+
+    def get_environments(self, instance):
+        environments = ProductEnvironmentGetSerializer
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -772,7 +825,7 @@ serializers_mapping = {
     'assets': AssetSerializer,
     'locations': LocationSerializer, 'asset_types': AssetTypeSerializer, 'resources': ResourceSerializer,
     'clusters': ClusterSerializer, 'teams': TeamSerializer, 'securityProviders': SecurityProviderSerializer,
-    'products': ProductSerializer
+    'products': ProductSerializer, 'assetsByEnvironment': AssetByEnvironmentSerializer
     }
 
 serializers_mapping_read = {
@@ -786,6 +839,7 @@ serializers_mapping_read = {
     'securityProviders': SecurityProviderGetSerializer,
     'assetsEnvironments': AssetGetEnvironmentSerializer,
     'assetsUrls': AssetGetUrlSerializer,
+    'assetsByEnvironment': AssetByEnvironmentGetSerializer,
 }
 
 serializers_mapping_associations = {

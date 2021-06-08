@@ -11,17 +11,20 @@ from django.db import models
 from requests.structures import CaseInsensitiveDict
 from django.core.exceptions import FieldDoesNotExist
 from .softdelete.models import SoftDeleteModel
+from .middleware import ViewException
 
 
 logger = logging.getLogger(__name__)
+FORMAT = 'json'
 athena_app_cmdb_API_PATH = ''
 UUID_MODELS = ['assets', 'clusters', 'locations', 'teams', 'products', 'resources']
 
-def validate_json(objname, instance):
+
+def validate_json(objname, instance, raise_exception=True):
     mapping = {
         "locations": 'Location.json', "products": 'Product.json', "resources": "Resource.json",
         "bff": 'Bff.json', "app": "App.json", "svc": "Svc.json",
-        "teams": 'Team.json',
+        "teams": 'Team.json', 'assetsByEnvironment': 'AssetEnvironment.json',
         "clusters": 'Cluster.json'
     }
     if objname == 'assets':
@@ -40,13 +43,18 @@ def validate_json(objname, instance):
     except Exception as e:
         logger.exception(e)
         error_message = "Failed to read json-schemas for validation."
-        pass
-        return False, error_message
+        if raise_exception:
+            raise ViewException(FORMAT, error_message, 400)
+        else:
+            return False, error_message
 
     try:
         jsonschema.validate(instance=instance, schema=json_schema)
     except jsonschema.exceptions.ValidationError as err:
-        return False, str(err)
+        if raise_exception:
+            raise ViewException(FORMAT, str(err), 400)
+        else:
+            return False, str(err)
     return True, 'OK'
 
 
@@ -57,8 +65,7 @@ class AppLanguage(models.Model):
     created_by = models.CharField(db_column='created_by', max_length=100, blank=True, null=True)
     updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
     deleted = models.BooleanField(db_column='deleted', default='f')
-    created_by = models.CharField(db_column='created_by', max_length=100, blank=True, null=True)
-    updated_by = models.CharField(db_column='updated_by', max_length=100, blank=True, null=True)
+
 
     class Meta:
         managed = True
