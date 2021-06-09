@@ -28,6 +28,13 @@ put:
   tags:
     - assets
   parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the asset to retrieve
+      schema:
+        type: string
+      example: "svc-demo-svc"
     - name: body
       in: body
       required: true

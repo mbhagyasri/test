@@ -82,29 +82,18 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
     pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
     path = '/'
 
-
     def get(self, request, objname):
         page_size = api_settings.PAGE_SIZE
 
         obj = common.get_model(objname)
         obj = common.get_model_all(request, objname, obj)
-        logger.info(obj)
         data, page_size = common.filter_get_request(request, obj, page_size)
-        logger.info(data)
         if 'HTTP_X_PAGE-SIZE' in request.META:
             page_size = request.META['HTTP_X_PAGE-SIZE']
-        try:
-            if data:
-                pass
-            else:
-                raise ViewException(FORMAT, "No {} found.".format(objname), 404)
-        except Exception as e:
-            logger.exception(e)
+        if not data:
             raise ViewException(FORMAT, "No {} found.".format(objname), 404)
-
         serializer_class = serializers.serializer_class_lookup_read[objname]
         # do not show pagination if query result is less than page size
-        logger.debug('count %s' % data.count())
 
         try:
             if data.count() <= int(page_size):
@@ -577,6 +566,7 @@ class AssetEnvironmentItem(APIView):
         data = common.get_item(request, obj, item)
         obj_serializer = serializer_class(data)
         asset_data = obj_serializer.data
+        logger.info('ASSET {}'.format(asset_data))
         return_data = asset_data
         if not env and self.request_type == 'environment':
             # List environments
@@ -599,10 +589,9 @@ class AssetEnvironmentItem(APIView):
         elif self.request_type == 'securityConfiguration':
             aobj = common.get_model('assetsByEnvironment')
             aobj = common.get_model_all(request, 'assetsByEnvironment', aobj)
-            logger.info('ENV {}, asset {}'.format(env, asset_data['id']))
-            filter = {'refid': env, 'asset': return_data['id']}
+            filter = {'refid': str(env), 'asset': asset_data['id']}
             if aobj.filter(**filter).exists():
-                data = aobj.get(asset=return_data['id'])
+                data = aobj.get(**filter)
             serializer_class = serializers.serializer_class_lookup_read['assetsByEnvironment']
             obj_serializer = serializer_class(data)
             asset_data = obj_serializer.data

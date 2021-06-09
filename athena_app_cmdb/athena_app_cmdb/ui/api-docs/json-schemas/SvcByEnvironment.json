@@ -1,0 +1,324 @@
+{
+  "description": "Generic Service",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Id of the service",
+      "id": "#svc",
+      "pattern": "^svc-[a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 5,
+      "maxLength": 32,
+      "type": "string"
+    },
+    "consumes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "protocol": {
+            "enum": [
+              "http",
+              "https",
+              "tcp"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "external",
+              "service"
+            ],
+            "type": "string"
+          },
+          "port": {
+            "type": "number"
+          },
+          "retryAttempts": {
+            "type": "number"
+          },
+          "retryTimeout": {
+            "type": "string"
+          },
+          "activateCircuitbreaker": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "type",
+          "value"
+        ]
+      }
+    },
+    "istio": {
+      "type": "object",
+      "properties": {
+        "virtualservice": {
+          "type": "object",
+          "properties": {
+            "http": {
+              "type": "object",
+              "properties": {
+                "timeout": {
+                  "type": "string"
+                },
+                "retries": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {}
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "attempts": {
+                          "type": "number"
+                        },
+                        "perTryTimeout": {
+                          "type": "string"
+                        },
+                        "retryOn": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "team": {
+      "description": "team id",
+      "pattern": "^team-[a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 5,
+      "type": "string"
+    },
+    "product": {
+      "description": "product id",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 3,
+      "type": "string"
+    },
+    "repo": {
+      "description": "git repo URL",
+      "type": "string"
+    },
+    "cicd": {
+      "description": "bamboo url",
+      "type": "string"
+    },
+    "internal": {
+      "description": "Is only available inside private network",
+      "default": false,
+      "type": "boolean"
+    },
+    "type": {
+      "enum": [
+        "app",
+        "bff",
+        "svc"
+      ],
+      "type": "string"
+    },
+    "security": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "enum": [
+              "adfs-sso",
+              "cdk-service",
+              "dms-drive",
+              "fortellis",
+              "iam",
+              "none"
+            ],
+            "type": "string"
+          },
+          "configuration": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "jwksuri": {
+                    "type": "string"
+                  },
+                  "issuer": {
+                    "type": "string"
+                  },
+                  "audience": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "audience",
+                  "issuer",
+                  "jwksuri"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "jwksuri": {
+                    "type": "string"
+                  },
+                  "issuer": {
+                    "type": "string"
+                  },
+                  "audience": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "audience",
+                  "issuer",
+                  "jwksuri"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "callbackPath": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "callbackPath"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "callbackPath": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "callbackPath"
+                ]
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "provider"
+        ]
+      }
+    },
+    "assetMasterId": {
+      "description": "Application ID from Asset Master",
+      "type": "number"
+    },
+    "appLanguage": {
+      "description": "Application Code Language",
+      "enum": [
+        "dotnetcore",
+        "java",
+        "nodejs",
+        "reactjs"
+      ],
+      "type": "string"
+    },
+    "attaches": {
+      "description": "Generic Attachment Point",
+      "type": "object",
+      "properties": {
+        "resources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "description": "Unique resource identifier",
+                "type": "string"
+              },
+              "environments": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "environments",
+              "name"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "resources"
+      ]
+    },
+    "additionalUrls": {
+      "type": "array",
+      "items": {
+        "description": "***\n\"Friendly\" URL assignment per environment",
+        "type": "object",
+        "properties": {
+          "environment": {
+            "type": "string"
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "entries",
+          "environment"
+        ]
+      }
+    },
+    "name": {
+      "description": "Name of the entity",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$",
+      "minLength": 3,
+      "type": "string"
+    },
+    "description": {
+      "description": "Description of the entity",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "appLanguage",
+    "assetMasterId",
+    "id",
+    "name",
+    "product",
+    "repo",
+    "team",
+    "type"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

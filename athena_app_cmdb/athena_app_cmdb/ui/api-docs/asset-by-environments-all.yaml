@@ -33,10 +33,10 @@ get:
           schema:
             $ref: "./Error.yaml"
 post:
-  summary: Create environment record for an asset
+  summary: Create asset record for a particular environment
   tags:
-    - assets
-  operationId: createAsset
+    - assetsByEnvironment
+  operationId: create an asset for an environment
   consumes:
     - application/json
   produces:
@@ -47,7 +47,7 @@ post:
       description: Create a new asset entity within app-registry.
       required: true
       schema:
-        $ref: "./json-schemas/AssetEnvironment.json"
+        $ref: "./json-schemas/SvcByEnvironment.json"
   responses:
     "201":
       description: Environment record inserted
@@ -61,4 +61,7 @@ components:
         $ref: "#/components/schemas/AssetEnvironment"
     AssetEnvironment:
       type: object
-      $ref: "./openapi-schemas/AssetEnvironment.json"
+      anyOf:
+        - $ref: "./openapi-schemas/SvcByEnvironment.json"
+        - $ref: "./openapi-schemas/AppByEnvironment.json"
+        - $ref: "./openapi-schemas/BffByEnvironment.json"

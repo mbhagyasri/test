@@ -111,11 +111,11 @@ paths:
   /assetsByEnvironment/{id}/environments:
     $ref: "./api-docs/asset-by-environments-all.yaml"
   /assetsByEnvironment/{id}/environments/{environmentId}:
-    $ref: "./api-docs/asset-by-environments.yaml"
+    $ref: "./api-docs/asset-by-environment.yaml"
   /assetsByEnvironment/{id}/environments/{environmentId}/attaches:
     $ref: "./api-docs/asset-attaches-all.yaml"
   /assetsByEnvironment/{id}/environments/{environmentId}/attaches/{resourceId}:
-    $ref: "./api-docs/assets-attaches-create_delete.yaml"
+    $ref: "./api-docs/asset-attaches-create_delete.yaml"
   /clusters:
     $ref: "./api-docs/clusters-all.yaml"
   /clusters/{id}:

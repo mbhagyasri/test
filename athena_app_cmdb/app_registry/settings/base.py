@@ -304,6 +304,7 @@ LOGGING = {
                 ("ts", "%(asctime)s"),
                 ("FunctionName", "%(funcName)s"),
                 ("loglevel", "%(levelname)s"),
+                ("source", '%(pathname)s:%(lineno)d'),
                 ("message", "%(message)s"),
             ])
         }

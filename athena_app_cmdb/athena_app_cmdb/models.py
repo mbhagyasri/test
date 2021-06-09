@@ -347,7 +347,8 @@ class Asset(SoftDeleteModel):
 
 class AssetEnvironment(SoftDeleteModel):
     id = models.UUIDField(db_column='id', primary_key=True, default=uuid.uuid4)
-    refid = models.CharField(db_column='assetEnvironment_id', max_length=100)
+    refid = models.CharField(db_column='environment_id', max_length=100)
+    product_environment = models.ForeignKey(ProductEnvironment, on_delete=models.PROTECT)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name='environments')
     properties = models.JSONField(db_column='json', blank=True, null=True)
     deleted = models.BooleanField(db_column='deleted', default='f')
@@ -364,30 +365,6 @@ class AssetEnvironment(SoftDeleteModel):
 
     def __str__(self):
         return self.refid
-
-
-class AssetBackup(models.Model):
-    id = models.CharField(db_column='id', primary_key=True, max_length=100)
-    name = models.CharField(db_column='app_name', max_length=255, unique=True)
-    product = models.ForeignKey(Product, db_column='product_id', on_delete=models.CASCADE)
-    team = models.ForeignKey(Team, db_column='team_id', on_delete=models.CASCADE)
-    type = models.ForeignKey(AssetType, db_column='asset_type_id', on_delete=models.CASCADE)
-    appLanguage = models.ForeignKey(AppLanguage, db_column='app_language_id', on_delete=models.CASCADE)
-    properties = models.JSONField(db_column='json', blank=True, null=True)
-    repo = models.CharField(db_column='repo', max_length=200, blank=True, null=True)
-    assetMasterId = models.IntegerField(db_column='asset_master_id')
-    deleted = models.BooleanField(db_column='deleted', default='f')
-    created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
-    updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
-    created_by = models.CharField(db_column='created_by', max_length=100, blank=True, null=True)
-    updated_by = models.CharField(db_column='updated_by', max_length=100, blank=True, null=True)
-
-    class Meta:
-        managed = True
-        db_table = 'asset_backup'
-        verbose_name = 'Asset Backup'
-        ordering = ['-updated_at', '-created_at', ]
-
 
 class Resource(SoftDeleteModel):
     id = models.UUIDField(db_column='id', primary_key=True, default=uuid.uuid4)

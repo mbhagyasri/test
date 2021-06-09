@@ -1,7 +1,7 @@
 post:
   summary: Attach an existing resource to this asset on this environment
   tags:
-    - assets
+    - assetsByEnvironment
   operationId: createAsset
   consumes:
     - application/json
@@ -37,7 +37,7 @@ post:
 delete:
   summary: Remove an attachment of an existing resource to this asset on this environment
   tags:
-    - assets
+    - assetsByEnvironment
   operationId: deleteAssetAttachment
   consumes:
     - application/json

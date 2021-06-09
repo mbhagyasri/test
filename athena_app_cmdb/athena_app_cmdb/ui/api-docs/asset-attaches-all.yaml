@@ -17,7 +17,7 @@ get:
   summary: An array of attaches data for an asset in an environment
   operationId: listAttachesByAssetIdByEnvironment
   tags:
-    - assets
+    - assetsByEnvironment
   responses:
     "200":
       description: An array of attachments
