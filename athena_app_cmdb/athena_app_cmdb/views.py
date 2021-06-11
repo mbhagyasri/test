@@ -147,6 +147,7 @@ class athena_app_cmdbListDetail(APIView, MyPaginationMixin):
     def get(self, request, objname):
         page_size = api_settings.PAGE_SIZE
         obj = common.get_model(objname)
+        obj = common.get_model_all(request, objname, obj)
         data, page_size = common.filter_get_request(request, obj, page_size)
         try:
             if data:
@@ -159,11 +160,8 @@ class athena_app_cmdbListDetail(APIView, MyPaginationMixin):
         serializer_class = serializers.serializer_class_lookup_read[objname]
         if objname in serializers.serializer_class_lookup_detail:
             serializer_class = serializers.serializer_class_lookup_detail[objname]
-        # do not show pagination if query result is less than page size
-        logger.info('count %s' % data.count())
-
         try:
-            if data.count() <= int(page_size):
+            if (hasattr(data, 'count') and data.count() <= int(page_size)) or (data.objects.count() <= int(page_size)):
                 self.pagination_class = None
             page = self.paginate_queryset(data, self.request)
             if page is not None:
@@ -296,8 +294,8 @@ class athena_app_cmdbAssociationsList(APIView):
 @method_decorator(never_cache, name='dispatch')
 class athena_app_cmdbAssociationsChildList(APIView):
     def get(self, request, parentobjname, parent, childobjname):
-        parentobj = common.get_model( parentobjname)
-        childobj = common.get_model( childobjname)
+        parentobj = common.get_model(parentobjname)
+        childobj = common.get_model(childobjname)
         pdata = parentobj.objects.exclude(deleted=1)
         pdata = get_object_or_404(pdata, id=parent)
         parent_serializer_class = serializers.serializer_class_lookup_associations[parentobjname]
@@ -589,9 +587,8 @@ class AssetEnvironmentItem(APIView):
         elif self.request_type == 'securityConfiguration':
             aobj = common.get_model('assetsByEnvironment')
             aobj = common.get_model_all(request, 'assetsByEnvironment', aobj)
-            filter = {'refid': str(env), 'asset': asset_data['id']}
-            if aobj.filter(**filter).exists():
-                data = aobj.get(**filter)
+            if aobj.filter(refid=str(env), asset=asset_data['id']).exists():
+                data = aobj.get(refid=str(env), asset=asset_data['id'])
             serializer_class = serializers.serializer_class_lookup_read['assetsByEnvironment']
             obj_serializer = serializer_class(data)
             asset_data = obj_serializer.data
@@ -611,8 +608,8 @@ class AssetEnvironmentItem(APIView):
 @method_decorator(never_cache, name='dispatch')
 class AssetUrlsItem(APIView):
 
-#    authentication_classes = AUTH_CLASS
-#    permission_classes = PERM_CLASS
+    #    authentication_classes = AUTH_CLASS
+    #    permission_classes = PERM_CLASS
 
     def get(self, request, item, ):
         obj = common.get_model('assets')
@@ -634,25 +631,14 @@ class AssetsByEnvironmentList(APIView, MyPaginationMixin):
         page_size = api_settings.PAGE_SIZE
         objname = 'assetsByEnviroment'
         obj = common.get_model(objname)
-
-        valid, errors = models.validate_json(objname, obj)
-        if not valid:
-            raise ViewException(FORMAT, errors, 400)
+        if obj.filter(asset__refid=item).exists():
+            obj = obj.filter(asset__refid=item)
         data, page_size = common.filter_get_request(request, obj, page_size)
         if 'HTTP_X_PAGE-SIZE' in request.META:
             page_size = request.META['HTTP_X_PAGE-SIZE']
-        try:
-            if data:
-                pass
-            else:
+            if not data:
                 raise ViewException(FORMAT, "No {} found.".format(objname), 404)
-        except Exception as e:
-            logger.exception(e)
-            raise ViewException(FORMAT, "No {} found.".format(objname), 404)
-
         serializer_class = serializers.serializer_class_lookup_read[objname]
-        # do not show pagination if query result is less than page size
-        logger.debug('count %s' % data.count())
 
         try:
             if data.count() <= int(page_size):

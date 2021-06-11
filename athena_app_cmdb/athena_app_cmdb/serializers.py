@@ -62,19 +62,45 @@ class AssetByEnvironmentSerializer(serializers.ModelSerializer):
         return AssetByEnvironmentGetSerializer(instance.data)
 
 
-class AssetByEnvironmentGetSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField(source='refid')
+
+class AssetGetDetailSerializer(serializers.ModelSerializer):
+    attaches = serializers.SerializerMethodField()
 
     class Meta:
-        model = models.AssetEnvironment
-        fields = ('id', 'asset', 'properties')
+        model = models.Asset
+        fields = ('id', 'refid', 'name', 'repo', 'team', 'type',
+                  'product', 'attaches',
+                  'appLanguage',  'assetMasterId', 'properties', 'deleted')
+
+    def get_attaches(self, instance):
+        aobj = models.AssetEnvironment.objects.filter(asset=instance.id)
+        data = AssetEnvironmentAttachesSerializer(aobj, many=True).data
+        return_data = []
+        for each in data:
+            if each:
+                return_data.append(each)
+        return return_data
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
+        # get all the environments data
+        tmp_data = OrderedDict()
+        key_list = []
+        attaches = data.pop('attaches')
+        resources = []
+        for each in attaches:
+            for item in each:
+                if item:
+                    resources.append(item)
+        if resources:
+            data.update({"attaches": {"resources": resources}})
         properties = data.pop('properties', None)
         data.update(properties)
         return data
 
+    def get_links(self, instance):
+        lks = {'_self': instance.self_links}
+        return lks
 
 
 class AssetSerializer(serializers.ModelSerializer):
@@ -143,13 +169,14 @@ class AssetSerializer(serializers.ModelSerializer):
         attaches = properties.pop('attaches', [])
         validated_data['properties'] = properties
         asset = models.Asset.objects.create(**validated_data)
-        product = ProductGetSerializer(asset.product).data
+        product = ProductGetDetailSerializer(asset.product).data
         try:
             for key in product['environments']:
-                env_id = key['id']
+                env_id = key['refid']
                 envobj = None
                 env = OrderedDict()
                 env['refid'] = env_id
+                env['product_environment'] = models.ProductEnvironment.objects.get(id=key['id'])
                 if env_id in environments_data:
                     env['properties'] = environments_data[env_id]
                 if 'created_at' in validated_data:
@@ -161,19 +188,20 @@ class AssetSerializer(serializers.ModelSerializer):
                 env['deleted'] = validated_data.get('deleted', 'f')
                 env['asset'] = asset
                 envobj = models.AssetEnvironment.objects.create(**env)
+
                 # adding attaches
                 attaches_list = []
-                for resource in attaches.get('resources', []):
-                    robj = None
-                    if pydash.objects.get(resource, 'environments.0', '') == env_id:
-                        logger.info(pydash.objects.get(resource, 'environments.0', 'NOT FOUND') + 'key {}'.format(key))
-                        if models.Resource.objects.filter(refid=resource.get('name', '')).exists():
-                            logger.info('WE FOUND IT')
-                            robj = models.Resource.objects.get(
-                                refid=resource.get('name', ''))
-                            logger.info('ADDING')
-                            robj.assetEnvironments.add(envobj)
-                            attaches_list.append(resource.get('name'))
+                if attaches:
+                    for resource in attaches.get('resources', []):
+                        robj = None
+                        if pydash.objects.get(resource, 'environments.0', '') == env_id:
+                            logger.info(
+                                pydash.objects.get(resource, 'environments.0', 'NOT FOUND') + 'key {}'.format(key))
+                            if models.Resource.objects.filter(refid=resource.get('name', '')).exists():
+                                robj = models.Resource.objects.get(
+                                    refid=resource.get('name', ''))
+                                robj.assetEnvironments.add(envobj)
+                                attaches_list.append(resource.get('name'))
                 # remove any attaches no longer
                 cdata = models.Resource.objects.raw_all()
                 pfiltername = 'assetEnvironments__id'
@@ -274,29 +302,6 @@ class AssetSerializer(serializers.ModelSerializer):
             raise ViewException(FORMAT, 'Invalid Request', 400)
         instance.save()
         return instance
-
-
-class AssetGetDetailSerializer(serializers.ModelSerializer):
-    cicd = serializers.CharField(source='properties.cicd', required=False)
-    attaches = serializers.JSONField(source='properties.attaches', required=False)
-    consumes = serializers.JSONField(source='properties.consumes', required=False)
-    internal = serializers.JSONField(source='properties.internal', required=False)
-    security = serializers.JSONField(source='properties.security', required=False)
-    description = serializers.CharField(source='properties.description', required=False)
-
-    class Meta:
-        model = models.Asset
-        fields = '__all__'
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        properties = data.pop('properties', None)
-        data.update(properties)
-        return data
-
-    def get_links(self, instance):
-        lks = {'_self': instance.self_links}
-        return lks
 
 
 class AssetGetEnvironmentSerializer(serializers.ModelSerializer):
@@ -488,6 +493,23 @@ class ProductEnvironmentGetSerializer(serializers.ModelSerializer):
         return data
 
 
+class ProductEnvironmentGetDetailSerializer(serializers.ModelSerializer):
+    """ Use this serializer to get full data and normal UUID info"""
+    location = serializers.ReadOnlyField(source='location.refid')
+
+    class Meta:
+        model = models.ProductEnvironment
+        fields = ('id', 'refid', 'type', 'prefix', 'location')
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        copy_data = deepcopy(data)
+        for each in copy_data:
+            if not copy_data.get(each, None):
+                del data[each]
+        return data
+
+
 class ProductSerializer(serializers.ModelSerializer):
     attaches = serializers.JSONField(required=False)
     consumes = serializers.JSONField(required=False)
@@ -594,6 +616,26 @@ class ProductSerializer(serializers.ModelSerializer):
         data['properties'] = properties
         return super(ProductSerializer, self).to_internal_value(data)
 
+class ProductGetDetailSerializer(serializers.ModelSerializer):
+    environments = ProductEnvironmentGetDetailSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = models.Product
+        fields = ('id', 'refid', 'properties', 'environments', 'deleted')
+
+
+    def get_links(self, instance):
+        lks = {'_self': instance.self_links}
+        return lks
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if 'env_type' in data:
+            env_type = data.pop('env_type')
+            data['env-type'] = env_type
+        properties = data.pop('properties', None)
+        data.update(properties)
+        return data
 
 class ProductGetSerializer(serializers.ModelSerializer):
     environments = ProductEnvironmentGetSerializer(many=True, read_only=True)
@@ -607,8 +649,6 @@ class ProductGetSerializer(serializers.ModelSerializer):
         lks = {'_self': instance.self_links}
         return lks
 
-    def get_environments(self, instance):
-        environments = ProductEnvironmentGetSerializer
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -808,6 +848,33 @@ class AssetEnvironmentAttachesSerializer(serializers.ModelSerializer):
         return robj
 
 
+class AssetByEnvironmentGetSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source='refid')
+    asset = AssetGetDetailSerializer()
+    attaches = AssetEnvironmentAttachesSerializer(required=False)
+
+    class Meta:
+        model = models.AssetEnvironment
+        fields = ('id', 'asset', 'properties')
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        asset = data.pop('asset')
+        return_data = OrderedDict()
+        return_data['id'] = asset['refid']
+        return_data['environment'] = data['id']
+        del asset['id']
+        del asset['refid']
+        if 'attaches' in asset:
+            del asset['attaches']
+        return_data.update(asset)
+        del data['id']
+        return_data['attaches'] = data['attaches']
+        properties = data.pop('properties', None)
+        return_data.update(properties)
+        return return_data
+
+
 class AssetGetSerializer(serializers.ModelSerializer):
     attaches = serializers.SerializerMethodField()
 
@@ -842,14 +909,17 @@ class AssetGetSerializer(serializers.ModelSerializer):
         if resources:
             data.update({"attaches": {"resources": resources}})
         asset_environments = models.AssetEnvironment.objects.filter(asset=instance.id)
-        for env in asset_environments:
-            env_properties = env.properties
-            for item in env_properties:
-                if item not in key_list:
-                    key_list.append(item)
-                    tmp_data[item] = []
-                env_data = {'environment': env.refid, 'entries': env_properties[item]}
-                tmp_data[item].append(env_data)
+        if asset_environments:
+            for env in asset_environments:
+                env_properties = env.properties
+
+                if env_properties:
+                    for item in env_properties:
+                        if item not in key_list:
+                            key_list.append(item)
+                            tmp_data[item] = []
+                        env_data = {'environment': env.refid, 'entries': env_properties[item]}
+                        tmp_data[item].append(env_data)
         data.update(tmp_data)
         properties = data.pop('properties', None)
         data.update(properties)
@@ -886,7 +956,8 @@ serializers_mapping_associations = {
 }
 
 serializers_mapping_detail = {
-    'assets': AssetGetDetailSerializer
+    'assets': AssetGetDetailSerializer,
+    'products': ProductGetDetailSerializer
 }
 
 serializer_class_lookup = CaseInsensitiveDict(serializers_mapping)

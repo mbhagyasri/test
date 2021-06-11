@@ -21,37 +21,41 @@
           },
           "entries": {
             "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "value": {
-                  "type": "string"
-                },
-                "protocol": {
-                  "enum": [
-                    "http",
-                    "https",
-                    "tcp"
-                  ],
-                  "type": "string"
-                },
-                "type": {
-                  "enum": [
-                    "external",
-                    "service"
-                  ],
-                  "type": "string"
-                },
-                "port": {
-                  "type": "number"
+            "items":
+
+                {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    },
+                    "protocol": {
+                      "enum": [
+                        "http",
+                        "https",
+                        "tcp"
+                      ],
+                      "type": "string"
+                    },
+                    "type": {
+                      "enum": [
+                        "external",
+                        "service"
+                      ],
+                      "type": "string"
+                    },
+                    "port": {
+                      "type": "number"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "type",
+                    "value"
+                  ]
                 }
-              },
-              "additionalProperties": false,
-              "required": [
-                "type",
-                "value"
-              ]
-            }
+
+
           }
         }
       }

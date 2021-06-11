@@ -92,7 +92,10 @@ def filter_get_request(request, data, page_size):
                         values_list = array[1].split(',')
                         ex[qf] = values_list
                     try:
-                        data = data.exclude(**ex)
+                        if hasattr(data, 'exclude'):
+                            data = data.exclude(**ex)
+                        else:
+                            data = data.objects.exclude(**ex)
                     except Exception as e:
                         logger.exception(e)
                         raise ViewException(FORMAT, 'Invalid filter request', 400)
@@ -101,7 +104,10 @@ def filter_get_request(request, data, page_size):
                     # noinspection PyArgumentList
                     try:
                         logger.debug('exclude: {}'.format(qf))
-                        data = data.exclude(**qf)
+                        if hasattr(data, 'exclude'):
+                            data = data.exclude(**ex)
+                        else:
+                            data = data.objects.exclude(**ex)
                     except Exception as e:
                         logger.exception(e)
                         raise ViewException(FORMAT, 'Invalid filter request', 400)
@@ -126,7 +132,11 @@ def filter_get_request(request, data, page_size):
                     ft[qf] = values_list
                 try:
                     logger.debug(ft)
-                    data = data.filter(**ft)
+                    if hasattr(data, 'filter'):
+                        data = data.filter(**ft)
+                    else:
+                        data = data.objects.filter(**ft)
+
                 except Exception as e:
                     logger.exception(e)
                     raise ViewException(FORMAT, "Invalid filter request.", 400)

@@ -9,6 +9,13 @@
       "maxLength": 32,
       "type": "string"
     },
+        "environment": {
+      "description": "Name of the environment",
+      "pattern": "^[a-z]{2,3}-[a-z0-9-]*$",
+      "minLength": 3,
+      "type": "string",
+      "example": "us-dev"
+    },
     "consumes": {
       "type": "array",
       "items": {
@@ -310,13 +317,7 @@
   },
   "additionalProperties": false,
   "required": [
-    "appLanguage",
-    "assetMasterId",
     "id",
-    "name",
-    "product",
-    "repo",
-    "team",
-    "type"
+    "environment"
   ]
 }

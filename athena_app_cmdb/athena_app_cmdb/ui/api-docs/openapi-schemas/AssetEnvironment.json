@@ -1,5 +1,6 @@
 {
-  "description": "Environment Data for an Asset.",
+  "description": "Environment Data for an Asset. Common data for an asset from /assets will trump individual environment data. ",
+
   "type": "object",
   "properties": {
     "id": {
@@ -48,8 +49,7 @@
                 "value"
               ]
             },
-        "additionalProperties": false
-      }
+      "additionalProperties": false
     },
     "internal": {
       "type": "boolean",

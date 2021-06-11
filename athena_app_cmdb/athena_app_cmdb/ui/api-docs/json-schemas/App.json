@@ -50,7 +50,10 @@
                 },
                 "port": {
                   "type": "number"
-                }
+                },
+                    "path": {
+                      "type": "string"
+                    }
               },
               "additionalProperties": false,
               "required": [

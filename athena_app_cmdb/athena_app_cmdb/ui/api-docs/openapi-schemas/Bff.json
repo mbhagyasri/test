@@ -9,6 +9,7 @@
       "maxLength": 32,
       "type": "string"
     },
+
     "consumes": {
       "type": "array",
       "items": {

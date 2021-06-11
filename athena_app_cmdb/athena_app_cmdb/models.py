@@ -23,12 +23,14 @@ UUID_MODELS = ['assets', 'clusters', 'locations', 'teams', 'products', 'resource
 def validate_json(objname, instance, raise_exception=True):
     mapping = {
         "locations": 'Location.json', "products": 'Product.json', "resources": "Resource.json",
-        "bff": 'Bff.json', "app": "App.json", "svc": "Svc.json",
-        "teams": 'Team.json', 'assetsByEnvironment': 'AssetEnvironment.json',
+        "assets-bff": 'Bff.json', "assets-app": "App.json", "assets-svc": "Svc.json",
+        "teams": 'Team.json',
+        "assetsByEnvironment-bff": 'Bff.json', "assetsByEnvironment-app": "App.json",
+        "assetsByEnvironment-svc": "Svc.json",
         "clusters": 'Cluster.json'
     }
-    if objname == 'assets':
-        filename = mapping.get(instance.get('type'), None)
+    if objname == 'assets' or objname == 'assetsByEnvironment':
+        filename = mapping.get('{}-{}'.format(objname, instance.get('type')), None)
     else:
         filename = mapping.get(objname, None)
     if not filename:

@@ -1,5 +1,5 @@
 {
-  "description": "UI application.",
+  "description": "UI Application Asset record for an environment.  ",
   "type": "object",
   "properties": {
     "id": {
@@ -8,6 +8,13 @@
       "minLength": 5,
       "maxLength": 32,
       "type": "string"
+    },
+    "environment": {
+      "description": "Name of the environment",
+      "pattern": "^[a-z]{2,3}-[a-z0-9-]*$",
+      "minLength": 3,
+      "type": "string",
+      "example": "us-dev"
     },
     "icon": {
       "type": "string"
@@ -272,15 +279,7 @@
   },
   "additionalProperties": false,
   "required": [
-    "appLanguage",
-    "assetMasterId",
-    "color",
-    "icon",
     "id",
-    "name",
-    "product",
-    "repo",
-    "team",
-    "type"
+    "environment"
   ]
 }

@@ -29,62 +29,6 @@ get:
             $ref: "#/components/schemas/AssetEnvironment"
 
 
-put:
-  summary: Update a specific environment data for an asset
-  operationId: updateAssetEnvironment
-  tags:
-    - assetsByEnvironment
-  parameters:
-    - name: id
-      in: path
-      required: true
-      description: The id of the asset to retrieve
-      schema:
-        type: string
-      example: "svc-demo-svc"
-    - name: environmentId
-      in: path
-      required: true
-      description: The id of the environment to retrieve
-      schema:
-        type: string
-      example: "us-prod"
-    - name: body
-      in: body
-      required: true
-      description: The id determines the asset to update
-      schema:
-        $ref: "./json-schemas/AssetEnvironment.json"
-  responses:
-    "200":
-      description: Asset Enviroment record updated
-    default:
-      description: Asset Environment update failed
-delete:
-  summary: Delete a specific asset environment details
-  operationId: deleteAssetEnvironment
-  tags:
-    - assetsByEnvironment
-  parameters:
-    - name: id
-      in: path
-      required: true
-      description: The id of the asset
-      schema:
-        type: string
-      example: "svc-example-delete"
-    - name: environmentId
-      in: path
-      required: true
-      description: The id of the environment to delete (caution)
-      schema:
-        type: string
-      example: "us-prod"
-  responses:
-    "204":
-      description: Asset Environment record deleted
-    default:
-      description: Asset Environment delete failed
 components:
   schemas:
     AssetsEnvironment:
@@ -93,4 +37,7 @@ components:
         $ref: "#/components/schemas/AssetEnvironment"
     AssetEnvironment:
       type: object
-      $ref: "./openapi-schemas/AssetEnvironment.json"
+      anyOf:
+        - $ref: "./openapi-schemas/SvcByEnvironment.json"
+        - $ref: "./openapi-schemas/AppByEnvironment.json"
+        - $ref: "./openapi-schemas/BffByEnvironment.json"

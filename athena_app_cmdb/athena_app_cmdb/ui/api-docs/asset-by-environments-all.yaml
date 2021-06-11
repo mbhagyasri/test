@@ -32,27 +32,7 @@ get:
         application/json:
           schema:
             $ref: "./Error.yaml"
-post:
-  summary: Create asset record for a particular environment
-  tags:
-    - assetsByEnvironment
-  operationId: create an asset for an environment
-  consumes:
-    - application/json
-  produces:
-    - application/json
-  parameters:
-    - in: "body"
-      name: "body"
-      description: Create a new asset entity within app-registry.
-      required: true
-      schema:
-        $ref: "./json-schemas/SvcByEnvironment.json"
-  responses:
-    "201":
-      description: Environment record inserted
-    default:
-      description: Environment insert failed
+
 components:
   schemas:
     AssetsEnvironment:
