@@ -316,10 +316,11 @@ class AssetGetUrlSerializer(serializers.ModelSerializer):
     locations = serializers.SerializerMethodField()
     environments = serializers.SerializerMethodField()
     additionalUrls = serializers.SerializerMethodField()
+    product = serializers.ReadOnlyField(source='product.refid')
 
     class Meta:
         model = models.Asset
-        fields = ('id', 'name', 'environments', 'locations', 'properties', 'type', 'product', 'additionalUrls')
+        fields = ('id', 'name', 'refid', 'environments', 'locations', 'properties', 'type', 'product', 'additionalUrls')
 
     def get_environments(self, instance):
         product = ProductGetSerializer(instance.product).data
@@ -359,7 +360,8 @@ class AssetGetUrlSerializer(serializers.ModelSerializer):
             tmp_data = OrderedDict([('environment_id', env['id']), ('type', env['type'])])
             prefix = "" if env['type'] == 'prod' else env['id'] + '-'
             hostname = data['name'] if data['type'] != 'bff' else '{}-{}.sd'.format(data['product'],
-                                                                                    data['id'])
+                                                                                    data['refid'])
+   
 
             additional_urls = []
             if locations:
