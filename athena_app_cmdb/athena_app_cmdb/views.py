@@ -502,8 +502,9 @@ class athena_app_cmdbBulkChange(APIView, MyPaginationMixin):
                         models.validate_json(objname, each)
                     serializer_class = serializers.serializer_class_lookup[objname]
                     # create/update
-                    logger.info('CHECKING if {} exists'.format(name))
-                    itemobj = common.get_item(request, valid, name, raise_exception=False)
+                    itemobj = None
+                    if name:
+                        itemobj = common.get_item(request, valid, name, raise_exception=False)
                     if itemobj:
                         serializer = serializer_class(itemobj, data=each)
                     else:
