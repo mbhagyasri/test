@@ -18,7 +18,6 @@ FILTER_FIELDS = {"environment_name": "environment.name", "location_name": "locat
 
 
 def get_model(objname, raise_exception=True):
-
     if objname not in models.models_class_lookup:
         resp = "%s table can not be found." % objname
         if raise_exception:

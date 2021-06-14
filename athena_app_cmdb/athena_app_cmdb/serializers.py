@@ -65,11 +65,13 @@ class AssetByEnvironmentSerializer(serializers.ModelSerializer):
 
 class AssetGetDetailSerializer(serializers.ModelSerializer):
     attaches = serializers.SerializerMethodField()
+    product_name = serializers.ReadOnlyField(source='product.refid')
+    team_name = serializers.ReadOnlyField(source='team.refid')
 
     class Meta:
         model = models.Asset
-        fields = ('id', 'refid', 'name', 'repo', 'team', 'type',
-                  'product', 'attaches',
+        fields = ('id', 'refid', 'name', 'repo', 'team', 'team_name', 'type',
+                  'product', 'product_name' ,'attaches',
                   'appLanguage',  'assetMasterId', 'properties', 'deleted')
 
     def get_attaches(self, instance):
@@ -241,7 +243,6 @@ class AssetSerializer(serializers.ModelSerializer):
         try:
             for key in product['environments']:
                 env_id = key['id']
-                logger.info('PROCESSING ENV {}'.format(env_id))
                 envobj = None
                 env = OrderedDict()
                 env['refid'] = env_id
@@ -269,34 +270,29 @@ class AssetSerializer(serializers.ModelSerializer):
                     envobj = models.AssetEnvironment.objects.create(**env)
                 # adding attaches
                 attaches_list = []
-                logger.info('PROCESSING {}'.format(env_id))
-                for resource in attaches.get('resources', []):
-                    robj = None
-                    name = resource['name']
-                    envs = resource['environments']
-                    env_resource = envs[0]
-                    logger.info('NAME {}, env[0] {}'.format(name, env_resource))
-                    if str(env_resource) == str(env_id):
-                        logger.info('found match')
-                        if models.Resource.objects.filter(refid=resource.get('name', '')).exists():
-                            logger.info('WE FOUND IT')
-                            robj = models.Resource.objects.get(
-                                refid=resource.get('name', ''))
-                            logger.info('ADDING')
-                            robj.assetEnvironments.add(envobj)
-                            attaches_list.append(resource.get('name'))
+                if attaches:
+                    for resource in attaches.get('resources', []):
+                        robj = None
+                        if pydash.objects.get(resource, 'environments.0', '') == env_id:
+                            logger.info(
+                                pydash.objects.get(resource, 'environments.0', 'NOT FOUND') + 'key {}'.format(key))
+                            if models.Resource.objects.filter(refid=resource.get('name', '')).exists():
+                                robj = models.Resource.objects.get(
+                                    refid=resource.get('name', ''))
+                                robj.assetEnvironments.add(envobj)
+                                attaches_list.append(resource.get('name'))
                 # remove any attaches no longer
-                #cdata = models.Resource.objects.raw_all()
-                #pfiltername = 'assetEnvironments__id'
-                #cfilter = {pfiltername: envobj.id}
-                #cdata = cdata.filter(**cfilter)
-                #for each in cdata:
-                #    properties = each.properties
-                #    name = each.refid
-                #    robj = None
-                #    if name not in attaches_list:
-                #        robj = models.Resource.objects.get(refid=name)
-                #        robj.assetEnvironments.delete(envobj)
+                cdata = models.Resource.objects.raw_all()
+                pfiltername = 'assetEnvironments__id'
+                cfilter = {pfiltername: envobj.id}
+                cdata = cdata.filter(**cfilter)
+                for each in cdata:
+                    properties = each.properties
+                    name = each.refid
+                    robj = None
+                    if name not in attaches_list:
+                        robj = models.Resource.objects.get(refid=name)
+                        robj.assetEnvironments.delete(envobj)
         except Exception as e:
             logger.exception(e)
             raise ViewException(FORMAT, 'Invalid Request', 400)
@@ -849,27 +845,43 @@ class AssetEnvironmentAttachesSerializer(serializers.ModelSerializer):
 
 
 class AssetByEnvironmentGetSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField(source='refid')
-    asset = AssetGetDetailSerializer()
-    attaches = AssetEnvironmentAttachesSerializer(required=False)
+    asset = AssetGetDetailSerializer(required=False)
+    resources = serializers.SerializerMethodField()
 
     class Meta:
         model = models.AssetEnvironment
-        fields = ('id', 'asset', 'properties')
+        fields = ('id', 'refid', 'asset', 'properties', 'resources')
+
+    def get_resources(self, instance):
+        robj = None
+        if models.Resource.objects.filter(assetEnvironments__id=instance.id).exists():
+            robj = models.Resource.objects.values_list('refid', flat=True).filter(assetEnvironments__id=instance.id)
+        return robj
+
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
         asset = data.pop('asset')
         return_data = OrderedDict()
         return_data['id'] = asset['refid']
-        return_data['environment'] = data['id']
+        return_data['environment'] = data['refid']
+        asset['team'] = asset['team_name']
+        asset['product'] = asset['product_name']
         del asset['id']
         del asset['refid']
+        del asset['team_name']
+        del asset['product_name']
         if 'attaches' in asset:
             del asset['attaches']
         return_data.update(asset)
-        del data['id']
-        return_data['attaches'] = data['attaches']
+        attaches = []
+        for each in data.get('resources', []):
+            if not each:
+                continue
+            tmp_data = {'name': str(each), 'environments': [return_data['environment'], ], }
+            attaches.append(tmp_data)
+        if attaches:
+            return_data['attaches'] = attaches
         properties = data.pop('properties', None)
         return_data.update(properties)
         return return_data

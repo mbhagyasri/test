@@ -351,7 +351,7 @@ class AssetEnvironment(SoftDeleteModel):
     id = models.UUIDField(db_column='id', primary_key=True, default=uuid.uuid4)
     refid = models.CharField(db_column='environment_id', max_length=100)
     product_environment = models.ForeignKey(ProductEnvironment, on_delete=models.PROTECT)
-    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name='environments')
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
     properties = models.JSONField(db_column='json', blank=True, null=True)
     deleted = models.BooleanField(db_column='deleted', default='f')
     created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)

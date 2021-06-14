@@ -187,9 +187,17 @@ class athena_app_cmdbItem(APIView):
 
     def get(self, request, objname, item):
         obj = common.get_model(objname)
-        data = common.get_item(request, obj, item)
         serializer_class = serializers.serializer_class_lookup_read[objname]
-        obj_serializer = serializer_class(data)
+        if objname == 'assetsByEnvironment':
+            data = common.get_model_all(request, objname, obj)
+            data = data.filter(asset__refid=item)
+            if not data:
+                raise ViewException(FORMAT, "No {} found.".format(objname), 404)
+            obj_serializer = serializer_class(data, many=True)
+        else:
+            data = common.get_item(request, obj, item)
+            obj_serializer = serializer_class(data)
+
         decrypt_data = obj_serializer.data
         return Response(decrypt_data)
 
@@ -449,6 +457,7 @@ class athena_app_cmdbBulkChange(APIView, MyPaginationMixin):
             return_content = []
 
             obj = common.get_model(objname)
+
             serializer_class = serializers.serializer_class_lookup[objname]
             if not isinstance(content, list):
                 raise ViewException(FORMAT, {"error": "Expect a list of resources"}, 406)
@@ -482,12 +491,23 @@ class athena_app_cmdbBulkChange(APIView, MyPaginationMixin):
             if not valid:
                 errors.append("Table {} not found ".format(objname))
                 continue
+            if objname == 'assets' and 'HTTP_X_ETAG' in request.META and request.META['HTTP_X_ETAG'] == 'v1':
+                content = self.asset_v1_processing(request, content)
             for each in content:
                 name = each['id'] if 'id' in each else None
                 try:
-                    models.validate_json(objname, each)
+                    if objname == 'assets' and 'HTTP_X_ETAG' in request.META and request.META['HTTP_X_ETAG'] == 'v1':
+                        pass
+                    else:
+                        models.validate_json(objname, each)
                     serializer_class = serializers.serializer_class_lookup[objname]
-                    serializer = serializer_class(data=each)
+                    # create/update
+                    logger.info('CHECKING if {} exists'.format(name))
+                    itemobj = common.get_item(request, valid, name, raise_exception=False)
+                    if itemobj:
+                        serializer = serializer_class(itemobj, data=each)
+                    else:
+                        serializer = serializer_class(data=each)
                     if serializer.is_valid():
                         serializer.save()
                         data = serializer.data
@@ -551,6 +571,36 @@ class athena_app_cmdbBulkChange(APIView, MyPaginationMixin):
                 return_data[objname] = return_content
         return Response(return_data, status.HTTP_200_OK)
 
+    def asset_v1_processing(self, request, data):
+        """
+        Special processing to merge v1 data load into v2.
+        :param request:
+        :param data:
+        :return:
+        """
+
+        return_data = []
+        for item in data:
+            obj = common.get_model('products')
+            serializer_class = serializers.serializer_class_lookup_read['products']
+            refid = item.get('product')
+            data = common.get_item(request, obj, refid)
+            obj_serializer = serializer_class(data)
+            asset_data = obj_serializer.data
+            env_list = []
+            for env in asset_data.get('environments', []):
+                if 'id' in env:
+                    env_list.append(env.get('id'))
+            if env_list:
+                for i in ["consumes", "security", "istio", "internal"]:
+                    if i in item:
+                        tmp_data = []
+                        for each in env_list:
+                            tmp_hash = {"environment": each, "entries": item[i]}
+                            tmp_data.append(tmp_hash)
+                        item[i] = tmp_data
+            return_data.append(item)
+        return return_data
 
 @method_decorator(never_cache, name='dispatch')
 class AssetEnvironmentItem(APIView):
@@ -564,7 +614,6 @@ class AssetEnvironmentItem(APIView):
         data = common.get_item(request, obj, item)
         obj_serializer = serializer_class(data)
         asset_data = obj_serializer.data
-        logger.info('ASSET {}'.format(asset_data))
         return_data = asset_data
         if not env and self.request_type == 'environment':
             # List environments
@@ -621,66 +670,22 @@ class AssetUrlsItem(APIView):
         return Response(return_data)
 
 
-class AssetsByEnvironmentList(APIView, MyPaginationMixin):
 
-    # authentication_classes = AUTH_CLASS
+@method_decorator(never_cache, name='dispatch')
+class AssetsByEnvironmentItem(APIView):
+
+    #    authentication_classes = AUTH_CLASS
     #    permission_classes = PERM_CLASS
-    pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
 
-    def get(self, request, item, ):
-        page_size = api_settings.PAGE_SIZE
-        objname = 'assetsByEnviroment'
+    def get(self, request, item, env):
+
+        objname = 'assetsByEnvironment'
         obj = common.get_model(objname)
-        if obj.filter(asset__refid=item).exists():
-            obj = obj.filter(asset__refid=item)
-        data, page_size = common.filter_get_request(request, obj, page_size)
-        if 'HTTP_X_PAGE-SIZE' in request.META:
-            page_size = request.META['HTTP_X_PAGE-SIZE']
-            if not data:
-                raise ViewException(FORMAT, "No {} found.".format(objname), 404)
+        data = common.get_model_all(request, objname, obj)
+        data = data.get(asset__refid=item, refid=env)
+        if not data:
+            raise ViewException(FORMAT, "No {} found.".format(objname), 404)
         serializer_class = serializers.serializer_class_lookup_read[objname]
-
-        try:
-            if data.count() <= int(page_size):
-                self.pagination_class = None
-            page = self.paginate_queryset(data, self.request)
-            if page is not None:
-                obj_serializer = serializer_class(page, many=True)
-                decrypt_data = obj_serializer.data
-                return self.get_paginated_response(decrypt_data)
-            else:
-                obj_serializer = serializer_class(data, many=True)
-                decrypt_data = obj_serializer.data
-                return Response(decrypt_data)
-        except rest_exceptions.NotFound:
-            raise ViewException(FORMAT, 'Not found.', 404)
-        except Exception as e:
-            logger.exception(e)
-            raise ViewException(FORMAT, 'Server Exception', 500)
-
-    def post(self, request, objname):
-        path = '/%s' % objname
-        # check to make sure the model exists
-        obj = common.get_model(objname)
-
-        data = request.data
-        # Validation
-        models.validate_json(objname, data)
-        if objname == 'products':
-            new_dict = deepcopy(data)
-            for key in ['created_at', 'deleted', 'deleted_at', 'created_by', 'updated_at', 'updated_by']:
-                if key in new_dict:
-                    del new_dict[key]
-            data = {'id': new_dict['id'], 'properties': new_dict}
-
-        # payload is valid .
-        serializer_class = serializers.serializer_class_lookup[objname]
-        if 'associations' in data:
-            del data['associations']
-        serializer = serializer_class(data=data)
-        if serializer.is_valid():
-            serializer.save()
-        else:
-            return Response(serializer.errors, status=400)
-        content = serializer.data
-        return Response(content, status.HTTP_201_CREATED)
+        obj_serializer = serializer_class(data)
+        return_data = obj_serializer.data
+        return Response(return_data)

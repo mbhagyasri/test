@@ -36,6 +36,7 @@ urlpatterns = [
     path('admin', redirect_admin),
     path('load-from-excel', excel_upload_views.LoadFromExcel.as_view(), name='api-load-from-excel'),
     path('bulk-change', api_views.athena_app_cmdbBulkChange.as_view(), name='api-bulk-change'),
+    path('assetsByEnvironment/<slug:item>/environments/<slug:env>', api_views.AssetsByEnvironmentItem.as_view()),
     path('<slug:objname>', api_views.athena_app_cmdbList.as_view(), name='athena_app_cmdb-list'),
     path('<slug:objname>/detail', api_views.athena_app_cmdbListDetail.as_view(), name='athena_app_cmdb-list-detail'),
     path('<slug:objname>/<slug:item>', api_views.athena_app_cmdbItem.as_view(), name='api-item'),
@@ -56,7 +57,7 @@ urlpatterns = [
     path('assets/<slug:item>/securityConfiguration/<slug:env>', api_views.AssetEnvironmentItem.as_view(
         request_type='securityConfiguration'), name='athena_app_cmdb-environment-securityConfiguration-item'),
     path('assets/<slug:item>/urls', api_views.AssetUrlsItem.as_view(), name='athena_app_cmdb-environment-urls-item'),
-    path('assetsByEnvironment/<slug:item>/environments', api_views.AssetsByEnvironmentList.as_view()),
+
 ]
 admin.site.login_form = BootstrapAuthenticationForm
 

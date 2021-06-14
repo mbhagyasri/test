@@ -2,7 +2,7 @@ from app_registry.settings.base import *
 import os
 import json
 
-DEBUG = False
+DEBUG = True
 
 
 TEMPLATES[0]['OPTIONS']['debug'] = True
