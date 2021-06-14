@@ -11,6 +11,7 @@ spec:
   - {{ .Values.gateways.private }}
   - mesh
   hosts:
+  - athena-app-cmdb.{{ .Values.domain }}
   - {{ .Values.name }}-managed.{{ .Values.namespace }}.svc.cluster.local
   - {{ .Values.location_id }}-{{ .Values.name }}.registry.{{ .Values.domain }}
   http:
