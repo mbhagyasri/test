@@ -274,8 +274,6 @@ class AssetSerializer(serializers.ModelSerializer):
                     for resource in attaches.get('resources', []):
                         robj = None
                         if pydash.objects.get(resource, 'environments.0', '') == env_id:
-                            logger.info(
-                                pydash.objects.get(resource, 'environments.0', 'NOT FOUND') + 'key {}'.format(key))
                             if models.Resource.objects.filter(refid=resource.get('name', '')).exists():
                                 robj = models.Resource.objects.get(
                                     refid=resource.get('name', ''))
@@ -889,6 +887,8 @@ class AssetByEnvironmentGetSerializer(serializers.ModelSerializer):
 
 class AssetGetSerializer(serializers.ModelSerializer):
     attaches = serializers.SerializerMethodField()
+    team = serializers.ReadOnlyField(source='team.refid')
+    product = serializers.ReadOnlyField(source='product.refid')
 
     class Meta:
         model = models.Asset
