@@ -361,7 +361,7 @@ class AssetGetUrlSerializer(serializers.ModelSerializer):
             prefix = "" if env['type'] == 'prod' else env['id'] + '-'
             hostname = data['name'] if data['type'] != 'bff' else '{}-{}.sd'.format(data['product'],
                                                                                     data['refid'])
-   
+
 
             additional_urls = []
             if locations:
@@ -875,11 +875,12 @@ class AssetByEnvironmentGetSerializer(serializers.ModelSerializer):
             del asset['attaches']
         return_data.update(asset)
         attaches = []
-        for each in data.get('resources', []):
-            if not each:
-                continue
-            tmp_data = {'name': str(each), 'environments': [return_data['environment'], ], }
-            attaches.append(tmp_data)
+        if data.get('resources', []):
+            for each in data.get('resources', []):
+                if not each:
+                    continue
+                tmp_data = {'name': str(each), 'environments': [return_data['environment'], ], }
+                attaches.append(tmp_data)
         if attaches:
             return_data['attaches'] = attaches
         properties = data.pop('properties', None)
@@ -966,7 +967,7 @@ serializers_mapping_read = {
 }
 
 serializers_mapping_associations = {
-
+    'assetsByEnvironment': AssetEnvironmentAttachesSerializer
 }
 
 serializers_mapping_detail = {

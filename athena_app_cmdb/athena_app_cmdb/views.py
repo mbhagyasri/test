@@ -300,65 +300,55 @@ class athena_app_cmdbAssociationsList(APIView):
 
 
 @method_decorator(never_cache, name='dispatch')
-class athena_app_cmdbAssociationsChildList(APIView):
-    def get(self, request, parentobjname, parent, childobjname):
+class athena_app_cmdbAttachesList(APIView):
+    request_type = 'default'
+
+    def get(self, request, item, env,):
+        parentobjname = 'assetsByEnvironment'
         parentobj = common.get_model(parentobjname)
-        childobj = common.get_model(childobjname)
-        pdata = parentobj.objects.exclude(deleted=1)
-        pdata = get_object_or_404(pdata, id=parent)
-        parent_serializer_class = serializers.serializer_class_lookup_associations[parentobjname]
-        parent_serializer = parent_serializer_class(pdata)
-        data = parent_serializer.data
-        cdata = childobj.objects.exclude(deleted=1)
-        pfiltername = '%s__id' % parentobjname
-        cfilter = {pfiltername: pdata.id}
-        cdata = cdata.filter(**cfilter)
-        child_serializer_class = serializers.serializer_class_lookup_associations[childobjname]
-        child_serializer = child_serializer_class(cdata, many=True)
-        data['associations'] = {childobjname: child_serializer.data}
-        return Response(data, status.HTTP_200_OK)
+
+        pdata = common.get_model_all(request, parentobjname, parentobj)
+        if pdata.filter(asset__refid=item, refid=env).exists():
+            pdata = pdata.get(asset__refid=item, refid=env)
+        else:
+            raise ViewException(FORMAT, "No {} found.".format(parentobjname), 404)
+        serializer_class = serializers.serializer_class_lookup_associations[parentobjname]
+        serializer = serializer_class(pdata, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
 
 
 @method_decorator(never_cache, name='dispatch')
-class athena_app_cmdbAssociationsChildCreateDestroy(APIView):
-    parentobj = None
-    childobj = None
+class athena_app_cmdbAttachesCreateDestroy(APIView):
 
-    def post(self, request, parentobjname, parent, childobjname, child):
-        self.parentobj = common.get_model(parentobjname)
-        self.childobj = common.get_model(childobjname)
-        path = '/%s/:id/associations/%s/:id' % (parentobjname, childobjname)
-        method = 'post'
-        logger.debug('path %s method: %s request: %s' % (path, method, request.data))
-        Validators().parse_mappings(path=path, method=method, data=request.data)
-        pdata = self.parentobj.objects.exclude(deleted=1)
-        pdata = get_object_or_404(pdata, id=parent)
-        cdata = self.childobj.objects.exclude(deleted=1)
-        cdata_item = get_object_or_404(cdata, id=child)
-        cdata_item.__getattribute__(parentobjname).add(pdata)
+    def post(self, request, item, env, resource):
+        parentobjname = 'assetsByEnvironment'
+        parentobj = common.get_model(parentobjname)
+
+        pdata = common.get_model_all(request, parentobjname, parentobj)
+        if pdata.filter(asset__refid=item, refid=env).exists():
+            pdata = pdata.get(asset__refid=item, refid=env)
+        else:
+            raise ViewException(FORMAT, "No {} found.".format(parentobjname), 404)
+        childobjname = 'resources'
+        childobj = common.get_model(childobjname)
+        cdata_item = common.get_item(request, childobj, resource)
+        cdata_item.assetEnvironments.add(pdata)
         cdata_item.save()
-        pfiltername = '%s__id' % parentobjname
-        cfilter = {pfiltername: pdata.id}
-        cdata = cdata.filter(**cfilter)
-        child_serializer_class = serializers.serializer_class_lookup_associations[childobjname]
-        child_serializer = child_serializer_class(cdata, many=True)
-        parent_serializer_class = serializers.serializer_class_lookup_associations[parentobjname]
-        parent_serializer = parent_serializer_class(pdata)
-        data = parent_serializer.data
-        data['associations'] = {childobjname: child_serializer.data}
-        return Response(data, status.HTTP_200_OK)
+        return Response("Done", status.HTTP_200_OK)
 
-    def delete(self, request, parentobjname, parent, childobjname, child):
-        self.parentobj = common.get_model( parentobjname)
-        self.childobj = common.get_model( childobjname)
-        # Validation to make sure parent and child exists
-        common.get_model(parentobjname)
-        common.get_model(childobjname)
-        pdata = self.parentobj.objects.all()
-        pdata = get_object_or_404(pdata, id=parent)
-        cdata = self.childobj.objects.all()
-        cdata_item = get_object_or_404(cdata, id=child)
-        cdata_item.__getattribute__(parentobjname).remove(pdata)
+    def delete(self, request, item, env, resource):
+        parentobjname = 'assetsByEnvironment'
+        parentobj = common.get_model(parentobjname)
+
+        pdata = common.get_model_all(request, parentobjname, parentobj)
+        if pdata.filter(asset__refid=item, refid=env).exists():
+            pdata = pdata.get(asset__refid=item, refid=env)
+        else:
+            raise ViewException(FORMAT, "No {} found.".format(parentobjname), 404)
+        childobjname = 'resources'
+        childobj = common.get_model(childobjname)
+        cdata_item = common.get_item(request, childobj, resource)
+        cdata_item.assetEnvironments.remove(pdata)
         cdata_item.save()
         return Response("Done", status.HTTP_204_NO_CONTENT)
 
@@ -683,8 +673,9 @@ class AssetsByEnvironmentItem(APIView):
         objname = 'assetsByEnvironment'
         obj = common.get_model(objname)
         data = common.get_model_all(request, objname, obj)
-        data = data.get(asset__refid=item, refid=env)
-        if not data:
+        if data.filter(asset__refid=item, refid=env).exists():
+            data = data.get(asset__refid=item, refid=env)
+        else:
             raise ViewException(FORMAT, "No {} found.".format(objname), 404)
         serializer_class = serializers.serializer_class_lookup_read[objname]
         obj_serializer = serializer_class(data)
