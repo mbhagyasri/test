@@ -28,3 +28,7 @@ django-currentuser
 django-admin-autocomplete-filter
 jsonformatter
 jsonschema
+pygraphviz
+pyparsing
+pydot
+django-extensions

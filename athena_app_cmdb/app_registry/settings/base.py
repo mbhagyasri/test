@@ -45,7 +45,9 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'athena_app_cmdb',
     'django_json_widget',
+    'django_extensions',
     'admin_auto_filters'
+
 
 ]
 

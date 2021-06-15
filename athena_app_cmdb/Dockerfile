@@ -27,7 +27,8 @@ ARG requirements=requirements/prod.txt
 COPY requirements/ /opt/athena_app_cmdb/requirements/
 # Installing client libraries and any other package you need
 # These are packages that are needed during runtime
-RUN apk add --update --no-cache python3 libpq bash expat-dev libffi curl py-pip ca-certificates postgresql-client
+RUN apk add --update --no-cache python3 libpq bash expat-dev libffi curl py-pip ca-certificates postgresql-client \
+                                graphviz ttf-freefont
 # Install build deps, then run `pip install`, then remove unneeded build deps all in a single step. Correct the path to your production requirements file, if needed.
 RUN set -ex \
     && apk add --update --no-cache --virtual .build-deps \
@@ -45,6 +46,7 @@ RUN set -ex \
             openssl-dev \
             cargo \
             openldap-dev \
+            graphviz-dev \
     && pip install -U pip \
     && pip install --no-cache-dir -r $requirements \
     && runDeps="$( \
@@ -59,6 +61,10 @@ RUN set -ex \
 # copy project source code
 COPY . /opt/athena_app_cmdb/
 COPY --from=node-tmp /opt/athena_app_cmdb/athena_app_cmdb/ui/openapi.yaml /openapi.yaml
+
+# generate ERD file
+RUN export SECRET_KEY='SECRET_KEY' && /usr/local/bin/python manage.py graph_models athena_app_cmdb -g --pygraphviz -o  \
+    athena_app_cmdb/static/img/athena_app_cmdb_erd.png
 
 # download AWS RDS SSL certificate to /opt/athena_app_cmdb/etc
 RUN wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem \

@@ -74,6 +74,8 @@ info:
       <li><b>day:</b> For date and datetime fields, an exact day match.
       <li><b>week_day:</b> For date and datetime fields, a ‘day of the week’ match.  Takes an integer value representing the day of week from 1 (Sunday) to 7 (Saturday).
     </ul>
+
+    <P>Select <a href="/static/img/athena_app_cmdb_erd.png">Data Model ERD Image</a> to view the underlying database model.
   version: 1.0.61
   title: App Registry
   contact:
