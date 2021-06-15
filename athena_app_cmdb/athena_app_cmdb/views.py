@@ -204,6 +204,12 @@ class athena_app_cmdbItem(APIView):
     def delete(self, request, objname, item):
         obj = common.get_model(objname)
         data = common.get_item(request, obj, item)
+        # check if there are attaches
+        if objname == 'resources':
+            attaches = data.assetEnvironments.all()
+            if attaches:
+                raise ViewException(FORMAT, "Failed to delete {}.  There are still assets being attached.".format(item),
+                                    400)
         if 'HTTP_X_FORCE_DELETE' in request.META and request.META['HTTP_X_FORCE_DELETE'].lower() == 'true':
             try:
                 data.hard_delete()
