@@ -1,0 +1,1 @@
+default_app_config = 'athena_app_cmdb.apps.athena_app_cmdbConfig'

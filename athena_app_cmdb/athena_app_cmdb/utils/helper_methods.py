@@ -6,16 +6,14 @@ import socket
 from uuid import UUID
 import json
 import logging
-from django import http
-from django.db import connection
-from django.conf import settings
-from libs.utility.config_parsers import get_config
+import os
 from django.utils.module_loading import import_string
-from django.core.serializers.json import DjangoJSONEncoder
+
+from requests.auth import HTTPBasicAuth
+from .api_adapters import API
 
 
 logger = logging.getLogger(__name__)
-config = get_config()
 
 
 # validate that value provided match the input type expected
@@ -108,45 +106,52 @@ class ObjDict(dict):
         return val
 
 
-class GEOS_JSONEncoder(DjangoJSONEncoder):
-    def default(self, o):
-        try:
-            return o.json  # Will therefore support all the GEOS objects
-        except:
-            pass
-        return super(GEOS_JSONEncoder, self).default(o)
+def trigger_bamboo_plan(plan_key, project_key='NGIP', stage_name='JOB1',
+                        username=os.getenv('bamboo_username', ''), password=os.getenv('bamboo_password', '')):
+    """
+    Calling Bamboo queue job.
+    :param plan_key:
+    :type plan_key: str
+    :param project_key:
+    :type project_key: str
+    :param stage_name:
+    :type stage_name: str
+    :param username:
+    :type username: str
+    :param password:
+    :type password: str
+    :return:
+    """
+    bamboo_url = 'https://bamboo.cdk.com/rest/api/latest'
+    headers = {'Accept': 'application/json'}
+    adapter = API(base_uri=bamboo_url, headers=headers)
+    kwarg = {'auth': HTTPBasicAuth(username, password), 'raise_exception': False}
+    uri = '/queue/{}-{}?{}&executeAllStages'.format(project_key, plan_key, stage_name)
+    return adapter.post(url=uri, **kwarg)
 
 
-def output_json(out, code=200):
-        if code != 200:
-            out['code'] = code
-        indent = None
-        if settings.DEBUG:
-            if isinstance(out, dict):
-                out['debug_db_queries'] = connection.queries
-            indent = 4
-
-        json_dumps_params = {'ensure_ascii': False, 'indent': indent}
-
-        if type(out) is dict:
-            response = http.JsonResponse(
-                out,
-                status=code,
-                encoder=GEOS_JSONEncoder,
-                json_dumps_params=json_dumps_params)
-        else:
-            encoder = GEOS_JSONEncoder(**json_dumps_params)
-            content = encoder.iterencode(out)
-
-            response = http.StreamingHttpResponse(
-                streaming_content=content,
-                content_type='application/json',
-                status=code)
-
-        response['Cache-Control'] = 'max-age=2419200'  # 4 weeks
-        response['Access-Control-Allow-Origin'] = '*'
-
-        return response
+def trigger_apsink():
+    plan_key = 'APSINK'
+    if os.getenv('environment', '') == 'us-prod':
+        response = trigger_bamboo_plan(plan_key)
+        if response.status_code >= 300:
+            logger.exception(response.text)
+    return True
 
 
+def trigger_external_secrets_plan():
+    plan_key = os.getenv('bamboo_resources_secret_plan', '')
+    if os.getenv('environment', '') == 'us-prod':
+        response = trigger_bamboo_plan(plan_key)
+        if response.status_code >= 300:
+            logger.exception(response.text)
+    return True
 
+
+def trigger_resource_plan():
+    plan_key = os.getenv('bamboo_resources_plan', '')
+    if os.getenv('environment', '') == 'us-prod':
+        response = trigger_bamboo_plan(plan_key)
+        if response.status_code >= 300:
+            logger.exception(response.text)
+    return True
