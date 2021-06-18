@@ -78,6 +78,7 @@ public class PlanSpec {
     "-e AWS_DEFAULT_REGION=${bamboo.AWS_DEFAULT_REGION} \\\n"+
     "-e IQR_ENVIRONMENT=${bamboo.IQR_ENVIRONMENT} \\\n"+
     "-e EKS_CLUSTER_NAME=${bamboo.EKS_CLUSTER_NAME} \\\n"+
+    "-e BAMBOO_SECRET=${bamboo.BAMBOO_SECRET} \\\n"+
     "-e BAMBOO_BUILD_ID=${bamboo.artifact.container_tag} \\\n"+
     "artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb-install:${bamboo_artifact_container_tag}";
 
