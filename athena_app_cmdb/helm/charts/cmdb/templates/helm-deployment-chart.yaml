@@ -67,9 +67,9 @@ spec:
           - name: bamboo_username
             value: {{ .Values.env.bamboo_username }}
           {{- end }}
-          {{- if .Values.env.bamboo_password }}
+          {{- if .Values.bamboo_secret }}
           - name: bamboo_password
-            value: {{ .Values.env.bamboo_password }}
+            value: {{ .Values.bamboo_secret }}
           {{- end }}
           {{- if .Values.env.bamboo_resources_plan }}
           - name: bamboo_resources_plan

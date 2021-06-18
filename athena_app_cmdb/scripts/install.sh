@@ -63,6 +63,12 @@ else
   echo "OK: BAMBOO_BUILD_ID=$BAMBOO_BUILD_ID"
 fi
 
+if [ -z "$BAMBOO_SECRET" ]; then
+	echo "Err: BAMBOO_SECRET is not set!"
+	echo "ex. export BAMBOO_SECRET=\"password\""
+	exit 1
+fi
+
 # End of section
 
 # Generate kubeconfig for specified EKS cluster and test connection
@@ -176,6 +182,7 @@ if ! [ "$(helm upgrade --install athena-app-cmdb ./helm/charts/cmdb \
   --set image=artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb:"$BAMBOO_BUILD_ID" \
   --set rds_host="${rds_host}" --set rds_port="${rds_port}" \
   --set redis_host="${redis_host}" --set redis_port="${redis_port}" \
+  --set bamboo_secret="${BAMBOO_SECRET}" \
   --set secret_key="${secret_key}" )" ]; then
 	echo "Err: unable to install athena-app-cmdb into cluster - $EKS_CLUSTER_NAME"
 	exit 1
