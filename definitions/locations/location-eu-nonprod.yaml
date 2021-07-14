@@ -18,7 +18,7 @@ parameters:
       partition: aws
     dockerRegistries:
       - type: artifactory
-        dockerEndpoint: "artifactory.cobalt.com"
+        dockerEndpoint: "artifactory.cdk.com"
         default: true
 clusters:
   primary: athena_null_value

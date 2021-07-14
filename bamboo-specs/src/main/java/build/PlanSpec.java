@@ -80,7 +80,7 @@ public class PlanSpec {
     "-e EKS_CLUSTER_NAME=${bamboo.EKS_CLUSTER_NAME} \\\n"+
     "-e BAMBOO_SECRET=${bamboo.BAMBOO_SECRET} \\\n"+
     "-e BAMBOO_BUILD_ID=${bamboo.artifact.container_tag} \\\n"+
-    "artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb-install:${bamboo_artifact_container_tag}";
+    "artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb-install:${bamboo_artifact_container_tag}";
 
     /*
      * Run main to publish plan on Bamboo
