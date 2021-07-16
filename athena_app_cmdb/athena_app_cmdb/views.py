@@ -8,6 +8,7 @@ import os
 import logging
 import jsonpatch
 import json
+import itertools
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -648,6 +649,7 @@ class AssetEnvironmentItem(APIView):
                 securityConfiguration.append(prod_data['security'])
             if 'security' in asset_data:
                 securityConfiguration.append(asset_data['security'])
+            return_data = itertools.chain.from_iterable(securityConfiguration)  #Merge list of lists into a single list
         return Response(return_data)
 
 

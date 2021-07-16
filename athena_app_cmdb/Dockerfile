@@ -85,7 +85,7 @@ COPY --from=nginx-build /opt/athena_app_cmdb/static /usr/share/nginx/html
 CMD ["nginx", "-g", "daemon off;"]
 
 
-FROM artifactory.cobalt.com/athena/athena-platform/tooling-base:latest as installer
+FROM artifactory.cdk.com/docker-local/athena/athena-platform/tooling-base:latest as installer
 COPY ["./helm", "./helm"]
 COPY ["./scripts", "./scripts"]
 RUN shellcheck ./scripts/install.sh
