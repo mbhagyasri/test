@@ -10,8 +10,6 @@ cd athena_app_cmdb
 
 # build nginx container
 docker build \
-    -t artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb-nginx:latest \
-    -t artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb-nginx:${container_tag} \
     -t artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb-nginx:latest \
     -t artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb-nginx:${container_tag} \
     --target=nginx \
@@ -20,8 +18,6 @@ docker build \
 
 # build backend container
 docker build \
-    -t artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb:latest \
-    -t artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb:${container_tag} \
     -t artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb:latest \
     -t artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb:${container_tag} \
     --target=backend \
@@ -29,28 +25,20 @@ docker build \
 
 # build installer
 docker build \
-    -t artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb-install:latest \
-    -t artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb-install:${container_tag} \
     -t artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb-install:latest \
     -t artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb-install:${container_tag} \
     --target=installer \
     .
 
 
-docker push artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb:${container_tag}
-docker push artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb:latest
 docker push artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb:${container_tag}
 docker push artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb:latest
 
-docker push artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb-nginx:${container_tag}
-docker push artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb-nginx:latest
 docker push artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb-nginx:${container_tag}
 docker push artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb-nginx:latest
 
 
 
-docker push artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb-install:${container_tag}
-docker push artifactory.cobalt.com/athena/athena-platform/athena-app-cmdb-install:latest
 docker push artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb-install:${container_tag}
 docker push artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb-install:latest
 
