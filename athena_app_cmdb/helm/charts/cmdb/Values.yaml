@@ -11,6 +11,7 @@ commonLabels:
   app.cdk.com/id: "athena-app-cmdb"
   product.cdk.com/id: "athena-platform"
   team.cdk.com/id: "team-athena-platform"
+  assetmaster.cdk.com/id: "500"
 
 # Namespace for resources
 namespace: cdk-athena-app-cmdb
