@@ -224,7 +224,8 @@
         "dotnetcore",
         "java",
         "nodejs",
-        "reactjs"
+        "reactjs",
+        "python"
       ],
       "type": "string"
     },
@@ -576,7 +577,8 @@
         "dotnetcore",
         "java",
         "nodejs",
-        "reactjs"
+        "reactjs",
+        "python"
       ],
       "type": "string"
     },
@@ -926,7 +928,8 @@
         "dotnetcore",
         "java",
         "nodejs",
-        "reactjs"
+        "reactjs",
+        "python"
       ],
       "type": "string"
     },

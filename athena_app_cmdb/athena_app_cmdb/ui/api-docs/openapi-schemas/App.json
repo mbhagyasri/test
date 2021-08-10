@@ -217,7 +217,8 @@
         "dotnetcore",
         "java",
         "nodejs",
-        "reactjs"
+        "reactjs",
+        "python"
       ],
       "type": "string"
     },
