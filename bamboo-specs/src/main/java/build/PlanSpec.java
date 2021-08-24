@@ -199,8 +199,7 @@ public class PlanSpec {
     //DEV
     Environment dev(){
         return new Environment(PlanSpec.ENV_DEV_NAME)
-        .triggers(new AfterSuccessfulBuildPlanTrigger()
-        .description("Build"))
+        .triggers(new AfterSuccessfulBuildPlanTrigger().triggerByBranch("dev").description("Build"))
         .tasks(
             new CleanWorkingDirectoryTask(),
             new ArtifactDownloaderTask()
@@ -227,8 +226,8 @@ public class PlanSpec {
     //NONPROD
     Environment nonprod(){
         return new Environment(PlanSpec.ENV_NONPROD_NAME)
-        .triggers(new AfterSuccessfulBuildPlanTrigger()
-        .description("Build"))
+        //.triggers(new AfterSuccessfulBuildPlanTrigger().description("Build"))
+        .triggers(new AfterSuccessfulBuildPlanTrigger().triggerByBranch("stage").description("Build"))
         .tasks(
             new CleanWorkingDirectoryTask(),
             new ArtifactDownloaderTask()
