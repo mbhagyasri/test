@@ -38,6 +38,9 @@
           },
           "name": {
             "type": "string"
+          },
+          "responseTimeout": {
+            "type": "number"
           }
         },
         "additionalProperties": false,

@@ -49,6 +49,12 @@
                 },
                 "port": {
                   "type": "number"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "responseTimeout": {
+                  "type": "number"
                 }
               },
               "additionalProperties": false,

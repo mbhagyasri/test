@@ -52,6 +52,12 @@
                 },
                 "port": {
                   "type": "number"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "responseTimeout": {
+                  "type": "number"
                 }
               },
               "additionalProperties": false,
@@ -412,6 +418,12 @@
                 },
                 "port": {
                   "type": "number"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "responseTimeout": {
+                  "type": "number"
                 }
               },
               "additionalProperties": false,
@@ -762,6 +774,12 @@
                   "type": "string"
                 },
                 "port": {
+                  "type": "number"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "responseTimeout": {
                   "type": "number"
                 }
               },
