@@ -23,6 +23,97 @@
         "type": "string"
       }
     },
+    "members": {
+      "description": "Members of the team to give role-based access",
+      "type": "object",
+      "properties": {
+        "admin": {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "email",
+                "username"
+              ]
+            }
+          ],
+          "minItems": 1,
+          "additionalItems": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "email",
+                  "username"
+                ]
+              }
+            ]
+          }
+        },
+        "developer": {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "email",
+                "username"
+              ]
+            }
+          ],
+          "minItems": 1,
+          "additionalItems": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "email",
+                  "username"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "opsgenie": {
       "type": "object",
       "properties": {
