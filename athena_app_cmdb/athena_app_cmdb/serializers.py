@@ -523,8 +523,8 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         environments = None
-        if 'environments' in validated_data:
-            environments = validated_data.pop('environments')
+        if 'environments' in validated_data.get('properties'):
+            environments = validated_data.get('properties').pop('environments')
         product = models.Product.objects.create(**validated_data)
         prod_id = str(product.id)
         if environments:
