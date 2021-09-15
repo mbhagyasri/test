@@ -161,7 +161,6 @@ def validateAssetId(amid):
     # gather token initially for validation request
     url = "http://api-int.connectcdk.com/api/ari-assets-backend/v1/api/ari-assets-backend/v1"  
     tokenurl = url + '/token' 
-    # print('Validating asset master id ' + str(amid))
     logger.info('Validating asset master id : {}'.format(str(amid)))
     credentials = {
     'username': 'asset-user',
@@ -173,7 +172,6 @@ def validateAssetId(amid):
         token = requests.post(tokenurl, json=credentials, auth=('asset-user', '1tsrAIn1NGcts&DGS!'))
         if token.status_code == 200:
             break
-        logger.info('Status code : {}'.format(str(token.status_code)))
     tokenjson = json.loads(token.content)
     auth = 'bearer ' + str(tokenjson["token"])
     #make validation request, we can tell if the asset is existent or not by checking length of reply body.

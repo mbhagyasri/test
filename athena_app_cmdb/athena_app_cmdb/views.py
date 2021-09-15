@@ -130,10 +130,10 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
         if objname == 'assets':
             new_dict = deepcopy(data)
             if 'assetMasterId' in new_dict: 
-                logger.info('result : {}'.format(new_dict['assetMasterId']))
                 amid = new_dict['assetMasterId']
                 checkid = validateAssetId(amid)
-                logger.info('bool flag checking id: {}'.format(checkid))
+                if checkid == False:
+                    raise ViewException(FORMAT, 'Error Validating Asset Master Id', 500)
         # payload is valid .
         serializer_class = serializers.serializer_class_lookup[objname]
         if 'associations' in data:
