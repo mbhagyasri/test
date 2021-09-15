@@ -37,7 +37,7 @@ from . import models, serializers, common
 from .operators import Validators
 from .paginator import MyPaginationMixin
 from .middleware import ViewException
-from .utils.helper_methods import check_value
+from .utils.helper_methods import check_value, validateAssetId
 from copy import deepcopy
 
 logger = logging.getLogger(__name__)
@@ -126,7 +126,14 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
                 if key in new_dict:
                     del new_dict[key]
             data = {'id': new_dict['id'], 'properties': new_dict}
-
+        # validate asset master id if doing a post to /assets
+        if objname == 'assets':
+            new_dict = deepcopy(data)
+            if 'assetMasterId' in new_dict: 
+                logger.info('result : {}'.format(new_dict['assetMasterId']))
+                amid = new_dict['assetMasterId']
+                checkid = validateAssetId(amid)
+                logger.info('bool flag checking id: {}'.format(checkid))
         # payload is valid .
         serializer_class = serializers.serializer_class_lookup[objname]
         if 'associations' in data:
