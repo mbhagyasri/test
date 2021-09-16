@@ -238,6 +238,13 @@ class athena_app_cmdbItem(APIView):
         obj = common.get_item(request, obj, item)
         data = request.data
         models.validate_json(objname, data)
+        if objname == 'assets':
+            new_dict = deepcopy(data)
+            if 'assetMasterId' in new_dict: 
+                amid = new_dict['assetMasterId']
+                checkid = validateAssetId(amid)
+                if checkid == False:
+                    raise ViewException(FORMAT, 'Error Validating Asset Master Id', 500)
         serializer_class = serializers.serializer_class_lookup[objname]
         if 'associations' in data:
             del data['associations']
