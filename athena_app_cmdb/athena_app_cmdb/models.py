@@ -241,7 +241,7 @@ class Location(SoftDeleteModel):
 class Team(SoftDeleteModel):
     id = models.UUIDField(db_column='id', primary_key=True, default=uuid.uuid4)
     refid = models.CharField(db_column='team_id', max_length=100, unique=True)
-    name = models.CharField(db_column='name', max_length=100, unique=True)
+    name = models.CharField(db_column='name', max_length=100)
     properties = models.JSONField(db_column='json', blank=True, null=True)
     deleted = models.BooleanField(db_column='deleted', default='f')
     created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
