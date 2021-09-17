@@ -169,7 +169,7 @@ def validateAssetId(amid):
     # sometimes the request comes back as a bad request (400 error code). 
     # workaround to keep retrying until status code returns 200 (successfull)
     while True:
-        token = requests.post(tokenurl, json=credentials, auth=('asset-user', '1tsrAIn1NGcts&DGS!'))
+        token = requests.post(tokenurl, json=credentials)
         if token.status_code == 200:
             break
     tokenjson = json.loads(token.content)
