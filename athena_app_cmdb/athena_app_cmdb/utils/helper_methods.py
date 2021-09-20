@@ -162,12 +162,15 @@ def validateAssetId(amid):
     url = "http://api-int.connectcdk.com/api/ari-assets-backend/v1/api/ari-assets-backend/v1"  
     tokenurl = url + '/token' 
     logger.info('Validating asset master id : {}'.format(str(amid)))
-    credentials = os.getenv('AMIDCREDENTIALS', '')
+    credentials = = {
+    'username': 'asset-user',
+    'password': '1tsrAIn1NGcts&DGS!'
+    }
     # sometimes the request comes back as a bad request (400 error code). 
     # workaround to keep retrying until status code returns 200 (successfull)
-    # limit retrys to 20
+    # limit retrys to 5
     token = requests.post(tokenurl, json=credentials)
-    maxretrys = 20
+    maxretrys = 5
     retrys = 0
     while (token.status_code != 200 and retrys < maxretrys):
         token = requests.post(tokenurl, json=credentials)

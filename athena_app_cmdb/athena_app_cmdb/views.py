@@ -244,7 +244,7 @@ class athena_app_cmdbItem(APIView):
                 amid = new_dict['assetMasterId']
                 checkid = validateAssetId(amid)
                 if checkid == False:
-                    raise ViewException(FORMAT, 'Error Validating Asset Master Id', 500)
+                    raise ViewException(FORMAT, 'Error Validating Asset Master Id {}'.format(amid), 500)
         serializer_class = serializers.serializer_class_lookup[objname]
         if 'associations' in data:
             del data['associations']
