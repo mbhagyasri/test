@@ -162,7 +162,7 @@ def validateAssetId(amid):
     url = "http://api-int.connectcdk.com/api/ari-assets-backend/v1/api/ari-assets-backend/v1"  
     tokenurl = url + '/token' 
     logger.info('Validating asset master id : {}'.format(str(amid)))
-    credentials = = {
+    credentials = {
     'username': 'asset-user',
     'password': '1tsrAIn1NGcts&DGS!'
     }
