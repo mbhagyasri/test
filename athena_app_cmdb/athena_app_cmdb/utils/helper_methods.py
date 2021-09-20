@@ -169,7 +169,7 @@ def validateAssetId(amid):
     token = requests.post(tokenurl, json=credentials)
     maxretrys = 20
     retrys = 0
-    while (token.status_code != 200 AND retrys < maxretrys):
+    while (token.status_code != 200 and retrys < maxretrys):
         token = requests.post(tokenurl, json=credentials)
         retrys += 1
     tokenjson = json.loads(token.content)
