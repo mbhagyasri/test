@@ -90,6 +90,7 @@ WSGI_APPLICATION = 'app_registry.wsgi.application'
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
+
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
@@ -346,3 +347,8 @@ LOGGING = {
 
     }
 }
+
+AMIDCREDENTIALS = {
+    'username': 'asset-user',
+    'password': '1tsrAIn1NGcts&DGS!'
+    }
