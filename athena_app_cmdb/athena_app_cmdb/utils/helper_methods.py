@@ -9,7 +9,7 @@ import requests
 import logging
 import os
 from django.utils.module_loading import import_string
-
+from django.conf import settings
 from requests.auth import HTTPBasicAuth
 from .api_adapters import API
 
@@ -162,10 +162,7 @@ def validateAssetId(amid):
     url = "http://api-int.connectcdk.com/api/ari-assets-backend/v1/api/ari-assets-backend/v1"  
     tokenurl = url + '/token' 
     logger.info('Validating asset master id : {}'.format(str(amid)))
-    credentials = {
-    'username': 'asset-user',
-    'password': '1tsrAIn1NGcts&DGS!'
-    }
+    credentials = getattr(settings, "AMIDCREDENTIALS", None)
     # sometimes the request comes back as a bad request (400 error code). 
     # workaround to keep retrying until status code returns 200 (successfull)
     # limit retrys to 5
