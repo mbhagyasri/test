@@ -21,3 +21,4 @@ AMIDCREDENTIALS = {
     'username': 'asset-user',
     'password': '1tsrAIn1NGcts&DGS!'
     }
+AMIDURL = 'http://api-int.connectcdk.com/api/ari-assets-backend/v1/api/ari-assets-backend/v1'

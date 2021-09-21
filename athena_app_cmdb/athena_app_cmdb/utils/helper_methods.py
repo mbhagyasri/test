@@ -159,7 +159,7 @@ def trigger_resource_plan():
 
 def validateAssetId(amid):
     # gather token initially for validation request
-    url = "http://api-int.connectcdk.com/api/ari-assets-backend/v1/api/ari-assets-backend/v1"  
+    url = getattr(settings, "AMIDURL", DEFAULT_TIMEOUT)
     tokenurl = url + '/token' 
     logger.info('Validating asset master id : {}'.format(str(amid)))
     credentials = getattr(settings, "AMIDCREDENTIALS", DEFAULT_TIMEOUT)
