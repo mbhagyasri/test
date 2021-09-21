@@ -17,3 +17,7 @@ INTERNAL_IPS = [
 # Cache time to live is 1s
 CACHE_TTL = 1
 
+AMIDCREDENTIALS = {
+    'username': 'asset-user',
+    'password': '1tsrAIn1NGcts&DGS!'
+    }
