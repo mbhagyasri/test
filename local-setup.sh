@@ -125,13 +125,20 @@ echo "Build the container athena_app_cmdb"
 docker build -t athena_app_cmdb --target=backend .
 cd ..
 
+# Cleanup the docker containers
+echo "Running the make down"
+make down BUILDENV=$BUILDENV
+# If "make" command fails comment the above make line and uncomment below docker-compose line, usually happens on windows
+# docker-compose -f docker-compose-${BUILDENV}.yml down
+
 # Run the docker compose
-echo "Running the docker-compose up"
+echo "Running the make up"
 make up BUILDENV=$BUILDENV
 # If "make" command fails comment the above make line and uncomment below docker-compose line, usually happens on windows
 # docker-compose -f docker-compose-${BUILDENV}.yml up -d
 
 # Run the migrations
+echo "Running the make setupdb"
 make setupdb BUILDENV=$BUILDENV
 # If "make" command fails comment the above make lin and uncomment below docker-compose line, usually happens on windows
 # docker-compose -f docker-compose-${BUILDENV}.yml exec athena_app_cmdb sh -c "/usr/local/bin/python manage.py makemigrations athena_app_cmdb && /usr/local/bin/python manage.py migrate athena_app_cmdb && /usr/local/bin/python manage.py migrate"
