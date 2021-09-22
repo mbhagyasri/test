@@ -1,2 +1,8 @@
 __pycache__/
 *.py[cod]
+
+docker-compose-mac.yml
+docker-compose-Darwin.yml
+scripts/docker_deploy_mac.sh
+scripts/docker_deploy_Darwin.sh
+scripts/docker_deploy_MIN*.sh
