@@ -94,6 +94,12 @@ fi
 echo "Run the script $DEPLOY_DOCKER_FILE_TARGET"
 sh $DEPLOY_DOCKER_FILE_TARGET
 
+if [ ! -f $ENV_FILE ]
+then
+    echo "File $ENV_FILE not found. Failing safely!"
+    exit 1
+fi
+
 # Setup environment variables for postgres 
 echo "Removing the generated/random passwords from $ENV_FILE"
 if [ $OS == "Darwin" ]
