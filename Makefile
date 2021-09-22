@@ -49,3 +49,6 @@ setupdb:
 
 collectstatic: 
 	docker-compose -f docker-compose-${BUILDENV}.yml exec athena_app_cmdb sh -c "/usr/local/bin/python manage.py collectstatic --no-input"
+
+local-setup:
+	sh local-setup.sh

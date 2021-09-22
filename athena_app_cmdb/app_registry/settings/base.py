@@ -102,7 +102,7 @@ if 'endpoint' in DB_CONFIG and DB_CONFIG.get('endpoint', "") != "":
     array = DB_CONFIG.get('endpoint').split(':')
     DB_HOST = array[0]
     DB_PORT = array[1]
-ssl_options = {'sslmode': 'verify-full',
+ssl_options = {'sslmode': os.getenv('PG_SSL_MODE', 'verify-full'),
                     'sslrootcert': os.path.join(PROJECT_DIR, '../etc/rds-combined-ca-bundle.pem'),
                     'ssl_min_protocol_version': 'TLSv1.2'}
 if os.getenv('env_type', '') == 'local':
