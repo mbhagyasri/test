@@ -13,7 +13,7 @@ commonLabels:
 environment: us-dev
 
 env:
-  bamboo_username: svc_athena_cli
+  bamboo_username: svc_athena_devops
   bamboo_resources_plan: ENVMGR
   bamboo_resources_secret_plan: PLREEXS
   django_settings_module: app_registry.settings.prod
