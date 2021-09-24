@@ -697,7 +697,6 @@ class ResourceGetSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source='refid')
     owner = serializers.ReadOnlyField(source='owner.refid')
     location = serializers.ReadOnlyField(source='location.refid')
-
     class Meta:
         model = models.Resource
         fields = ('id', 'owner', 'location', 'properties',
@@ -712,9 +711,16 @@ class ResourceGetSerializer(serializers.ModelSerializer):
         properties = data.pop('properties', None)
         spec = properties.pop('spec')
         new_spec = OrderedDict()
+
+        def get_fields(data, field):
+            try:
+                return data.get(field)
+            except KeyError:
+                return
+
         new_spec['type'] = spec.pop('type', {})
-        new_spec['owner'] = data['owner']
-        new_spec['platform'] = data['location']
+        new_spec['owner'] = get_fields(data, 'owner')
+        new_spec['platform'] = get_fields(data, 'location')
         new_spec['definition'] = spec.pop('definition', {})
         new_spec['provisioner'] = spec.pop('provisioner', {})
         new_spec.update(spec)

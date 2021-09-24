@@ -95,7 +95,6 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
             raise ViewException(FORMAT, "No {} found.".format(objname), 404)
         serializer_class = serializers.serializer_class_lookup_read[objname]
         # do not show pagination if query result is less than page size
-
         try:
             if data.count() <= int(page_size):
                 self.pagination_class = None
@@ -134,6 +133,15 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
                 checkid = validateAssetId(amid)
                 if checkid == False:
                     raise ViewException(FORMAT, 'Error Validating Asset Master Id: {}'.format(amid), 500)
+        # validate resources on owner and location, if doing a post to /resources
+        if objname == 'resources':
+            spec = data.get('spec', {})
+            platform=spec.get('platform')
+            owner=spec.get('owner')
+            if not models.Location.objects.filter(refid=platform).exists():
+                raise ViewException(FORMAT, 'Platform: {} does not exists'.format(platform), 400)
+            if not models.Team.objects.filter(refid=owner).exists():
+                raise ViewException(FORMAT, 'Owner: {} does not exists'.format(owner), 400)
         # payload is valid .
         serializer_class = serializers.serializer_class_lookup[objname]
         if 'associations' in data:
