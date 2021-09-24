@@ -4,6 +4,7 @@
     "id": {
       "description": "Id of the entity",
       "enum": [
+        "adfs-sso",
         "cdk-service",
         "dms-drive",
         "fortellis",
