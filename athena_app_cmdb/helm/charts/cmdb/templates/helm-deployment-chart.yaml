@@ -10,7 +10,11 @@ metadata:
 spec:
   progressDeadlineSeconds: {{ .Values.progressDeadlineSeconds }}
 {{- if not .Values.autoscaling.enabled }}
+{{- if eq .Values.environment "us-prod" }}
+  replicas: {{ .Values.prodReplicaCount }}
+{{- else }}
   replicas: {{ .Values.replicaCount }}
+{{- end }}
 {{- end }}
   selector:
     matchLabels:
