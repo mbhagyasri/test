@@ -10,7 +10,7 @@ metadata:
 spec:
   progressDeadlineSeconds: {{ .Values.progressDeadlineSeconds }}
 {{- if not .Values.autoscaling.enabled }}
-{{- if eq .Values.environment "us-prod" }}
+{{- if eq .Values.environment "us-dev" }}
   replicas: {{ .Values.prodReplicaCount }}
 {{- else }}
   replicas: {{ .Values.replicaCount }}
