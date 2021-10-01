@@ -15,6 +15,7 @@ spec:
 {{- else }}
   replicas: {{ .Values.replicaCount }}
 {{- end }}
+{{- end }}
   selector:
     matchLabels:
       app.cdk.com/id: "athena-app-cmdb"
