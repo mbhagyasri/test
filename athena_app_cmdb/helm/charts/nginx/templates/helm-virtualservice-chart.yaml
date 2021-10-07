@@ -30,8 +30,8 @@ spec:
       ignoreUriCase: true
     retries:
     	attempts: 3
-        perTryTimeout: 5s
-        retryOn: 5xx    
+        perTryTimeout: "5s"
+        retryOn: "5xx"    
     route:
     - destination:
         host: athena-app-cmdb-managed
