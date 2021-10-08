@@ -1,7 +1,7 @@
 # Default values for helm.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-replicaCount: 1
+replicaCount: 2
 # Common labels applied to all resources and subresources
 commonLabels:
   environment: "us-prod"
