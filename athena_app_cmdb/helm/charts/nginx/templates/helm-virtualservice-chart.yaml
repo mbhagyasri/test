@@ -28,6 +28,10 @@ spec:
     - uri:
         prefix: "/"
       ignoreUriCase: true
+    retries:
+        attempts: 3
+        perTryTimeout: 5s
+        retryOn: 5xx
     route:
     - destination:
         host: athena-app-cmdb-managed

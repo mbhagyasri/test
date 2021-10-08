@@ -232,6 +232,12 @@ class AssetSerializer(serializers.ModelSerializer):
                 del properties[key]
         instance.refid = validated_data.get('refid', instance.refid)
         instance.properties = properties
+        instance.repo = validated_data.get('repo', instance.repo)
+        instance.name = validated_data.get('name', instance.name)
+        instance.team = validated_data.get('team', instance.team)
+        instance.product = validated_data.get('product', instance.product)
+        instance.appLanguage = validated_data.get('appLanguage', instance.appLanguage)
+        instance.assetMasterId = validated_data.get('assetMasterId', instance.assetMasterId)
         instance.deleted = validated_data.get('deleted', instance.deleted)
         instance.created_at = validated_data.get('created_at', instance.created_at)
         instance.created_by = validated_data.get('created_by', instance.created_by)
@@ -294,6 +300,7 @@ class AssetSerializer(serializers.ModelSerializer):
         except Exception as e:
             logger.exception(e)
             raise ViewException(FORMAT, 'Invalid Request', 400)
+
         instance.save()
         return instance
 
