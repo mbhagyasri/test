@@ -14,11 +14,7 @@ spec:
   - {{ .Values.name }}-managed.{{ .Values.namespace }}.svc.cluster.local
   - {{ .Values.location_id }}-{{ .Values.name }}.registry.{{ .Values.domain }}
   http:
-  - match:
-    - uri:
-        prefix: "/"
-      ignoreUriCase: true
-    retries:
+  - retries:
         attempts: 3
         perTryTimeout: 5s
         retryOn: 5xx
