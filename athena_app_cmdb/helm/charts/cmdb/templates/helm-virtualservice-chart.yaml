@@ -18,6 +18,7 @@ spec:
         attempts: 3
         perTryTimeout: 5s
         retryOn: 5xx
+    timeout: 15s
     route:
     - destination:
         host: {{ .Values.name }}-managed
