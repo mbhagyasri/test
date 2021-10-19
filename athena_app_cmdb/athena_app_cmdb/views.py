@@ -236,6 +236,7 @@ class athena_app_cmdbItem(APIView):
             logger.info('HERE SOFT DELETE')
             try:
                 data.delete()
+                logger.info('FINISHED DELETE')
             except Exception as e:
                 logger.exception(e)
                 raise ViewException(FORMAT, "Invalid request.", 400)
