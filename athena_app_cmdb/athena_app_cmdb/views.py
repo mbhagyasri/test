@@ -240,7 +240,7 @@ class athena_app_cmdbItem(APIView):
             except Exception as e:
                 logger.exception(e)
                 raise ViewException(FORMAT, "Invalid request.", 400)
-        return Response("Done", status.HTTP_200_OK)
+        return Response(status.HTTP_204_NO_CONTENT)
 
     def put(self, request, objname, item):
         obj = common.get_model(objname)
@@ -380,7 +380,7 @@ class athena_app_cmdbAttachesCreateDestroy(APIView):
         cdata_item = common.get_item(request, childobj, resource)
         cdata_item.assetEnvironments.remove(pdata)
         cdata_item.save()
-        return Response("Done", status.HTTP_204_NO_CONTENT)
+        return Response(status.HTTP_204_NO_CONTENT)
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -441,7 +441,7 @@ class athena_app_cmdbItemHistoryDetail(APIView):
         obj = common.get_model('{}_history'.format(objname))
         data = get_object_or_404(obj, id=history_item)
         data.delete()
-        return Response("Done", status.HTTP_204_NO_CONTENT)
+        return Response(status.HTTP_204_NO_CONTENT)
 
 
 @method_decorator(never_cache, name='dispatch')
