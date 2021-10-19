@@ -240,7 +240,7 @@ class athena_app_cmdbItem(APIView):
             except Exception as e:
                 logger.exception(e)
                 raise ViewException(FORMAT, "Invalid request.", 400)
-        return Response("Done", status.HTTP_204_NO_CONTENT)
+        return Response("Done", status.HTTP_200_OK)
 
     def put(self, request, objname, item):
         obj = common.get_model(objname)
