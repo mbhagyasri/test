@@ -128,6 +128,12 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
         # validate asset master id if doing a post to /assets
         if objname == 'assets':
             new_dict = deepcopy(data)
+            if 'attaches' in new_dict:
+                if 'resources' in new_dict['attaches']:
+                    resourcelist = new_dict['attaches']['resources']
+                    checkresources = validateAttaches(resourcelist)
+                    if checkresources == False:
+                        raise ViewException(FORMAT, 'Failed Validating Attaches', 500)
             if 'assetMasterId' in new_dict: 
                 amid = new_dict['assetMasterId']
                 checkid = validateAssetId(amid)
