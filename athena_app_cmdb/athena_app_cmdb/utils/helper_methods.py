@@ -13,7 +13,7 @@ from django.conf import settings
 from requests.auth import HTTPBasicAuth
 from .api_adapters import API
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
-
+from .. import models 
 logger = logging.getLogger(__name__)
 
 
@@ -182,3 +182,15 @@ def validateAssetId(amid):
         return True
     else:
         return False
+
+def validateAttaches(resourcelist):
+    for i in resourcelist:
+        resourcename = i['name']
+        logger.info('Validating existence of resource: {}...'.format(resourcename))
+        resourcecount = models.Resource.objects.filter(refid=resourcename).count()
+        if resourcecount != 1:
+            logger.info('Failed to validate resource: {}'.format(resourcename))
+            return False
+        else: 
+            logger.info('Resource Validated: {}'.format(resourcename))
+    return True

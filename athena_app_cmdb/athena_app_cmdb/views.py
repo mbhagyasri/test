@@ -37,7 +37,7 @@ from . import models, serializers, common
 from .operators import Validators
 from .paginator import MyPaginationMixin
 from .middleware import ViewException
-from .utils.helper_methods import check_value, validateAssetId
+from .utils.helper_methods import check_value, validateAssetId, validateAttaches
 from copy import deepcopy
 
 logger = logging.getLogger(__name__)
@@ -248,6 +248,13 @@ class athena_app_cmdbItem(APIView):
         models.validate_json(objname, data)
         if objname == 'assets':
             new_dict = deepcopy(data)
+            #validate attaches
+            if 'attaches' in new_dict:
+                if 'resources' in new_dict['attaches']:
+                    resourcelist = new_dict['attaches']['resources']
+                    checkresources = validateAttaches(resourcelist)
+                    if checkresources == False:
+                        raise ViewException(FORMAT, 'Failed Validating Attaches', 500)
             if 'assetMasterId' in new_dict: 
                 amid = new_dict['assetMasterId']
                 checkid = validateAssetId(amid)
