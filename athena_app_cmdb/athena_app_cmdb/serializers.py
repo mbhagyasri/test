@@ -365,7 +365,7 @@ class AssetGetUrlSerializer(serializers.ModelSerializer):
             return {}
         for env in environments:
             tmp_data = OrderedDict([('environment_id', env['id']), ('type', env['type'])])
-            prefix = "" if env['type'] == 'prod' else env['id'] + '-'
+            prefix = env['prefix'] + '-' if 'prefix' in env else ''
             hostname = data['name'] if data['type'] != 'bff' else '{}-{}.sd'.format(data['product'],
                                                                                     data['refid'])
 
