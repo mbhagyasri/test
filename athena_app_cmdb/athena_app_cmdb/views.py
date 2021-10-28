@@ -133,12 +133,12 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
                     resourcelist = new_dict['attaches']['resources']
                     checkresources = validateAttaches(resourcelist)
                     if checkresources == False:
-                        raise ViewException(FORMAT, 'Failed Validating Attaches', 500)
+                        raise ViewException(FORMAT, 'Failed Validating Attaches', 400)
             if 'assetMasterId' in new_dict: 
                 amid = new_dict['assetMasterId']
                 checkid = validateAssetId(amid)
                 if checkid == False:
-                    raise ViewException(FORMAT, 'Error Validating Asset Master Id: {}'.format(amid), 500)
+                    raise ViewException(FORMAT, 'Error Validating Asset Master Id: {}'.format(amid), 400)
         # validate resources on owner and location, if doing a post to /resources
         if objname == 'resources':
             spec = data.get('spec', {})
@@ -260,12 +260,12 @@ class athena_app_cmdbItem(APIView):
                     resourcelist = new_dict['attaches']['resources']
                     checkresources = validateAttaches(resourcelist)
                     if checkresources == False:
-                        raise ViewException(FORMAT, 'Failed Validating Attaches', 500)
+                        raise ViewException(FORMAT, 'Failed Validating Attaches', 400)
             if 'assetMasterId' in new_dict: 
                 amid = new_dict['assetMasterId']
                 checkid = validateAssetId(amid)
                 if checkid == False:
-                    raise ViewException(FORMAT, 'Error Validating Asset Master Id {}'.format(amid), 500)
+                    raise ViewException(FORMAT, 'Error Validating Asset Master Id {}'.format(amid), 400)
         serializer_class = serializers.serializer_class_lookup[objname]
         if 'associations' in data:
             del data['associations']
