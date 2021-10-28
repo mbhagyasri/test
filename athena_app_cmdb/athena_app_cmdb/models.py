@@ -12,7 +12,7 @@ from requests.structures import CaseInsensitiveDict
 from django.core.exceptions import FieldDoesNotExist
 from .softdelete.models import SoftDeleteModel
 from .middleware import ViewException
-
+from auditlog.registry import auditlog
 
 logger = logging.getLogger(__name__)
 FORMAT = 'json'
@@ -423,3 +423,13 @@ models_name_mapping = {'locations': 'Location', 'teams': 'Team', 'securityProvid
 
 models_class_lookup = CaseInsensitiveDict(models_mapping)
 models_name_lookup = CaseInsensitiveDict(models_name_mapping)
+
+auditlog.register(Location)
+auditlog.register(Team)
+auditlog.register(SecurityProvider)
+auditlog.register(Cluster)
+auditlog.register(Product)
+auditlog.register(Asset)
+auditlog.register(Resource)
+auditlog.register(AssetType)
+auditlog.register(AssetEnvironment)

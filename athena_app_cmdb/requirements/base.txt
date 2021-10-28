@@ -33,3 +33,5 @@ pyparsing
 pydot
 django-extensions
 django-request-logging
+auditlog3
+jsonfield

@@ -245,13 +245,15 @@ class athena_app_cmdbItem(APIView):
             except Exception as e:
                 logger.exception(e)
                 raise ViewException(FORMAT, "Invalid request.", 400)
-        return Response("Done", status.HTTP_204_NO_CONTENT)
+        return Response("Done", status.HTTP_200_OK)
 
     def put(self, request, objname, item):
         obj = common.get_model(objname)
         obj = common.get_item(request, obj, item)
         data = request.data
         models.validate_json(objname, data)
+        if (objname in ['assets', 'products', 'teams', 'locations'] and item != data['id']):
+            raise ViewException(FORMAT, 'Failed to update the record {}. The id in payload is not matching with {}.'.format(item, item), 500)
         if objname == 'assets':
             new_dict = deepcopy(data)
             #validate attaches
@@ -392,7 +394,7 @@ class athena_app_cmdbAttachesCreateDestroy(APIView):
         cdata_item = common.get_item(request, childobj, resource)
         cdata_item.assetEnvironments.remove(pdata)
         cdata_item.save()
-        return Response("Done", status.HTTP_204_NO_CONTENT)
+        return Response("Done", status.HTTP_200_OK)
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -453,7 +455,7 @@ class athena_app_cmdbItemHistoryDetail(APIView):
         obj = common.get_model('{}_history'.format(objname))
         data = get_object_or_404(obj, id=history_item)
         data.delete()
-        return Response("Done", status.HTTP_204_NO_CONTENT)
+        return Response("Done", status.HTTP_200_OK)
 
 
 @method_decorator(never_cache, name='dispatch')
