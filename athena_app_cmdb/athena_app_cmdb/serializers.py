@@ -215,7 +215,7 @@ class AssetSerializer(serializers.ModelSerializer):
                     robj = None
                     if name not in attaches_list:
                         robj = models.Resource.objects.get(refid=name)
-                        robj.assetEnvironments.delete(envobj)
+                        robj.assetEnvironments.remove(envobj)
         except Exception as e:
             logger.exception(e)
             #roll back creation
@@ -296,7 +296,7 @@ class AssetSerializer(serializers.ModelSerializer):
                     robj = None
                     if name not in attaches_list:
                         robj = models.Resource.objects.get(refid=name)
-                        robj.assetEnvironments.delete(envobj)
+                        robj.assetEnvironments.remove(envobj)
         except Exception as e:
             logger.exception(e)
             raise ViewException(FORMAT, 'Invalid Request', 400)
