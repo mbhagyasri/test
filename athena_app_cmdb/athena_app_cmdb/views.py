@@ -23,13 +23,14 @@ from django.views.decorators.cache import never_cache
 
 from django.utils.decorators import method_decorator
 from rest_framework import exceptions as rest_exceptions
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, action
 from rest_framework.settings import api_settings
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.reverse import reverse
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework_simplejwt import authentication
+from rest_framework.authentication import BasicAuthentication
 
 
 from rest_framework.response import Response
@@ -81,6 +82,8 @@ def api_root(request, format=None):
 @method_decorator(never_cache, name='dispatch')
 class athena_app_cmdbList(APIView, MyPaginationMixin):
     pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     path = '/'
 
     def get(self, request, objname):
@@ -203,6 +206,8 @@ class athena_app_cmdbListDetail(APIView, MyPaginationMixin):
 
 @method_decorator(never_cache, name='dispatch')
 class athena_app_cmdbItem(APIView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def perform_update(self, serializer):
         serializer.save(last_changed=timezone.now())
@@ -363,6 +368,8 @@ class athena_app_cmdbAttachesList(APIView):
 
 @method_decorator(never_cache, name='dispatch')
 class athena_app_cmdbAttachesCreateDestroy(APIView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def post(self, request, item, env, resource):
         parentobjname = 'assetsByEnvironment'
@@ -441,6 +448,8 @@ class athena_app_cmdbItemHistory(APIView, MyPaginationMixin):
 
 @method_decorator(never_cache, name='dispatch')
 class athena_app_cmdbItemHistoryDetail(APIView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, objname, history_item):
         obj = common.get_model('{}_history'.format(objname))
@@ -460,6 +469,9 @@ class athena_app_cmdbItemHistoryDetail(APIView):
 
 @method_decorator(never_cache, name='dispatch')
 class athena_app_cmdbItemHistorySync(APIView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def post(self, request, objname, history_item):
         obj = common.get_model('{}_history'.format(objname))
         data = get_object_or_404(obj, id=history_item)
@@ -479,6 +491,8 @@ class athena_app_cmdbItemHistorySync(APIView):
 
 class athena_app_cmdbBulkChange(APIView, MyPaginationMixin):
     pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def patch(self, request):
         return_data = {}
