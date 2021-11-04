@@ -37,7 +37,7 @@ from . import models, serializers, common
 from .operators import Validators
 from .paginator import MyPaginationMixin
 from .middleware import ViewException
-from .utils.helper_methods import check_value, validateAssetId, validateAttaches
+from .utils.helper_methods import check_value, validateAssetId, validateAttaches, validateAssetEnvConfig
 from copy import deepcopy
 
 logger = logging.getLogger(__name__)
@@ -126,15 +126,20 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
                 if key in new_dict:
                     del new_dict[key]
             data = {'id': new_dict['id'], 'properties': new_dict}
-        # validate asset master id if doing a post to /assets
         if objname == 'assets':
             new_dict = deepcopy(data)
+            # validate asset security and internal configs provided for all product environments
+            check_envs = validateAssetEnvConfig(new_dict)
+            if check_envs == False:
+                raise ViewException(FORMAT, 'Asset env configs must match product envs ({})'.format(new_dict['product']), 400)
+            # validate that attached Resources exist
             if 'attaches' in new_dict:
                 if 'resources' in new_dict['attaches']:
                     resourcelist = new_dict['attaches']['resources']
                     checkresources = validateAttaches(resourcelist)
                     if checkresources == False:
                         raise ViewException(FORMAT, 'Failed Validating Attaches', 400)
+            # validate asset master id if doing a post to /assets
             if 'assetMasterId' in new_dict: 
                 amid = new_dict['assetMasterId']
                 checkid = validateAssetId(amid)
@@ -232,16 +237,17 @@ class athena_app_cmdbItem(APIView):
         if objname == 'resources':
             attaches = data.assetEnvironments.all()
             if attaches:
-                raise ViewException(FORMAT, "Failed to delete {}.  There are still assets being attached.".format(item),
+                raise ViewException(FORMAT, "Failed to delete {}.  Resource is still attached to asset(s).".format(item),
                                     400)
         if 'HTTP_X_FORCE_DELETE' in request.META and request.META['HTTP_X_FORCE_DELETE'].lower() == 'true':
+            logger.info('HARD DELETE: {}'.format(item))
             try:
                 data.hard_delete()
             except Exception as e:
                 logger.exception(e)
                 raise ViewException(FORMAT, "Invalid request.", 400)
         else:
-            logger.info('HERE SOFT DELETE')
+            logger.info('SOFT DELETE: {}'.format(item))
             try:
                 data.delete()
             except Exception as e:
@@ -258,6 +264,10 @@ class athena_app_cmdbItem(APIView):
             raise ViewException(FORMAT, 'Failed to update the record {}. The id in payload is not matching with {}.'.format(item, item), 500)
         if objname == 'assets':
             new_dict = deepcopy(data)
+            # validate asset security and internal configs provided for all product environments
+            check_envs = validateAssetEnvConfig(new_dict)
+            if check_envs == False:
+                raise ViewException(FORMAT, 'Asset env configs must match product envs ({})'.format(new_dict['product']), 400)
             #validate attaches
             if 'attaches' in new_dict:
                 if 'resources' in new_dict['attaches']:

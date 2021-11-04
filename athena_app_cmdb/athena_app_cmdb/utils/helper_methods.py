@@ -194,3 +194,18 @@ def validateAttaches(resourcelist):
         else: 
             logger.info('Resource Validated: {}'.format(resourcename))
     return True
+
+# Validate whether an Asset has per-environment property values configured for all its Product environments. Returns boolean.
+def validateAssetEnvConfig(asset_data):
+    #Get list of the environment ids from the Asset's product.
+    productEnvIds = models.ProductEnvironment.objects.values_list('refid', flat=True).filter(product__refid=asset_data['product'])
+    
+    #Create lists of the Asset's Internal and Security environment ids
+    assetInternalEnvs = [ elem['environment'] for elem in asset_data['internal'] ]
+    assetSecurityEnvs = [ elem['environment'] for elem in asset_data['security'] ]
+
+    #check if assetEnvs contains all elements from productEnvIds
+    internalResult = all(elem in assetInternalEnvs  for elem in productEnvIds)
+    securityResult = all(elem in assetSecurityEnvs  for elem in productEnvIds)
+
+    return internalResult and securityResult
