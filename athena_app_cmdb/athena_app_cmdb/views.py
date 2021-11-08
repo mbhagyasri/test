@@ -260,7 +260,7 @@ class athena_app_cmdbItem(APIView):
         obj = common.get_item(request, obj, item)
         data = request.data
         models.validate_json(objname, data)
-        if (objname in ['assets', 'products', 'teams', 'locations'] and item != data['id']):
+        if (objname in ['assets', 'products', 'teams', 'locations','resources'] and item != data['id']):
             raise ViewException(FORMAT, 'Failed to update the record {}. The id in payload is not matching with {}.'.format(item, item), 500)
         if objname == 'assets':
             new_dict = deepcopy(data)
