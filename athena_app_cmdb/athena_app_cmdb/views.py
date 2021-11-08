@@ -264,10 +264,12 @@ class athena_app_cmdbItem(APIView):
             raise ViewException(FORMAT, 'Failed to update the record {}. The id in payload is not matching with {}.'.format(item, item), 500)
         if objname == 'assets':
             new_dict = deepcopy(data)
-            # validate asset security and internal configs provided for all product environments
-            check_envs = validateAssetEnvConfig(new_dict)
-            if check_envs == False:
-                raise ViewException(FORMAT, 'Asset env configs must match product envs ({})'.format(new_dict['product']), 400)
+            # validate asset security and internal configs are provided for all product environments
+            # Set the X_IGNORE_ENVS header to 'true' to bypass this check (ie: if needed to remove asset envs prior to updating product envs)
+            if 'HTTP_X_IGNORE_ENVS' not in request.META or request.META['HTTP_X_IGNORE_ENVS'].lower() == 'false':
+                check_envs = validateAssetEnvConfig(new_dict)
+                if check_envs == False:
+                    raise ViewException(FORMAT, 'Asset env configs must match product envs ({})'.format(new_dict['product']), 400)
             #validate attaches
             if 'attaches' in new_dict:
                 if 'resources' in new_dict['attaches']:
