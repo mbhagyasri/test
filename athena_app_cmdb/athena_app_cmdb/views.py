@@ -261,7 +261,9 @@ class athena_app_cmdbItem(APIView):
         data = request.data
         models.validate_json(objname, data)
         if (objname in ['assets', 'products', 'teams', 'locations','resources'] and item != data['id']):
-            raise ViewException(FORMAT, 'Failed to update the record {}. The id in payload is not matching with {}.'.format(item, item), 500)
+            raise ViewException(FORMAT, 'Failed to update the record {}. The id in payload is not matching with {}.'.format(item, item), 400)
+        if (objname == 'resources' and item != data['metadata']['name']):
+            raise ViewException(FORMAT, 'Failed to update the record {}. The id in payload is not matching with {}.'.format(item, item), 400)
         if objname == 'assets':
             new_dict = deepcopy(data)
             # validate asset security and internal configs are provided for all product environments
