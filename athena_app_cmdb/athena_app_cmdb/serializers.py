@@ -215,7 +215,7 @@ class AssetSerializer(serializers.ModelSerializer):
                     robj = None
                     if name not in attaches_list:
                         robj = models.Resource.objects.get(refid=name)
-                        robj.assetEnvironments.delete(envobj)
+                        robj.assetEnvironments.remove(envobj)
         except Exception as e:
             logger.exception(e)
             #roll back creation
@@ -296,7 +296,7 @@ class AssetSerializer(serializers.ModelSerializer):
                     robj = None
                     if name not in attaches_list:
                         robj = models.Resource.objects.get(refid=name)
-                        robj.assetEnvironments.delete(envobj)
+                        robj.assetEnvironments.remove(envobj)
         except Exception as e:
             logger.exception(e)
             raise ViewException(FORMAT, 'Invalid Request', 400)
@@ -365,7 +365,7 @@ class AssetGetUrlSerializer(serializers.ModelSerializer):
             return {}
         for env in environments:
             tmp_data = OrderedDict([('environment_id', env['id']), ('type', env['type'])])
-            prefix = "" if env['type'] == 'prod' else env['id'] + '-'
+            prefix = env['prefix'] + '-' if 'prefix' in env else ''
             hostname = data['name'] if data['type'] != 'bff' else '{}-{}.sd'.format(data['product'],
                                                                                     data['refid'])
 

@@ -46,8 +46,8 @@ INSTALLED_APPS = [
     'athena_app_cmdb',
     'django_json_widget',
     'django_extensions',
-    'admin_auto_filters'
-
+    'admin_auto_filters',
+    'auditlog'
 
 ]
 
@@ -63,6 +63,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_currentuser.middleware.ThreadLocalUserMiddleware',
     'athena_app_cmdb.middleware.ViewExceptionMiddleware',
+    'auditlog.middleware.AuditlogMiddleware',
 ]
 
 ROOT_URLCONF = 'app_registry.urls'
@@ -183,7 +184,6 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-
     ),
 }
 
