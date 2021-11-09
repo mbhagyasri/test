@@ -11,29 +11,16 @@ spec:
   - {{ .Values.gateways.private }}
   - mesh
   hosts:
-  - athena-app-cmdb.{{ .Values.domain }}
   - {{ .Values.name }}-managed.{{ .Values.namespace }}.svc.cluster.local
   - {{ .Values.location_id }}-{{ .Values.name }}.registry.{{ .Values.domain }}
   http:
-  - match:
-    - uri:
-        prefix: "/static"
-      ignoreUriCase: true
-    route:
-    - destination:
-        host: {{ .Values.name }}-managed
-        port:
-          number: {{ .Values.virtualService.kubernetesService.httpPort }}
-  - match:
-    - uri:
-        prefix: "/"
-      ignoreUriCase: true
-    retries:
+  - retries:
         attempts: 3
         perTryTimeout: 5s
         retryOn: 5xx
+    timeout: 15s
     route:
     - destination:
-        host: athena-app-cmdb-managed
+        host: {{ .Values.name }}-managed
         port:
           number: {{ .Values.virtualService.kubernetesService.httpPort }}

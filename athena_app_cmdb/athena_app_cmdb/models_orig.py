@@ -95,7 +95,7 @@ class Team(models.Model):
         verbose_name = 'Team'
         ordering = ['-updated_at', '-created_at',]
         constraints = [
-            models.UniqueConstraint(fields=['name'], name='unique_team_name')
+            models.UniqueConstraint(fields=['team_id'], name='unique_team_id')
         ]
 
     @property

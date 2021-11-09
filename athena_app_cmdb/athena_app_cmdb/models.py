@@ -12,7 +12,7 @@ from requests.structures import CaseInsensitiveDict
 from django.core.exceptions import FieldDoesNotExist
 from .softdelete.models import SoftDeleteModel
 from .middleware import ViewException
-
+from auditlog.registry import auditlog
 
 logger = logging.getLogger(__name__)
 FORMAT = 'json'
@@ -241,7 +241,7 @@ class Location(SoftDeleteModel):
 class Team(SoftDeleteModel):
     id = models.UUIDField(db_column='id', primary_key=True, default=uuid.uuid4)
     refid = models.CharField(db_column='team_id', max_length=100, unique=True)
-    name = models.CharField(db_column='name', max_length=100, unique=True)
+    name = models.CharField(db_column='name', max_length=100)
     properties = models.JSONField(db_column='json', blank=True, null=True)
     deleted = models.BooleanField(db_column='deleted', default='f')
     created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
@@ -423,3 +423,13 @@ models_name_mapping = {'locations': 'Location', 'teams': 'Team', 'securityProvid
 
 models_class_lookup = CaseInsensitiveDict(models_mapping)
 models_name_lookup = CaseInsensitiveDict(models_name_mapping)
+
+auditlog.register(Location)
+auditlog.register(Team)
+auditlog.register(SecurityProvider)
+auditlog.register(Cluster)
+auditlog.register(Product)
+auditlog.register(Asset)
+auditlog.register(Resource)
+auditlog.register(AssetType)
+auditlog.register(AssetEnvironment)

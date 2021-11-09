@@ -215,7 +215,7 @@ class AssetSerializer(serializers.ModelSerializer):
                     robj = None
                     if name not in attaches_list:
                         robj = models.Resource.objects.get(refid=name)
-                        robj.assetEnvironments.delete(envobj)
+                        robj.assetEnvironments.remove(envobj)
         except Exception as e:
             logger.exception(e)
             #roll back creation
@@ -232,6 +232,12 @@ class AssetSerializer(serializers.ModelSerializer):
                 del properties[key]
         instance.refid = validated_data.get('refid', instance.refid)
         instance.properties = properties
+        instance.repo = validated_data.get('repo', instance.repo)
+        instance.name = validated_data.get('name', instance.name)
+        instance.team = validated_data.get('team', instance.team)
+        instance.product = validated_data.get('product', instance.product)
+        instance.appLanguage = validated_data.get('appLanguage', instance.appLanguage)
+        instance.assetMasterId = validated_data.get('assetMasterId', instance.assetMasterId)
         instance.deleted = validated_data.get('deleted', instance.deleted)
         instance.created_at = validated_data.get('created_at', instance.created_at)
         instance.created_by = validated_data.get('created_by', instance.created_by)
@@ -290,10 +296,11 @@ class AssetSerializer(serializers.ModelSerializer):
                     robj = None
                     if name not in attaches_list:
                         robj = models.Resource.objects.get(refid=name)
-                        robj.assetEnvironments.delete(envobj)
+                        robj.assetEnvironments.remove(envobj)
         except Exception as e:
             logger.exception(e)
             raise ViewException(FORMAT, 'Invalid Request', 400)
+
         instance.save()
         return instance
 
@@ -358,7 +365,7 @@ class AssetGetUrlSerializer(serializers.ModelSerializer):
             return {}
         for env in environments:
             tmp_data = OrderedDict([('environment_id', env['id']), ('type', env['type'])])
-            prefix = "" if env['type'] == 'prod' else env['id'] + '-'
+            prefix = env['prefix'] + '-' if 'prefix' in env else ''
             hostname = data['name'] if data['type'] != 'bff' else '{}-{}.sd'.format(data['product'],
                                                                                     data['refid'])
 
@@ -697,7 +704,6 @@ class ResourceGetSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source='refid')
     owner = serializers.ReadOnlyField(source='owner.refid')
     location = serializers.ReadOnlyField(source='location.refid')
-
     class Meta:
         model = models.Resource
         fields = ('id', 'owner', 'location', 'properties',
@@ -712,9 +718,16 @@ class ResourceGetSerializer(serializers.ModelSerializer):
         properties = data.pop('properties', None)
         spec = properties.pop('spec')
         new_spec = OrderedDict()
+
+        def get_fields(data, field):
+            try:
+                return data.get(field)
+            except KeyError:
+                return
+
         new_spec['type'] = spec.pop('type', {})
-        new_spec['owner'] = data['owner']
-        new_spec['platform'] = data['location']
+        new_spec['owner'] = get_fields(data, 'owner')
+        new_spec['platform'] = get_fields(data, 'location')
         new_spec['definition'] = spec.pop('definition', {})
         new_spec['provisioner'] = spec.pop('provisioner', {})
         new_spec.update(spec)

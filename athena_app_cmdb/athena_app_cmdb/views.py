@@ -37,7 +37,7 @@ from . import models, serializers, common
 from .operators import Validators
 from .paginator import MyPaginationMixin
 from .middleware import ViewException
-from .utils.helper_methods import check_value, validateAssetId
+from .utils.helper_methods import check_value, validateAssetId, validateAttaches, validateAssetEnvConfig
 from copy import deepcopy
 
 logger = logging.getLogger(__name__)
@@ -81,6 +81,7 @@ def api_root(request, format=None):
 @method_decorator(never_cache, name='dispatch')
 class athena_app_cmdbList(APIView, MyPaginationMixin):
     pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
+    
     path = '/'
 
     def get(self, request, objname):
@@ -95,7 +96,6 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
             raise ViewException(FORMAT, "No {} found.".format(objname), 404)
         serializer_class = serializers.serializer_class_lookup_read[objname]
         # do not show pagination if query result is less than page size
-
         try:
             if data.count() <= int(page_size):
                 self.pagination_class = None
@@ -126,14 +126,34 @@ class athena_app_cmdbList(APIView, MyPaginationMixin):
                 if key in new_dict:
                     del new_dict[key]
             data = {'id': new_dict['id'], 'properties': new_dict}
-        # validate asset master id if doing a post to /assets
         if objname == 'assets':
             new_dict = deepcopy(data)
+            # validate asset security and internal configs provided for all product environments
+            check_envs = validateAssetEnvConfig(new_dict)
+            if check_envs == False:
+                raise ViewException(FORMAT, 'Asset env configs must match product envs ({})'.format(new_dict['product']), 400)
+            # validate that attached Resources exist
+            if 'attaches' in new_dict:
+                if 'resources' in new_dict['attaches']:
+                    resourcelist = new_dict['attaches']['resources']
+                    checkresources = validateAttaches(resourcelist)
+                    if checkresources == False:
+                        raise ViewException(FORMAT, 'Failed Validating Attaches', 400)
+            # validate asset master id if doing a post to /assets
             if 'assetMasterId' in new_dict: 
                 amid = new_dict['assetMasterId']
                 checkid = validateAssetId(amid)
                 if checkid == False:
-                    raise ViewException(FORMAT, 'Error Validating Asset Master Id: {}'.format(amid), 500)
+                    raise ViewException(FORMAT, 'Error Validating Asset Master Id: {}'.format(amid), 400)
+        # validate resources on owner and location, if doing a post to /resources
+        if objname == 'resources':
+            spec = data.get('spec', {})
+            platform=spec.get('platform')
+            owner=spec.get('owner')
+            if not models.Location.objects.filter(refid=platform).exists():
+                raise ViewException(FORMAT, 'Platform: {} does not exists'.format(platform), 400)
+            if not models.Team.objects.filter(refid=owner).exists():
+                raise ViewException(FORMAT, 'Owner: {} does not exists'.format(owner), 400)
         # payload is valid .
         serializer_class = serializers.serializer_class_lookup[objname]
         if 'associations' in data:
@@ -189,6 +209,7 @@ class athena_app_cmdbListDetail(APIView, MyPaginationMixin):
 
 @method_decorator(never_cache, name='dispatch')
 class athena_app_cmdbItem(APIView):
+    
 
     def perform_update(self, serializer):
         serializer.save(last_changed=timezone.now())
@@ -216,35 +237,53 @@ class athena_app_cmdbItem(APIView):
         if objname == 'resources':
             attaches = data.assetEnvironments.all()
             if attaches:
-                raise ViewException(FORMAT, "Failed to delete {}.  There are still assets being attached.".format(item),
+                raise ViewException(FORMAT, "Failed to delete {}.  Resource is still attached to asset(s).".format(item),
                                     400)
         if 'HTTP_X_FORCE_DELETE' in request.META and request.META['HTTP_X_FORCE_DELETE'].lower() == 'true':
+            logger.info('HARD DELETE: {}'.format(item))
             try:
                 data.hard_delete()
             except Exception as e:
                 logger.exception(e)
                 raise ViewException(FORMAT, "Invalid request.", 400)
         else:
-            logger.info('HERE SOFT DELETE')
+            logger.info('SOFT DELETE: {}'.format(item))
             try:
                 data.delete()
             except Exception as e:
                 logger.exception(e)
                 raise ViewException(FORMAT, "Invalid request.", 400)
-        return Response("Done", status.HTTP_204_NO_CONTENT)
+        return Response("Done", status.HTTP_200_OK)
 
     def put(self, request, objname, item):
         obj = common.get_model(objname)
         obj = common.get_item(request, obj, item)
         data = request.data
         models.validate_json(objname, data)
+        if (objname in ['assets', 'products', 'teams', 'locations','resources'] and item != data['id']):
+            raise ViewException(FORMAT, 'Failed to update the record {}. The id in payload is not matching with {}.'.format(item, item), 400)
+        if (objname == 'resources' and item != data['metadata']['name']):
+            raise ViewException(FORMAT, 'Failed to update the record {}. The id in payload is not matching with {}.'.format(item, item), 400)
         if objname == 'assets':
             new_dict = deepcopy(data)
+            # validate asset security and internal configs are provided for all product environments
+            # Set the X_IGNORE_ENVS header to 'true' to bypass this check (ie: if needed to remove asset envs prior to updating product envs)
+            if 'HTTP_X_IGNORE_ENVS' not in request.META or request.META['HTTP_X_IGNORE_ENVS'].lower() == 'false':
+                check_envs = validateAssetEnvConfig(new_dict)
+                if check_envs == False:
+                    raise ViewException(FORMAT, 'Asset env configs must match product envs ({})'.format(new_dict['product']), 400)
+            #validate attaches
+            if 'attaches' in new_dict:
+                if 'resources' in new_dict['attaches']:
+                    resourcelist = new_dict['attaches']['resources']
+                    checkresources = validateAttaches(resourcelist)
+                    if checkresources == False:
+                        raise ViewException(FORMAT, 'Failed Validating Attaches', 400)
             if 'assetMasterId' in new_dict: 
                 amid = new_dict['assetMasterId']
                 checkid = validateAssetId(amid)
                 if checkid == False:
-                    raise ViewException(FORMAT, 'Error Validating Asset Master Id {}'.format(amid), 500)
+                    raise ViewException(FORMAT, 'Error Validating Asset Master Id {}'.format(amid), 400)
         serializer_class = serializers.serializer_class_lookup[objname]
         if 'associations' in data:
             del data['associations']
@@ -340,6 +379,7 @@ class athena_app_cmdbAttachesList(APIView):
 
 @method_decorator(never_cache, name='dispatch')
 class athena_app_cmdbAttachesCreateDestroy(APIView):
+    
 
     def post(self, request, item, env, resource):
         parentobjname = 'assetsByEnvironment'
@@ -371,7 +411,7 @@ class athena_app_cmdbAttachesCreateDestroy(APIView):
         cdata_item = common.get_item(request, childobj, resource)
         cdata_item.assetEnvironments.remove(pdata)
         cdata_item.save()
-        return Response("Done", status.HTTP_204_NO_CONTENT)
+        return Response("Done", status.HTTP_200_OK)
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -418,6 +458,7 @@ class athena_app_cmdbItemHistory(APIView, MyPaginationMixin):
 
 @method_decorator(never_cache, name='dispatch')
 class athena_app_cmdbItemHistoryDetail(APIView):
+    
 
     def get(self, request, objname, history_item):
         obj = common.get_model('{}_history'.format(objname))
@@ -432,11 +473,13 @@ class athena_app_cmdbItemHistoryDetail(APIView):
         obj = common.get_model('{}_history'.format(objname))
         data = get_object_or_404(obj, id=history_item)
         data.delete()
-        return Response("Done", status.HTTP_204_NO_CONTENT)
+        return Response("Done", status.HTTP_200_OK)
 
 
 @method_decorator(never_cache, name='dispatch')
 class athena_app_cmdbItemHistorySync(APIView):
+    
+
     def post(self, request, objname, history_item):
         obj = common.get_model('{}_history'.format(objname))
         data = get_object_or_404(obj, id=history_item)
@@ -456,6 +499,7 @@ class athena_app_cmdbItemHistorySync(APIView):
 
 class athena_app_cmdbBulkChange(APIView, MyPaginationMixin):
     pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
+    
 
     def patch(self, request):
         return_data = {}

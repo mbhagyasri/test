@@ -135,6 +135,7 @@
               "properties": {
                 "provider": {
                   "enum": [
+                    "adfs-sso",
                     "cdk-service",
                     "dms-drive",
                     "fortellis",

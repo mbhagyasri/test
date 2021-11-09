@@ -46,8 +46,8 @@ INSTALLED_APPS = [
     'athena_app_cmdb',
     'django_json_widget',
     'django_extensions',
-    'admin_auto_filters'
-
+    'admin_auto_filters',
+    'auditlog'
 
 ]
 
@@ -56,12 +56,14 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django_session_timeout.middleware.SessionTimeoutMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'request_logging.middleware.LoggingMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_currentuser.middleware.ThreadLocalUserMiddleware',
     'athena_app_cmdb.middleware.ViewExceptionMiddleware',
+    'auditlog.middleware.AuditlogMiddleware',
 ]
 
 ROOT_URLCONF = 'app_registry.urls'
@@ -102,7 +104,7 @@ if 'endpoint' in DB_CONFIG and DB_CONFIG.get('endpoint', "") != "":
     array = DB_CONFIG.get('endpoint').split(':')
     DB_HOST = array[0]
     DB_PORT = array[1]
-ssl_options = {'sslmode': 'verify-full',
+ssl_options = {'sslmode': os.getenv('PG_SSL_MODE', 'verify-full'),
                     'sslrootcert': os.path.join(PROJECT_DIR, '../etc/rds-combined-ca-bundle.pem'),
                     'ssl_min_protocol_version': 'TLSv1.2'}
 if os.getenv('env_type', '') == 'local':
@@ -182,7 +184,6 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-
     ),
 }
 
