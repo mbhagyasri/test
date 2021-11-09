@@ -440,7 +440,7 @@ class athena_app_cmdbItemHistoryDetail(APIView):
         obj = common.get_model('{}_history'.format(objname))
         data = get_object_or_404(obj, id=history_item)
         data.delete()
-        return Response("Done",status.HTTP_204_NO_CONTENT)
+        return Response("Done", status.HTTP_204_NO_CONTENT)
 
 
 @method_decorator(never_cache, name='dispatch')
