@@ -1,8 +1,7 @@
 # Default values for helm.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-prodReplicaCount: 2
-ReplicaCount: 1
+replicaCount: 1
 
 # Kubernetes 'name' value for created objects
 name: athena-app-cmdb
