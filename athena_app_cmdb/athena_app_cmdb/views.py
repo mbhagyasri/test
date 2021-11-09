@@ -379,7 +379,7 @@ class athena_app_cmdbAttachesCreateDestroy(APIView):
         cdata_item = common.get_item(request, childobj, resource)
         cdata_item.assetEnvironments.remove(pdata)
         cdata_item.save()
-        return Response(status.HTTP_204_NO_CONTENT)
+        return Response("Done", status.HTTP_204_NO_CONTENT)
 
 
 @method_decorator(never_cache, name='dispatch')
