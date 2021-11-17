@@ -4,7 +4,7 @@ FROM artifactory.cdk.com/dockerhub/python:3.9.5-alpine3.13
 # set environment varibles
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-ENV DJANGO_SETTINGS_MODULE=app_registry.settings.dev
+ENV DJANGO_SETTINGS_MODULE=app_registry.settings.test
 
 # Copy your application code to the container (make sure you create a .dockerignore file if any large files or directories should be excluded)
 RUN mkdir -p /opt/athena_app_cmdb/config /opt/athena_app_cmdb/etc
@@ -54,4 +54,9 @@ COPY . /opt/athena_app_cmdb/
 RUN export SECRET_KEY='SECRET_KEY' && /usr/local/bin/python manage.py graph_models athena_app_cmdb -g --pygraphviz -o  \
     athena_app_cmdb/static/img/athena_app_cmdb_erd.png
 
-RUN python3 -m unittest athena_app_cmdb.test.sample
+ENV SECRET_KEY='SECRET_KEY'
+
+RUN python manage.py makemigrations athena_app_cmdb\
+    && python manage.py migrate athena_app_cmdb \
+    && python manage.py migrate \
+    && python manage.py test athena_app_cmdb.test
