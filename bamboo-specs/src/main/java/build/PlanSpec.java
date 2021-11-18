@@ -86,7 +86,8 @@ public class PlanSpec {
     "-e BAMBOO_BUILD_ID=${bamboo.artifact.container_tag} \\\n"+
     "artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb-install:${bamboo_artifact_container_tag}";
 
-    public static String ENV_APITEST = "pwd \\\n"+
+    public static String ENV_APITEST = "#!/usr/bin/env bash \\\n"+
+    "set -x \\\n"+
     "ls -l \\\n"+
     "echo ${SYSTEM_TEST_ARTIFACTS_DIR}\\\n"+
     "cd ${SYSTEM_TEST_ARTIFACTS_DIR}\\\n"+
