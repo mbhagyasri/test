@@ -73,7 +73,8 @@ public class PlanSpec {
     public static String ENV_PROD_NAME = "us-prod";
     public static String ENV_PROD_VAR = "./enviroments/prod/vars.yml";
     public static String SYSTEM_TEST_DIR = "system-tests";
-    public static String SYSTEM_TESTS_PATH = "athena_app_cmdb/athena_app_cmdb/"+SYSTEM_TEST_DIR;
+    public static String SYSTEM_TEST_ARTIFACTS_DIR = SYSTEM_TEST_DIR+"-artifacts";
+    public static String SYSTEM_TESTS_PATH = "athena_app_cmdb/"+SYSTEM_TEST_DIR;
 
     public static String ENV_TASK = "docker run \\\n"+
     "-e AWS_ACCESS_KEY_ID=${bamboo.AWS_ACCESS_KEY_ID_SECRET} \\\n"+
@@ -85,7 +86,7 @@ public class PlanSpec {
     "-e BAMBOO_BUILD_ID=${bamboo.artifact.container_tag} \\\n"+
     "artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb-install:${bamboo_artifact_container_tag}";
 
-    public static String ENV_APITEST = "cd ${SYSTEM_TEST_DIR} \\\n"+
+    public static String ENV_APITEST = "cd ${SYSTEM_TEST_ARTIFACTS_DIR} \\\n"+
     "/opt/node-v12.*.*-linux-x64/bin/node ./node_modules/newman/bin/newman.js run app-registry-tests.postman_collection.json \\\n"+
     "-e ${bamboo.IQR_ENVIRONMENT}-app-registry.postman_environment.json --bail";
 
@@ -182,7 +183,8 @@ public class PlanSpec {
                                 .shared(true))
                         .artifacts(new Artifact()
                                 .name(PlanSpec.SYSTEM_TEST_DIR)
-                                .copyPattern(PlanSpec.SYSTEM_TEST_DIR+"/**")
+                                .copyPattern("*.json")
+                                .location(PlanSpec.SYSTEM_TESTS_PATH)
                                 .shared(true))
                         .tasks(
                             new VcsCheckoutTask()
@@ -200,8 +202,8 @@ public class PlanSpec {
                                 .description("Copy artifacts - "+PlanSpec.SYSTEM_TEST_DIR)
                                 .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
                                 .inlineBody("pwd \\\n" +
-                                    "mkdir -p "+PlanSpec.SYSTEM_TEST_DIR+" \\\n" +
-                                    "cp "+ PlanSpec.SYSTEM_TESTS_PATH + "/* "+PlanSpec.SYSTEM_TEST_DIR+" \\\n"))
+                                    "mkdir -p "+PlanSpec.SYSTEM_TEST_ARTIFACTS_DIR+" \\\n" +
+                                    "cp -af "+ PlanSpec.SYSTEM_TESTS_PATH + "/* "+PlanSpec.SYSTEM_TEST_ARTIFACTS_DIR+" \\\n"))
                         .requirements(new Requirement("system.docker.executable"))))
                         .triggers(new BitbucketServerTrigger())
                         .planBranchManagement(new PlanBranchManagement()
@@ -224,9 +226,8 @@ public class PlanSpec {
                 .artifacts(new DownloadItem()
                 .artifact("artifact")),
             new ArtifactDownloaderTask()
-                .description("Donwload the "+PlanSpec.SYSTEM_TEST_DIR+" artifacts")
-                .artifacts(new DownloadItem()
-                .artifact(PlanSpec.SYSTEM_TEST_DIR)),
+                .description("Download the "+PlanSpec.SYSTEM_TEST_ARTIFACTS_DIR+" artifacts")
+                .artifacts(new DownloadItem().artifact(PlanSpec.SYSTEM_TEST_ARTIFACTS_DIR)),
             new AnyTask(new AtlassianModule("com.atlassian.bamboo.plugin.requirementtask:task.requirements"))
             .configuration(new MapBuilder()
                         .put("existingRequirement", "system.docker.executable")
