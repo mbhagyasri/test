@@ -187,8 +187,7 @@ public class PlanSpec {
                                 .shared(true))
                         .artifacts(new Artifact()
                                 .name(PlanSpec.SYSTEM_TEST_DIR)
-                                .copyPattern("*.json")
-                                .location(PlanSpec.SYSTEM_TESTS_PATH)
+                                .copyPattern(PlanSpec.SYSTEM_TEST_ARTIFACTS_DIR+"/*.json")
                                 .shared(true))
                         .tasks(
                             new VcsCheckoutTask()
