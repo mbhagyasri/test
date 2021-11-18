@@ -86,7 +86,10 @@ public class PlanSpec {
     "-e BAMBOO_BUILD_ID=${bamboo.artifact.container_tag} \\\n"+
     "artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb-install:${bamboo_artifact_container_tag}";
 
-    public static String ENV_APITEST = "cd ${SYSTEM_TEST_ARTIFACTS_DIR} \\\n"+
+    public static String ENV_APITEST = "pwd \\\n"+
+    "ls -l \\\n"+
+    "echo ${SYSTEM_TEST_ARTIFACTS_DIR}\\\n"+
+    "cd ${SYSTEM_TEST_ARTIFACTS_DIR}\\\n"+
     "/opt/node-v12.*.*-linux-x64/bin/node ./node_modules/newman/bin/newman.js run app-registry-tests.postman_collection.json \\\n"+
     "-e ${bamboo.IQR_ENVIRONMENT}-app-registry.postman_environment.json --bail";
 
