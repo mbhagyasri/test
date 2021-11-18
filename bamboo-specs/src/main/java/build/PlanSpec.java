@@ -37,6 +37,7 @@ import com.atlassian.bamboo.specs.util.MapBuilder;
 import com.atlassian.bamboo.specs.api.builders.Variable;
 import com.atlassian.bamboo.specs.api.builders.AtlassianModule;
 import com.atlassian.bamboo.specs.builders.trigger.AfterSuccessfulBuildPlanTrigger;
+import com.atlassian.bamboo.specs.builders.task.NpmTask;
 //YAML stuff
 import java.io.*;
 import com.amihaiemil.eoyaml.*;
