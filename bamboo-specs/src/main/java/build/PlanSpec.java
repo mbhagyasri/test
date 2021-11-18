@@ -268,6 +268,9 @@ public class PlanSpec {
             .description("Download release contents")
             .artifacts(new DownloadItem()
                 .artifact("artifact")),
+            new ArtifactDownloaderTask()
+                .description("Download the "+PlanSpec.SYSTEM_TEST_DIR+" artifacts")
+                .artifacts(new DownloadItem().artifact(PlanSpec.SYSTEM_TEST_DIR)),
             new AnyTask(new AtlassianModule("com.atlassian.bamboo.plugin.requirementtask:task.requirements"))
             .configuration(new MapBuilder()
                         .put("existingRequirement", "system.docker.executable")
@@ -279,7 +282,15 @@ public class PlanSpec {
             new ScriptTask()
                 .description("Install")
                 .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
-                .inlineBody(PlanSpec.ENV_TASK))
+                .inlineBody(PlanSpec.ENV_TASK),
+            new NpmTask()
+                .description("Install newman")
+                .nodeExecutable("Node.js 12.x.x")
+                .command("install newman"),
+            new ScriptTask()
+                .description("Postman Collection Tests")
+                .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
+                .inlineBody(PlanSpec.ENV_APITEST))
             .variables(
                 fillVars(PlanSpec.ENV_NONPROD_VAR)
             )
@@ -294,6 +305,9 @@ public class PlanSpec {
             .description("Download release contents")
             .artifacts(new DownloadItem()
                 .artifact("artifact")),
+            new ArtifactDownloaderTask()
+                .description("Download the "+PlanSpec.SYSTEM_TEST_DIR+" artifacts")
+                .artifacts(new DownloadItem().artifact(PlanSpec.SYSTEM_TEST_DIR)),
             new AnyTask(new AtlassianModule("com.atlassian.bamboo.plugin.requirementtask:task.requirements"))
             .configuration(new MapBuilder()
                         .put("existingRequirement", "system.docker.executable")
@@ -305,7 +319,15 @@ public class PlanSpec {
             new ScriptTask()
                 .description("Install")
                 .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
-                .inlineBody(PlanSpec.ENV_TASK))
+                .inlineBody(PlanSpec.ENV_TASK),
+            new NpmTask()
+                .description("Install newman")
+                .nodeExecutable("Node.js 12.x.x")
+                .command("install newman"),
+            new ScriptTask()
+                .description("Postman Collection Tests")
+                .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
+                .inlineBody(PlanSpec.ENV_APITEST))
             .variables(
                 fillVars(PlanSpec.ENV_PROD_VAR)
             )
