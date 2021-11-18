@@ -204,7 +204,9 @@ public class PlanSpec {
                             new ScriptTask()
                                 .description("Copy artifacts - "+PlanSpec.SYSTEM_TEST_DIR)
                                 .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
-                                .inlineBody("pwd \\\n" +
+                                .inlineBody("#!/usr/bin/env bash \\\n"+
+                                    "set -x \\\n"+
+                                    "pwd \\\n" +
                                     "mkdir -p "+PlanSpec.SYSTEM_TEST_ARTIFACTS_DIR+" \\\n" +
                                     "cp -af "+ PlanSpec.SYSTEM_TESTS_PATH + "/* "+PlanSpec.SYSTEM_TEST_ARTIFACTS_DIR+" \\\n"))
                         .requirements(new Requirement("system.docker.executable"))))
