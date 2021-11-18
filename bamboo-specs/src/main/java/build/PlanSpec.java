@@ -224,9 +224,9 @@ public class PlanSpec {
                 .artifacts(new DownloadItem()
                 .artifact("artifact")),
             new ArtifactDownloaderTask()
-                .description("Donwload the system-tests artifacts")
+                .description("Donwload the "+PlanSpec.SYSTEM_TEST_DIR+" artifacts")
                 .artifacts(new DownloadItem()
-                .artifact("system-tests")),
+                .artifact(PlanSpec.SYSTEM_TEST_DIR)),
             new AnyTask(new AtlassianModule("com.atlassian.bamboo.plugin.requirementtask:task.requirements"))
             .configuration(new MapBuilder()
                         .put("existingRequirement", "system.docker.executable")
