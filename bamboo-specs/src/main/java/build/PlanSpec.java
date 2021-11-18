@@ -72,6 +72,8 @@ public class PlanSpec {
     //PROD
     public static String ENV_PROD_NAME = "us-prod";
     public static String ENV_PROD_VAR = "./enviroments/prod/vars.yml";
+    public static String SYSTEM_TEST_DIR = "system-tests";
+    public static String SYSTEM_TESTS_PATH = "athena_app_cmdb/athena_app_cmdb/"+SYSTEM_TEST_DIR;
 
     public static String ENV_TASK = "docker run \\\n"+
     "-e AWS_ACCESS_KEY_ID=${bamboo.AWS_ACCESS_KEY_ID_SECRET} \\\n"+
@@ -83,8 +85,9 @@ public class PlanSpec {
     "-e BAMBOO_BUILD_ID=${bamboo.artifact.container_tag} \\\n"+
     "artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb-install:${bamboo_artifact_container_tag}";
 
-    public static String ENV_APITEST = "/opt/node-v12.*.*-linux-x64/bin/node ./node_modules/newman/bin/newman.js run athena_app_registry/system-tests/app-registry-tests.postman_collection.json \\\n"+
-    "-e athena_app_registry/system-tests/${bamboo.IQR_ENVIRONMENT}-app-registry.postman_environment.json --bail";
+    public static String ENV_APITEST = "cd ${SYSTEM_TEST_DIR} \\\n"+
+    "/opt/node-v12.*.*-linux-x64/bin/node ./node_modules/newman/bin/newman.js run app-registry-tests.postman_collection.json \\\n"+
+    "-e ${bamboo.IQR_ENVIRONMENT}-app-registry.postman_environment.json --bail";
 
     /*
      * Run main to publish plan on Bamboo
@@ -177,6 +180,10 @@ public class PlanSpec {
                                 .name("artifact")
                                 .copyPattern(".artifact")
                                 .shared(true))
+                        .artifacts(new Artifact()
+                                .name(PlanSpec.SYSTEM_TEST_DIR)
+                                .copyPattern(PlanSpec.SYSTEM_TEST_DIR+"/**")
+                                .shared(true))
                         .tasks(
                             new VcsCheckoutTask()
                                     .description("Source code checkout")
@@ -188,7 +195,13 @@ public class PlanSpec {
                             new InjectVariablesTask()
                                 .path(".artifact")
                                 .namespace("artifact")
-                                .scope(InjectVariablesScope.RESULT))
+                                .scope(InjectVariablesScope.RESULT),
+                            new ScriptTask()
+                                .description("Copy artifacts - "+PlanSpec.SYSTEM_TEST_DIR)
+                                .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
+                                .inlineBody("pwd \\\n" +
+                                    "mkdir -p "+PlanSpec.SYSTEM_TEST_DIR+" \\\n" +
+                                    "cp "+ PlanSpec.SYSTEM_TESTS_PATH + "/* "+PlanSpec.SYSTEM_TEST_DIR+" \\\n"))
                         .requirements(new Requirement("system.docker.executable"))))
                         .triggers(new BitbucketServerTrigger())
                         .planBranchManagement(new PlanBranchManagement()
@@ -207,9 +220,13 @@ public class PlanSpec {
         .tasks(
             new CleanWorkingDirectoryTask(),
             new ArtifactDownloaderTask()
-            .description("Download release contents")
-            .artifacts(new DownloadItem()
+                .description("Download release contents")
+                .artifacts(new DownloadItem()
                 .artifact("artifact")),
+            new ArtifactDownloaderTask()
+                .description("Donwload the system-tests artifacts")
+                .artifacts(new DownloadItem()
+                .artifact("system-tests")),
             new AnyTask(new AtlassianModule("com.atlassian.bamboo.plugin.requirementtask:task.requirements"))
             .configuration(new MapBuilder()
                         .put("existingRequirement", "system.docker.executable")
@@ -222,11 +239,6 @@ public class PlanSpec {
                 .description("Install")
                 .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
                 .inlineBody(PlanSpec.ENV_TASK),
-            new NpmTask()
-                .description("npm install")
-                .enabled(false)
-                .nodeExecutable("Node.js 12.x.x")
-                .command("install"),
             new NpmTask()
                 .description("Install newman")
                 .nodeExecutable("Node.js 12.x.x")
