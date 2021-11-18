@@ -82,6 +82,9 @@ public class PlanSpec {
     "-e BAMBOO_BUILD_ID=${bamboo.artifact.container_tag} \\\n"+
     "artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb-install:${bamboo_artifact_container_tag}";
 
+    public static String ENV_APITEST = "/opt/node-v12.*.*-linux-x64/bin/node ./node_modules/newman/bin/newman.js run athena_app_registry/system-tests/app-registry-tests.postman_collection.json \\\n"+
+    "-e athena_app_registry/system-tests/${bamboo.IQR_ENVIRONMENT}-app-registry.postman_environment.json --bail";
+
     /*
      * Run main to publish plan on Bamboo
      */
@@ -217,7 +220,20 @@ public class PlanSpec {
             new ScriptTask()
                 .description("Install")
                 .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
-                .inlineBody(PlanSpec.ENV_TASK))
+                .inlineBody(PlanSpec.ENV_TASK),
+            new NpmTask()
+                .description("npm install")
+                .enabled(false)
+                .nodeExecutable("Node.js 12.x.x")
+                .command("install"),
+            new NpmTask()
+                .description("Install newman")
+                .nodeExecutable("Node.js 12.x.x")
+                .command("install newman"),
+            new ScriptTask()
+                .description("Postman Collection Tests")
+                .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
+                .inlineBody(PlanSpec.ENV_APITEST))
             .variables(
                 fillVars(PlanSpec.ENV_DEV_VAR)
             )
