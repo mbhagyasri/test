@@ -204,9 +204,6 @@ public class PlanSpec {
                                 .namespace("artifact")
                                 .scope(InjectVariablesScope.RESULT),
                             new ScriptTask()
-                                .description("ls")
-                                .inlineBody("ls -l \nls -l "+ credentialsFolder),
-                            new ScriptTask()
                                 .description("Copy artifacts - "+PlanSpec.SYSTEM_TEST_DIR)
                                 .inlineBody("#!/bin/bash\n"+
                                     "set -x\n"+
