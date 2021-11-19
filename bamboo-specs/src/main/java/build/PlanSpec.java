@@ -90,7 +90,7 @@ public class PlanSpec {
     "set -x\n"+
     "pwd\n"+
     "ls -l\n"+
-    "/opt/node-v12.*.*-linux-x64/bin/node ./node_modules/newman/bin/newman.js run app-registry-tests.postman_collection.json\n"+
+    "/opt/node-v12.*.*-linux-x64/bin/node ./node_modules/newman/bin/newman.js run app-registry-tests.postman_collection.json \\\n"+
     "-e ${bamboo.IQR_ENVIRONMENT}-app-registry.postman_environment.json --bail";
 
     /*
