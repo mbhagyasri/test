@@ -86,12 +86,13 @@ public class PlanSpec {
     "-e BAMBOO_BUILD_ID=${bamboo.artifact.container_tag} \\\n"+
     "artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb-install:${bamboo_artifact_container_tag}";
 
-    public static String ENV_APITEST = "#!/usr/bin/env bash \\\n"+
-    "set -x \\\n"+
-    "ls -l \\\n"+
-    "echo ${SYSTEM_TEST_ARTIFACTS_DIR}\\\n"+
-    "cd ${SYSTEM_TEST_ARTIFACTS_DIR}\\\n"+
-    "/opt/node-v12.*.*-linux-x64/bin/node ./node_modules/newman/bin/newman.js run app-registry-tests.postman_collection.json \\\n"+
+    public static String ENV_APITEST = "#!/bin/bash\n"+
+    "set -x\n"+
+    "pwd\n"+
+    "ls -l\n"+
+    "echo ${SYSTEM_TEST_ARTIFACTS_DIR}\n"+
+    "cd ${SYSTEM_TEST_ARTIFACTS_DIR}\n"+
+    "/opt/node-v12.*.*-linux-x64/bin/node ../node_modules/newman/bin/newman.js run app-registry-tests.postman_collection.json\n"+
     "-e ${bamboo.IQR_ENVIRONMENT}-app-registry.postman_environment.json --bail";
 
     /*
@@ -187,7 +188,8 @@ public class PlanSpec {
                                 .shared(true))
                         .artifacts(new Artifact()
                                 .name(PlanSpec.SYSTEM_TEST_DIR)
-                                .copyPattern(PlanSpec.SYSTEM_TEST_ARTIFACTS_DIR+"/*.json")
+                                .location(PlanSpec.SYSTEM_TESTS_PATH)
+                                .copyPattern("*.json")
                                 .shared(true))
                         .tasks(
                             new VcsCheckoutTask()
@@ -202,13 +204,15 @@ public class PlanSpec {
                                 .namespace("artifact")
                                 .scope(InjectVariablesScope.RESULT),
                             new ScriptTask()
+                                .description("ls")
+                                .inlineBody("ls -l \nls -l "+ credentialsFolder),
+                            new ScriptTask()
                                 .description("Copy artifacts - "+PlanSpec.SYSTEM_TEST_DIR)
-                                .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
-                                .inlineBody("#!/usr/bin/env bash \\\n"+
-                                    "set -x \\\n"+
-                                    "pwd \\\n" +
-                                    "mkdir -p "+PlanSpec.SYSTEM_TEST_ARTIFACTS_DIR+" \\\n" +
-                                    "cp -af "+ PlanSpec.SYSTEM_TESTS_PATH + "/* "+PlanSpec.SYSTEM_TEST_ARTIFACTS_DIR+" \\\n"))
+                                .inlineBody("#!/bin/bash\n"+
+                                    "set -x\n"+
+                                    "pwd\n" +
+                                    "mkdir "+PlanSpec.SYSTEM_TEST_ARTIFACTS_DIR+"\n" +
+                                    "cp -af "+ PlanSpec.SYSTEM_TESTS_PATH + "/* "+PlanSpec.SYSTEM_TEST_ARTIFACTS_DIR))
                         .requirements(new Requirement("system.docker.executable"))))
                         .triggers(new BitbucketServerTrigger())
                         .planBranchManagement(new PlanBranchManagement()
@@ -251,7 +255,6 @@ public class PlanSpec {
                 .command("install newman"),
             new ScriptTask()
                 .description("Postman Collection Tests")
-                .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
                 .inlineBody(PlanSpec.ENV_APITEST))
             .variables(
                 fillVars(PlanSpec.ENV_DEV_VAR)
@@ -290,7 +293,6 @@ public class PlanSpec {
                 .command("install newman"),
             new ScriptTask()
                 .description("Postman Collection Tests")
-                .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
                 .inlineBody(PlanSpec.ENV_APITEST))
             .variables(
                 fillVars(PlanSpec.ENV_NONPROD_VAR)
@@ -327,7 +329,6 @@ public class PlanSpec {
                 .command("install newman"),
             new ScriptTask()
                 .description("Postman Collection Tests")
-                .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
                 .inlineBody(PlanSpec.ENV_APITEST))
             .variables(
                 fillVars(PlanSpec.ENV_PROD_VAR)
