@@ -115,16 +115,3 @@ class LocationSerializerTest(TestCase):
         serializer = serializers.LocationSerializer(location)
         dictionary = serializer.data
         self.assertEqual("location-us-dev", dictionary['id'])
-# class SecurityProviderSerializerTest(TestCase):
-#     def test_deserialization(self):
-#         #get the serializer class associated with security providers, create serializer with mock data and check validity
-#         serializer_class = serializers.serializer_class_lookup['assetEnvironments']
-#         data = copy.deepcopy(mockassetEnvironment)
-#         serializer = serializer_class(data=data)
-#         serializer.is_valid()
-#         print("ERORRSS")
-#         print(serializer.errors)
-#         #save the serializer, this returns the security provdermodel object that was created
-#         securityProvider = serializer.save()
-#         #verify the id matches that of our mock data
-#         # self.assertEqual(securityProvider.id, "example-service")
