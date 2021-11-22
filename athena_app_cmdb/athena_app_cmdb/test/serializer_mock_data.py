@@ -2,10 +2,10 @@ mockasset =  {
         "id": "svc-example-test",
         "cicd": "https://bamboo.cdk.com/browse/NGIP-SVCEXAMPLETEST",
         "name": "example-test",
-        "repo": "https://stash.cdk.com/projects/ATHENAP/repos/svc-example-test/browse",
-        "team": "team-athena-platform",
+        "repo": "https://stash.cdk.com/projects/EXAMPLE/repos/svc-example-test/browse",
+        "team": "team-example-team",
         "type": "svc",
-        "product": "athena",
+        "product": "example-product",
         "internal": [
         {
             "environment": "us-dev",
@@ -57,49 +57,30 @@ mockteam = {
     "deleted": False,
     "_type": "team",
     "email": [
-        "AthenaPlatformDevelopers@cdk.com"
+        "example@cdk.com"
     ],
     "ad-group": [
-        "Athena Platform Developers",
-        "Athena Platform Developers (DSI)"
+        "Example Developers",
+        "Example Developers (DSI)"
     ],
     "opsgenie": {
-        "name": "athena-platform",
+        "name": "example",
         "create": True,
-        "manager": "athenaplatformdevelopers@cdk.com"
+        "manager": "example@cdk.com"
     },
-    "description": "Athena Platform Team",
+    "description": "Example eam",
     "notification": [
         {
-            "email": "AthenaPlatformDevelopers@cdk.com"
+            "email": "Example@cdk.com"
         },
         {
-            "slack": "https://cdk-global.slack.com/archives/GPCG44ZPU"
+            "slack": "https://cdk-global.slack.com/archives/example"
         }
     ]
 }
 
 mockproduct = {
     "id": "example-product",
-    "environments": [
-        {
-            "id": "us-dev",
-            "type": "dev",
-            "prefix": "dev",
-            "location": "location-us-dev"
-        },
-        {
-            "id": "us-prod",
-            "type": "prod",
-            "location": "location-us-prod"
-        },
-        {
-            "id": "us-stage",
-            "type": "stage",
-            "prefix": "stage",
-            "location": "location-us-nonprod"
-        }
-    ],
     "deleted": False,
     "security": [
         {
@@ -112,12 +93,86 @@ mockproduct = {
     },
     "bamboo-projects": [
         {
-            "id": "NGIP"
+            "id": "EXAMPLE"
         }
     ],
     "bitbucket-projects": [
         {
-            "id": "ATHENAP"
+            "id": "EXAMPLE"
         }
     ]
 }
+
+mockresource = {
+    "spec": {
+        "type": "aws-elasticache-redis",
+        "owner": "team-example-team",
+        "platform": "location-us-nonprod",
+        "definition": {
+            "props": {
+                "family": "redis6.x",
+                "engineVersion": "6.x",
+                "authentication": [
+                    "Example"
+                ],
+                "parameterGroup": {},
+                "backupRetention": 0,
+                "accessExternally": False
+            },
+            "version": "001",
+            "templateName": "athena-redis-mini",
+            "encryptionRest": False,
+            "encryptionTransit": False
+        },
+        "provisioner": {
+            "type": "terraform",
+            "source": ""
+        },
+        "assetMasterId": 325
+    },
+    "metadata": {
+        "name": "example-resource",
+        "annotations": {
+            "iqr_product_id": "7210"
+        },
+        "description": "Example Resource"
+    },
+    "kind": "Resource",
+    "apiVersion": "cdk.com/v1"
+}
+
+mocklocation = {
+    "id": "location-us-dev",
+    "name": "us-dev",
+    "domain": "example-dev.connectcdk.com",
+    "region": "us",
+    "status": "live",
+    "_type": "location",
+    "clusters": {
+      "primary": "example_cluster"
+    },
+    "parameters": {
+      "integrations": {
+        "aws": {
+          "id": "711406216734",
+          "name": "cdk-aws-athenaplatform-dev",
+          "partition": "aws",
+          "account-type": "dev",
+          "cf-acm-region": "us-east-1",
+          "primary-region": "us-west-2",
+          "secondary-region": "us-east-1"
+        },
+        "okta": {
+          "url": "https://connectcdk-dev.oktapreview.com"
+        },
+        "dockerRegistries": [
+          {
+            "type": "artifactory",
+            "default": True,
+            "dockerEndpoint": "artifactory.cobalt.com"
+          }
+        ]
+      }
+    },
+    "description": "Example Development Platform (US)"
+  },
