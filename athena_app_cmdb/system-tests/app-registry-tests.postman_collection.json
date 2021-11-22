@@ -1,0 +1,590 @@
+{
+	"info": {
+		"_postman_id": "e185b042-fed6-4e81-b42b-7b22b4435722",
+		"name": "app-registry-tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "app-registry-products",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "5ec18c91-fe32-4a34-a1b8-7aa55c43fada",
+						"exec": [
+							"pm.test(\"Status code is 200 and has items\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    pm.response.to.have.status(200);",
+							"    pm.expect(jsonData.length).to.be.above(0);",
+							"    pm.expect(jsonData[0].id.length).to.be.above(0);",
+							"    ",
+							"    pm.variables.set(\"products\", JSON.stringify(jsonData));",
+							"    pm.variables.set(\"product_id\", jsonData[0].id);",
+							"    pm.variables.set(\"product_index\", 0);",
+							"    postman.setNextRequest(\"app-registry-product\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{api-url}}/products",
+					"host": [
+						"{{api-url}}"
+					],
+					"path": [
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "app-registry-product",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "0bc9f699-eb43-44be-9a42-0796b8a615e3",
+						"exec": [
+							"pm.test(\"Status code is 200 and returns expected data\", function () {",
+							"    var products = JSON.parse(pm.variables.get(\"products\"));",
+							"    var currentProductId = pm.variables.get(\"product_id\");",
+							"    var currentProductIndex = pm.variables.get(\"product_index\");",
+							"    var currentProduct = products[currentProductIndex];",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    pm.response.to.have.status(200);",
+							"    pm.expect(jsonData.id.length).to.be.above(0);",
+							"    pm.expect(jsonData.id).to.eql(currentProduct.id);",
+							"    pm.expect(jsonData.type).to.eql(currentProduct.type);",
+							"    ",
+							"    if(currentProduct.environments) {",
+							"        pm.expect(jsonData.environments.length).to.eql(currentProduct.environments.length);",
+							"        ",
+							"        for(var i=0; i < currentProduct.environments.length; i++){",
+							"            var expectedEnv = currentProduct.environments[i];",
+							"            var env = jsonData.environments[i];",
+							"            ",
+							"            pm.expect(env.id).to.eql(expectedEnv.id);",
+							"            pm.expect(env.location).to.eql(expectedEnv.location);",
+							"            pm.expect(env.type).to.eql(expectedEnv.type);",
+							"            pm.expect(env.prefix).to.eql(expectedEnv.prefix);",
+							"        }",
+							"    }",
+							"    ",
+							"    if(currentProduct[\"bamboo-projects\"]) {",
+							"        pm.expect(jsonData[\"bamboo-projects\"].length).to.eql(currentProduct[\"bamboo-projects\"].length);",
+							"        ",
+							"        for(var i=0; i < currentProduct[\"bamboo-projects\"].length; i++){",
+							"            var expectedBambooProject = currentProduct[\"bamboo-projects\"][i];",
+							"            var bambooProject = jsonData[\"bamboo-projects\"][i];",
+							"            ",
+							"            pm.expect(bambooProject.id).to.eql(expectedBambooProject.id);",
+							"        }",
+							"    }",
+							"    ",
+							"    if(currentProduct[\"bitbucket-projects\"]) {",
+							"        pm.expect(jsonData[\"bitbucket-projects\"].length).to.eql(currentProduct[\"bitbucket-projects\"].length);",
+							"        ",
+							"        for(var i=0; i < currentProduct[\"bitbucket-projects\"].length; i++){",
+							"            var expectedBitbucketProject = currentProduct[\"bitbucket-projects\"][i];",
+							"            var bitbucketProject = jsonData[\"bitbucket-projects\"][i];",
+							"            ",
+							"            pm.expect(bitbucketProject.id).to.eql(expectedBitbucketProject.id);",
+							"        }",
+							"    }",
+							"    ",
+							"    testNextProduct(products, currentProductIndex);",
+							"});",
+							"",
+							"function testNextProduct(products, currentProductIndex) {",
+							"    var isSecondLastItem = currentProductIndex < products.length - 1;",
+							"    ",
+							"    if(isSecondLastItem) ",
+							"    {",
+							"        var newIndex = currentProductIndex + 1;",
+							"        pm.variables.set(\"product_id\", products[newIndex].id);",
+							"        pm.variables.set(\"product_index\", newIndex);",
+							"        postman.setNextRequest(\"app-registry-product\");",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{api-url}}/products/{{product_id}}",
+					"host": [
+						"{{api-url}}"
+					],
+					"path": [
+						"products",
+						"{{product_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "app-registry-assets",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "53368634-8433-40f7-998e-845f00eeabd1",
+						"exec": [
+							"pm.test(\"Status code is 200 and has items\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    pm.response.to.have.status(200);",
+							"    pm.expect(jsonData.length).to.be.above(0);",
+							"    pm.expect(jsonData[0].id.length).to.be.above(0);",
+							"    ",
+							"    pm.variables.set(\"assets\", JSON.stringify(jsonData));",
+							"    pm.variables.set(\"asset_id\", jsonData[0].id);",
+							"    pm.variables.set(\"asset_index\", 0);",
+							"    postman.setNextRequest(\"app-registry-asset\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{api-url}}/assets",
+					"host": [
+						"{{api-url}}"
+					],
+					"path": [
+						"assets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "app-registry-asset",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "6b420aeb-3d2f-469b-8b3f-8b0d3d93edd4",
+						"exec": [
+							"pm.test(\"Status code is 200 and returns expected data\", function () {",
+							"    var assets = JSON.parse(pm.variables.get(\"assets\"));",
+							"    var currentAssetId = pm.variables.get(\"asset_id\");",
+							"    var currentAssetIndex = pm.variables.get(\"asset_index\");",
+							"    var currentAsset = assets[currentAssetIndex];",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    pm.response.to.have.status(200);",
+							"    pm.expect(jsonData.id.length).to.be.above(0);",
+							"    pm.expect(jsonData.id).to.eql(currentAsset.id);",
+							"    pm.expect(jsonData.name).to.eql(currentAsset.name);",
+							"    pm.expect(jsonData.type).to.eql(currentAsset.type);",
+							"    pm.expect(jsonData.team).to.eql(currentAsset.team);",
+							"    pm.expect(jsonData.product).to.eql(currentAsset.product);",
+							"    ",
+							"    if(currentAsset.consumes) {",
+							"        pm.expect(jsonData.consumes.length).to.eql(currentAsset.consumes.length);",
+							"        ",
+							"        for(var i=0; i < currentAsset.consumes.length; i++){",
+							"            var expectedConsume = currentAsset.consumes[i];",
+							"            var consume = jsonData.consumes[i];",
+							"            ",
+							"            pm.expect(consume.value).to.eql(expectedConsume.value);",
+							"            pm.expect(consume.path).to.eql(expectedConsume.path);",
+							"        }",
+							"    }",
+							"    ",
+							"    testNextAsset(assets, currentAssetIndex);",
+							"});",
+							"",
+							"function testNextAsset(assets, currentAssetIndex) {",
+							"    var isSecondLastItem = currentAssetIndex < assets.length - 1;",
+							"    ",
+							"    if(isSecondLastItem) ",
+							"    {",
+							"        var newIndex = currentAssetIndex + 1;",
+							"        pm.variables.set(\"asset_id\", assets[newIndex].id);",
+							"        pm.variables.set(\"asset_index\", newIndex);",
+							"        postman.setNextRequest(\"app-registry-asset\");",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{api-url}}/assets/{{asset_id}}",
+					"host": [
+						"{{api-url}}"
+					],
+					"path": [
+						"assets",
+						"{{asset_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "app-registry-locations",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "fe86b17a-be6b-48a2-aba3-4cc6c308d055",
+						"exec": [
+							"pm.test(\"Status code is 200 and has items\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    pm.response.to.have.status(200);",
+							"    pm.expect(jsonData.length).to.be.above(0);",
+							"    pm.expect(jsonData[0].id.length).to.be.above(0);",
+							"    ",
+							"    pm.variables.set(\"locations\", JSON.stringify(jsonData));",
+							"    pm.variables.set(\"location_id\", jsonData[0].id);",
+							"    pm.variables.set(\"location_index\", 0);",
+							"    postman.setNextRequest(\"app-registry-location\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{api-url}}/locations",
+					"host": [
+						"{{api-url}}"
+					],
+					"path": [
+						"locations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "app-registry-location",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "bab88874-fc28-4d0f-9605-1e89e55a3b55",
+						"exec": [
+							"pm.test(\"Status code is 200 and returns expected data\", function () {\r",
+							"    var locations = JSON.parse(pm.variables.get(\"locations\"));\r",
+							"    var currentLocationId = pm.variables.get(\"location_id\");\r",
+							"    var currentLocationIndex = pm.variables.get(\"location_index\");\r",
+							"    var currentLocation = locations[currentLocationIndex];\r",
+							"    var jsonData = pm.response.json();\r",
+							"    \r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.expect(jsonData.id.length).to.be.above(0);",
+							"    pm.expect(jsonData.id).to.eql(currentLocation.id);\r",
+							"    pm.expect(jsonData.type).to.eql(currentLocation.type);\r",
+							"    pm.expect(jsonData.name).to.eql(currentLocation.name);\r",
+							"    pm.expect(jsonData.region).to.eql(currentLocation.region);\r",
+							"    pm.expect(jsonData[\"env-type\"]).to.eql(currentLocation[\"env-type\"]);\r",
+							"    pm.expect(jsonData.domain).to.eql(currentLocation.domain);\r",
+							"    pm.expect(jsonData.status).to.eql(currentLocation.status);\r",
+							"    \r",
+							"    if(currentLocation.parameters && \r",
+							"        currentLocation.parameters.integrations && \r",
+							"        currentLocation.parameters.integrations.aws) \r",
+							"    {\r",
+							"        pm.expect(jsonData.parameters.integrations.aws.id.length).to.be.above(0);",
+							"        pm.expect(jsonData.parameters.integrations.aws.id).to.eql(currentLocation.parameters.integrations.aws.id);\r",
+							"        pm.expect(jsonData.parameters.integrations.aws.name).to.eql(currentLocation.parameters.integrations.aws.name);\r",
+							"        pm.expect(jsonData.parameters.integrations.aws[\"account-type\"]).to.eql(currentLocation.parameters.integrations.aws[\"account-type\"]);\r",
+							"        pm.expect(jsonData.parameters.integrations.aws[\"primary-region\"]).to.eql(currentLocation.parameters.integrations.aws[\"primary-region\"]);\r",
+							"        pm.expect(jsonData.parameters.integrations.aws[\"secondary-region\"]).to.eql(currentLocation.parameters.integrations.aws[\"secondary-region\"]);\r",
+							"        pm.expect(jsonData.parameters.integrations.aws[\"cf-acm-region\"]).to.eql(currentLocation.parameters.integrations.aws[\"cf-acm-region\"]);\r",
+							"        pm.expect(jsonData.parameters.integrations.aws.partition).to.eql(currentLocation.parameters.integrations.aws.partition);\r",
+							"    }\r",
+							"    \r",
+							"    testNextLocation(locations, currentLocationIndex);\r",
+							"});\r",
+							"\r",
+							"function testNextLocation(locations, currentLocationIndex) {\r",
+							"    var isSecondLastItem = currentLocationIndex < locations.length - 1;\r",
+							"    \r",
+							"    if(isSecondLastItem) \r",
+							"    {\r",
+							"        var newIndex = currentLocationIndex + 1;\r",
+							"        pm.variables.set(\"location_id\", locations[newIndex].id);\r",
+							"        pm.variables.set(\"location_index\", newIndex);\r",
+							"        postman.setNextRequest(\"app-registry-location\");\r",
+							"    }\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{api-url}}/locations/{{location_id}}",
+					"host": [
+						"{{api-url}}"
+					],
+					"path": [
+						"locations",
+						"{{location_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "app-registry-teams",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "5cc89b27-8036-4a7c-9f27-f6bf7b1cef16",
+						"exec": [
+							"pm.test(\"Status code is 200 and has items\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    pm.response.to.have.status(200);",
+							"    pm.expect(jsonData.length).to.be.above(0);",
+							"    pm.expect(jsonData[0].id.length).to.be.above(0);",
+							"    ",
+							"    pm.variables.set(\"teams\", JSON.stringify(jsonData));",
+							"    pm.variables.set(\"team_id\", jsonData[0].id);",
+							"    pm.variables.set(\"team_index\", 0);",
+							"    postman.setNextRequest(\"app-registry-team\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{api-url}}/teams",
+					"host": [
+						"{{api-url}}"
+					],
+					"path": [
+						"teams"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "app-registry-team",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "751b849a-89e6-4f79-9b30-26ef02c8322a",
+						"exec": [
+							"pm.test(\"Status code is 200 and returns expected data\", function () {\r",
+							"    var teams = JSON.parse(pm.variables.get(\"teams\"));\r",
+							"    var currentTeamId = pm.variables.get(\"team_id\");\r",
+							"    var currentTeamIndex = pm.variables.get(\"team_index\");\r",
+							"    var currentTeam = teams[currentTeamIndex];\r",
+							"    var jsonData = pm.response.json();\r",
+							"    \r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.expect(jsonData.id.length).to.be.above(0);",
+							"    pm.expect(jsonData.id).to.eql(currentTeam.id);\r",
+							"    pm.expect(jsonData.type).to.eql(currentTeam.type);\r",
+							"    pm.expect(jsonData.name).to.eql(currentTeam.name);\r",
+							"    \r",
+							"    if(currentTeam.email) {\r",
+							"        pm.expect(jsonData.email.length).to.eql(currentTeam.email.length);\r",
+							"        \r",
+							"        for(var i=0; i < currentTeam.email.length; i++){\r",
+							"            pm.expect(jsonData.email[i]).to.eql(currentTeam.email[i]);\r",
+							"        }\r",
+							"    }\r",
+							"    \r",
+							"    if(currentTeam[\"ad-group\"]) {\r",
+							"        pm.expect(jsonData[\"ad-group\"].length).to.eql(currentTeam[\"ad-group\"].length);\r",
+							"        \r",
+							"        for(var i=0; i < currentTeam[\"ad-group\"].length; i++){\r",
+							"            pm.expect(jsonData[\"ad-group\"][i]).to.eql(currentTeam[\"ad-group\"][i]);\r",
+							"        }\r",
+							"    }\r",
+							"    \r",
+							"    if(currentTeam.notification) {\r",
+							"        pm.expect(jsonData.notification.length).to.eql(currentTeam.notification.length);\r",
+							"        \r",
+							"        for(var i=0; i < currentTeam.notification.length; i++){\r",
+							"            pm.expect(jsonData.notification[i].email).to.eql(currentTeam.notification[i].email);\r",
+							"            pm.expect(jsonData.notification[i].slack).to.eql(currentTeam.notification[i].slack);\r",
+							"        }\r",
+							"    }\r",
+							"    \r",
+							"    testNextTeam(teams, currentTeamIndex);\r",
+							"});\r",
+							"\r",
+							"function testNextTeam(teams, currentTeamIndex) {\r",
+							"    var isSecondLastItem = currentTeamIndex < teams.length - 1;\r",
+							"    \r",
+							"    if(isSecondLastItem) \r",
+							"    {\r",
+							"        var newIndex = currentTeamIndex + 1;\r",
+							"        pm.variables.set(\"team_id\", teams[newIndex].id);\r",
+							"        pm.variables.set(\"team_index\", newIndex);\r",
+							"        postman.setNextRequest(\"app-registry-team\");\r",
+							"    }\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{api-url}}/teams/{{team_id}}",
+					"host": [
+						"{{api-url}}"
+					],
+					"path": [
+						"teams",
+						"{{team_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "app-registry-asset-environments",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e50780d5-634e-4f9d-afd5-1ee1bba671d2",
+						"exec": [
+							"pm.test(\"Status code is 200 and has items\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    \r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.expect(jsonData.length).to.be.above(0);\r",
+							"    pm.expect(jsonData[0].id.length).to.be.above(0);\r",
+							"    \r",
+							"    pm.variables.set(\"environments\", JSON.stringify(jsonData));\r",
+							"    pm.variables.set(\"environment_id\", jsonData[0].id);\r",
+							"    pm.variables.set(\"environment_index\", 0);\r",
+							"    postman.setNextRequest(\"app-registry-asset-environment\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{api-url}}/assets/svc-platform-test/environments",
+					"host": [
+						"{{api-url}}"
+					],
+					"path": [
+						"assets",
+						"svc-platform-test",
+						"environments"
+					]
+				},
+				"description": "Get all environments for a example asset.\r\nGET /assets/:id/environments"
+			},
+			"response": []
+		},
+		{
+			"name": "app-registry-asset-environment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f6767962-5d85-4e3a-a109-7b140029677d",
+						"exec": [
+							"pm.test(\"Status code is 200 and returns expected data\", function () {\r",
+							"    var environments = JSON.parse(pm.variables.get(\"environments\"));\r",
+							"    var currentEnvironmentId = pm.variables.get(\"environment_id\");\r",
+							"    var currentEnvironmentIndex = pm.variables.get(\"environment_index\");\r",
+							"    var currentEnvironment = environments[currentEnvironmentIndex];\r",
+							"    var jsonData = pm.response.json();\r",
+							"    \r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.expect(jsonData.id.length).to.be.above(0);\r",
+							"    pm.expect(jsonData.type.length).to.be.above(0);\r",
+							"    pm.expect(jsonData.location.length).to.be.above(0);\r",
+							"    pm.expect(jsonData.id).to.eql(currentEnvironment.id);\r",
+							"    pm.expect(jsonData.type).to.eql(currentEnvironment.type);\r",
+							"    pm.expect(jsonData.location).to.eql(currentEnvironment.location);\r",
+							"    \r",
+							"    testNextEnvironment(environments, currentEnvironmentIndex);\r",
+							"});\r",
+							"\r",
+							"function testNextEnvironment(environments, currentEnvironmentIndex) {\r",
+							"    var isSecondLastItem = currentEnvironmentIndex < environments.length - 1;\r",
+							"    \r",
+							"    if(isSecondLastItem) \r",
+							"    {\r",
+							"        var newIndex = currentEnvironmentIndex + 1;\r",
+							"        pm.variables.set(\"environment_id\", environments[newIndex].id);\r",
+							"        pm.variables.set(\"environment_index\", newIndex);\r",
+							"        postman.setNextRequest(\"app-registry-asset-environment\");\r",
+							"    }\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{api-url}}/assets/svc-platform-test/environments/{{environment_id}}",
+					"host": [
+						"{{api-url}}"
+					],
+					"path": [
+						"assets",
+						"svc-platform-test",
+						"environments",
+						"{{environment_id}}"
+					]
+				},
+				"description": "Get a specific environment for a specific asset.\r\n\r\nGET /assets/:id/environments/:environmentId"
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
