@@ -118,11 +118,9 @@ class AssetSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def to_representation(self, instance):
-        logger.info("HERE%")
         return AssetGetSerializer(instance).data
 
     def to_internal_value(self, data):
-        logger.info("HERE^")
         if 'refid' not in data:
             data['refid'] = data['id']
             del data['id']
@@ -165,8 +163,6 @@ class AssetSerializer(serializers.ModelSerializer):
         return environments_data
 
     def create(self, validated_data):
-        logger.info("HERE*")
-        print("HERE*")
         properties = validated_data.pop('properties')
         environments_data = self.process_environments_data(properties)
         if 'key_list' in environments_data:
@@ -399,8 +395,6 @@ class LocationSerializer(serializers.ModelSerializer):
         return LocationGetSerializer(instance).data
 
     def to_internal_value(self, data):
-       
-        logger.info("data type {} ".format(type(data)))
         if 'refid' not in data:
             data['refid'] = data['id']
             del data['id']
@@ -538,10 +532,6 @@ class ProductSerializer(serializers.ModelSerializer):
         environments = None
         if 'environments' in validated_data.get('properties'):
             environments = validated_data.get('properties').pop('environments')
-        logger.info("validated_data {}".format(validated_data))
-   
-        print('validated_data normal')
-        print(validated_data)
         product = models.Product.objects.create(**validated_data)
         prod_id = str(product.id)
         if environments:
@@ -932,9 +922,7 @@ class AssetGetSerializer(serializers.ModelSerializer):
         return return_data
 
     def to_representation(self, instance):
-        logger.info("TYPE OF INSTANCE : {}".format(type(instance)))
         data = super().to_representation(instance)
-        logger.info("TYPE OF DATA: {}".format(type(data)))
         data['id'] = data['refid']
         del data['refid']
         # get all the environments data
@@ -962,12 +950,6 @@ class AssetGetSerializer(serializers.ModelSerializer):
                         tmp_data[item].append(env_data)
         data.update(tmp_data)
         properties = data.pop('properties', None)
-        print("data")
-        print(data)
-        print(type(data))
-        print(type(properties))
-        logger.info("PROPERTIES : {}".format(properties))
-        logger.info("TYPE OF PROPERTIES: {}".format(type(properties)))
         data.update(properties)
         return data
 
