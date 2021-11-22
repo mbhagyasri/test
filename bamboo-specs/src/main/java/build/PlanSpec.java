@@ -37,6 +37,7 @@ import com.atlassian.bamboo.specs.util.MapBuilder;
 import com.atlassian.bamboo.specs.api.builders.Variable;
 import com.atlassian.bamboo.specs.api.builders.AtlassianModule;
 import com.atlassian.bamboo.specs.builders.trigger.AfterSuccessfulBuildPlanTrigger;
+import com.atlassian.bamboo.specs.builders.task.NpmTask;
 //YAML stuff
 import java.io.*;
 import com.amihaiemil.eoyaml.*;
@@ -71,6 +72,9 @@ public class PlanSpec {
     //PROD
     public static String ENV_PROD_NAME = "us-prod";
     public static String ENV_PROD_VAR = "./enviroments/prod/vars.yml";
+    public static String SYSTEM_TEST_DIR = "system-tests";
+    public static String SYSTEM_TEST_ARTIFACTS_DIR = SYSTEM_TEST_DIR+"-artifacts";
+    public static String SYSTEM_TESTS_PATH = "athena_app_cmdb/"+SYSTEM_TEST_DIR;
 
     public static String ENV_TASK = "docker run \\\n"+
     "-e AWS_ACCESS_KEY_ID=${bamboo.AWS_ACCESS_KEY_ID_SECRET} \\\n"+
@@ -81,6 +85,13 @@ public class PlanSpec {
     "-e BAMBOO_SECRET=${bamboo.BAMBOO_SECRET} \\\n"+
     "-e BAMBOO_BUILD_ID=${bamboo.artifact.container_tag} \\\n"+
     "artifactory.cdk.com/docker-local/athena/athena-platform/athena-app-cmdb-install:${bamboo_artifact_container_tag}";
+
+    public static String ENV_APITEST = "#!/bin/bash\n"+
+    "set -x\n"+
+    "pwd\n"+
+    "ls -l\n"+
+    "/opt/node-v12.*.*-linux-x64/bin/node ./node_modules/newman/bin/newman.js run app-registry-tests.postman_collection.json \\\n"+
+    "-e ${bamboo.IQR_ENVIRONMENT}-app-registry.postman_environment.json --bail";
 
     /*
      * Run main to publish plan on Bamboo
@@ -173,6 +184,11 @@ public class PlanSpec {
                                 .name("artifact")
                                 .copyPattern(".artifact")
                                 .shared(true))
+                        .artifacts(new Artifact()
+                                .name(PlanSpec.SYSTEM_TEST_DIR)
+                                .location(PlanSpec.SYSTEM_TESTS_PATH)
+                                .copyPattern("*.json")
+                                .shared(true))
                         .tasks(
                             new VcsCheckoutTask()
                                     .description("Source code checkout")
@@ -184,7 +200,14 @@ public class PlanSpec {
                             new InjectVariablesTask()
                                 .path(".artifact")
                                 .namespace("artifact")
-                                .scope(InjectVariablesScope.RESULT))
+                                .scope(InjectVariablesScope.RESULT),
+                            new ScriptTask()
+                                .description("Copy artifacts - "+PlanSpec.SYSTEM_TEST_DIR)
+                                .inlineBody("#!/bin/bash\n"+
+                                    "set -x\n"+
+                                    "pwd\n" +
+                                    "mkdir "+PlanSpec.SYSTEM_TEST_ARTIFACTS_DIR+"\n" +
+                                    "cp -af "+ PlanSpec.SYSTEM_TESTS_PATH + "/* "+PlanSpec.SYSTEM_TEST_ARTIFACTS_DIR))
                         .requirements(new Requirement("system.docker.executable"))))
                         .triggers(new BitbucketServerTrigger())
                         .planBranchManagement(new PlanBranchManagement()
@@ -203,9 +226,12 @@ public class PlanSpec {
         .tasks(
             new CleanWorkingDirectoryTask(),
             new ArtifactDownloaderTask()
-            .description("Download release contents")
-            .artifacts(new DownloadItem()
+                .description("Download release contents")
+                .artifacts(new DownloadItem()
                 .artifact("artifact")),
+            new ArtifactDownloaderTask()
+                .description("Download the "+PlanSpec.SYSTEM_TEST_DIR+" artifacts")
+                .artifacts(new DownloadItem().artifact(PlanSpec.SYSTEM_TEST_DIR)),
             new AnyTask(new AtlassianModule("com.atlassian.bamboo.plugin.requirementtask:task.requirements"))
             .configuration(new MapBuilder()
                         .put("existingRequirement", "system.docker.executable")
@@ -217,7 +243,14 @@ public class PlanSpec {
             new ScriptTask()
                 .description("Install")
                 .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
-                .inlineBody(PlanSpec.ENV_TASK))
+                .inlineBody(PlanSpec.ENV_TASK),
+            new NpmTask()
+                .description("Install newman")
+                .nodeExecutable("Node.js 12.x.x")
+                .command("install newman"),
+            new ScriptTask()
+                .description("Postman Collection Tests")
+                .inlineBody(PlanSpec.ENV_APITEST))
             .variables(
                 fillVars(PlanSpec.ENV_DEV_VAR)
             )
@@ -234,6 +267,9 @@ public class PlanSpec {
             .description("Download release contents")
             .artifacts(new DownloadItem()
                 .artifact("artifact")),
+            new ArtifactDownloaderTask()
+                .description("Download the "+PlanSpec.SYSTEM_TEST_DIR+" artifacts")
+                .artifacts(new DownloadItem().artifact(PlanSpec.SYSTEM_TEST_DIR)),
             new AnyTask(new AtlassianModule("com.atlassian.bamboo.plugin.requirementtask:task.requirements"))
             .configuration(new MapBuilder()
                         .put("existingRequirement", "system.docker.executable")
@@ -245,7 +281,14 @@ public class PlanSpec {
             new ScriptTask()
                 .description("Install")
                 .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
-                .inlineBody(PlanSpec.ENV_TASK))
+                .inlineBody(PlanSpec.ENV_TASK),
+            new NpmTask()
+                .description("Install newman")
+                .nodeExecutable("Node.js 12.x.x")
+                .command("install newman"),
+            new ScriptTask()
+                .description("Postman Collection Tests")
+                .inlineBody(PlanSpec.ENV_APITEST))
             .variables(
                 fillVars(PlanSpec.ENV_NONPROD_VAR)
             )
@@ -260,6 +303,9 @@ public class PlanSpec {
             .description("Download release contents")
             .artifacts(new DownloadItem()
                 .artifact("artifact")),
+            new ArtifactDownloaderTask()
+                .description("Download the "+PlanSpec.SYSTEM_TEST_DIR+" artifacts")
+                .artifacts(new DownloadItem().artifact(PlanSpec.SYSTEM_TEST_DIR)),
             new AnyTask(new AtlassianModule("com.atlassian.bamboo.plugin.requirementtask:task.requirements"))
             .configuration(new MapBuilder()
                         .put("existingRequirement", "system.docker.executable")
@@ -271,7 +317,14 @@ public class PlanSpec {
             new ScriptTask()
                 .description("Install")
                 .interpreter(ScriptTaskProperties.Interpreter.BINSH_OR_CMDEXE)
-                .inlineBody(PlanSpec.ENV_TASK))
+                .inlineBody(PlanSpec.ENV_TASK),
+            new NpmTask()
+                .description("Install newman")
+                .nodeExecutable("Node.js 12.x.x")
+                .command("install newman"),
+            new ScriptTask()
+                .description("Postman Collection Tests")
+                .inlineBody(PlanSpec.ENV_APITEST))
             .variables(
                 fillVars(PlanSpec.ENV_PROD_VAR)
             )
