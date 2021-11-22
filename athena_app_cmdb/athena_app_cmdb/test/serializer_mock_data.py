@@ -144,6 +144,7 @@ mockresource = {
 mocklocation = {
     "id": "location-us-dev",
     "name": "us-dev",
+    "env-type": "dev",
     "domain": "example-dev.connectcdk.com",
     "region": "us",
     "status": "live",
@@ -155,7 +156,7 @@ mocklocation = {
       "integrations": {
         "aws": {
           "id": "711406216734",
-          "name": "cdk-aws-athenaplatform-dev",
+          "name": "cdk-aws-example-dev",
           "partition": "aws",
           "account-type": "dev",
           "cf-acm-region": "us-east-1",
@@ -169,10 +170,10 @@ mocklocation = {
           {
             "type": "artifactory",
             "default": True,
-            "dockerEndpoint": "artifactory.cobalt.com"
+            "dockerEndpoint": "artifactory.cdk.com"
           }
         ]
       }
     },
     "description": "Example Development Platform (US)"
-  },
+  }
