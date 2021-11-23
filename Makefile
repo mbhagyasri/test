@@ -10,6 +10,8 @@ build:
 	docker build -t ${IMG} athena_app_cmdb
 	docker tag ${IMG} ${LATEST}
 
+unittest:
+	docker build -t test_${IMG} --target=unittest athena_app_cmdb
 
 push:
 	@docker push ${NAME}

@@ -7,30 +7,15 @@ RUN npm install -g @apidevtools/swagger-cli openapi-types@>=7 \
     && swagger-cli bundle --outfile=/opt/athena_app_cmdb/athena_app_cmdb/ui/openapi.yaml /opt/athena_app_cmdb/athena_app_cmdb/ui/openapi_ref.yaml
 
 # pull official base image
-FROM artifactory.cdk.com/dockerhub/python:3.9.5-alpine3.13 as backend
-
-# expose the port
-EXPOSE 8000
-
-# set environment varibles
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-ENV DJANGO_SETTINGS_MODULE=app_registry.settings.prod
-
+FROM artifactory.cdk.com/dockerhub/python:3.9.5-alpine3.13 as base
 # Copy your application code to the container (make sure you create a .dockerignore file if any large files or directories should be excluded)
 RUN mkdir -p /opt/athena_app_cmdb/config /opt/athena_app_cmdb/etc
 WORKDIR /opt/athena_app_cmdb
-
-ARG requirements=requirements/prod.txt
-
-# Copy in your requirements file
-COPY requirements/ /opt/athena_app_cmdb/requirements/
 # Installing client libraries and any other package you need
 # These are packages that are needed during runtime
-RUN apk add --update --no-cache python3 libpq bash expat-dev libffi curl py-pip ca-certificates postgresql-client \
-                                graphviz ttf-freefont
 # Install build deps, then run `pip install`, then remove unneeded build deps all in a single step. Correct the path to your production requirements file, if needed.
 RUN set -ex \
+    && apk add --update --no-cache python3 libpq bash expat-dev libffi curl py-pip ca-certificates postgresql-client graphviz ttf-freefont \
     && apk add --update --no-cache --virtual .build-deps \
             gcc \
             make \
@@ -48,7 +33,6 @@ RUN set -ex \
             openldap-dev \
             graphviz-dev \
     && pip install -U pip \
-    && pip install --no-cache-dir -r $requirements \
     && runDeps="$( \
             scanelf --needed --nobanner --recursive /venv \
                     | awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
@@ -56,22 +40,55 @@ RUN set -ex \
                     | xargs -r apk info --installed \
                     | sort -u \
     )" \
-    && apk add --virtual .python-rundeps $runDeps \
+    && apk add --virtual .python-rundeps $runDeps
+
+# unit test stage
+FROM base as unittest
+# set environment varibles
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV DJANGO_SETTINGS_MODULE=app_registry.settings.test
+# Copy in your requirements file
+COPY requirements/ /opt/athena_app_cmdb/requirements/
+ARG requirements=requirements/dev.txt
+# copy project source code
+COPY . /opt/athena_app_cmdb/
+ENV SECRET_KEY='SECRET_KEY'
+# generate ERD file
+RUN pip install --no-cache-dir -r $requirements \
+    && apk del .build-deps \
+    && export SECRET_KEY='SECRET_KEY' \
+    && /usr/local/bin/python manage.py graph_models athena_app_cmdb -g --pygraphviz -o athena_app_cmdb/static/img/athena_app_cmdb_erd.png \
+    && python manage.py makemigrations athena_app_cmdb\
+    && python manage.py migrate athena_app_cmdb \
+    && python manage.py migrate \
+    && python manage.py test athena_app_cmdb.test
+
+# real backend
+FROM base as backend
+# expose the port
+EXPOSE 8000
+# set environment varibles
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV DJANGO_SETTINGS_MODULE=app_registry.settings.prod
+# Copy in your requirements file
+COPY requirements/ /opt/athena_app_cmdb/requirements/
+ARG requirements=requirements/prod.txt
+RUN pip install --no-cache-dir -r $requirements \
     && apk del .build-deps
 # copy project source code
 COPY . /opt/athena_app_cmdb/
 COPY --from=node-tmp /opt/athena_app_cmdb/athena_app_cmdb/ui/openapi.yaml /openapi.yaml
-
 # generate ERD file
 RUN export SECRET_KEY='SECRET_KEY' && /usr/local/bin/python manage.py graph_models athena_app_cmdb -g --pygraphviz -o  \
     athena_app_cmdb/static/img/athena_app_cmdb_erd.png
-
 # download AWS RDS SSL certificate to /opt/athena_app_cmdb/etc
 RUN wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem \
     && cp /opt/athena_app_cmdb/rds-combined-ca-bundle.pem /usr/local/share/ca-certificates/rds-combined-ca-bundle.pem \
     && update-ca-certificates \
-    && mv /opt/athena_app_cmdb/rds-combined-ca-bundle.pem /opt/athena_app_cmdb/etc/rds-combined-ca-bundle.pem
-RUN chmod +x /opt/athena_app_cmdb/scripts/entrypoint.sh
+    && mv /opt/athena_app_cmdb/rds-combined-ca-bundle.pem /opt/athena_app_cmdb/etc/rds-combined-ca-bundle.pem \
+    && chmod +x /opt/athena_app_cmdb/scripts/entrypoint.sh
 ENTRYPOINT ["/opt/athena_app_cmdb/scripts/entrypoint.sh"]
 
 FROM backend as nginx-build
