@@ -178,25 +178,46 @@ class ClusterSerializerTest(TestCase):
         self.assertEqual("example_cluster_id", dictionary['id'])
 
 
-class AssetEnvironmentSerializerTest(TestCase):
-    def test_serialization(self):
-        #create associated model objects
-        #create product
-        Product.objects.create(refid="example-product", properties={"example": "test"})
-        product = Product.objects.get(refid="example-product")
-
+class AssetAdditionalSerializersTest(TestCase):
+    def setUp(self):
         #create team
         Team.objects.create(refid="team-example-team")
-        
+        #create product
+        Product.objects.create(refid="example-product", properties={"example": "test"})
         #create assettype, AppLanguage, Location, Entype
         AssetType.objects.create(id="svc", name="svc")
         AppLanguage.objects.create(id="python", name="python")
         Location.objects.create( name="example-location")
-        location = Location.objects.get(name="example-location")
         EnvType.objects.create( id="example-env", name="example-env")
+        #create product environment
+        product = Product.objects.get(refid="example-product")
+        location = Location.objects.get(name="example-location")
         env = EnvType.objects.get(name="example-env")
+        ProductEnvironment.objects.create(refid="prod-environment", product=product, location_id=location.id, type_id=env.id)
 
-        #create mock asset
+    def test_assetenvironment_serialization(self):
+
+        assetdata = copy.deepcopy(mockasset)
+        asset_serializer_class = serializers.serializer_class_lookup['assets']
+        assetserializer = asset_serializer_class(data=assetdata)
+        assetserializer.is_valid()
+        #save the serializer, this returns the asset model object that was created
+        asset = assetserializer.save()
+
+        prodenv = ProductEnvironment.objects.get(refid="prod-environment")
+        
+        #create assetenvironment
+        AssetEnvironment.objects.create(refid="example-asset-environment", asset_id=asset.id, product_environment_id=prodenv.id)
+        assetenvironment = AssetEnvironment.objects.get(refid="example-asset-environment")
+
+        #use the serializer to take the created model and return serialized data
+        serializer = serializers.AssetEnvironmentSerializer(assetenvironment)
+        dictionary = serializer.data    
+        self.assertEqual(dictionary['refid'], 'example-asset-environment')
+
+
+    def test_assetgetenvironment_serialization(self):
+
         assetdata = copy.deepcopy(mockasset)
         asset_serializer_class = serializers.serializer_class_lookup['assets']
         assetserializer = asset_serializer_class(data=assetdata)
@@ -205,7 +226,6 @@ class AssetEnvironmentSerializerTest(TestCase):
         asset = assetserializer.save()
 
         #create product environment
-        ProductEnvironment.objects.create(refid="prod-environment", product=product, location_id=location.id, type_id=env.id)
         prodenv = ProductEnvironment.objects.get(refid="prod-environment")
         
         #create assetenvironment
@@ -217,5 +237,8 @@ class AssetEnvironmentSerializerTest(TestCase):
         dictionary = serializer.data    
         self.assertEqual(dictionary['refid'], 'example-asset-environment')
         
-
-        
+        #test get environment serializer
+        getenvironmentserializer = serializers.AssetGetEnvironmentSerializer(asset)
+        data = getenvironmentserializer.get_environments(asset)
+        self.assertEqual(data[0]['id'], 'prod-environment')
+ 
