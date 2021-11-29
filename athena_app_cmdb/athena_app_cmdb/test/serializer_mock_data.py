@@ -177,3 +177,14 @@ mocklocation = {
     },
     "description": "Example Development Platform (US)"
   }
+
+mockassetenvironment = {
+    "id": "example-asset-environment",
+    "asset": "svc-example-test"
+
+}
+
+mockcluster = {
+    "id": "example_cluster_id",
+    "uri": "https://7354A20DD24328892CEBAFE85866321D.gr7.us-west-2.eks.amazonaws.com"
+  }
