@@ -9,6 +9,8 @@ from athena_app_cmdb.models import Asset, Location, Team, Product, Resource, Ass
 from athena_app_cmdb import serializers 
 from athena_app_cmdb.test.serializer_mock_data import mockasset, mockteam, mockproduct, mockresource, mocklocation, mockassetenvironment, mockcluster
 import copy
+
+
 #Deserialization tests: test taking serialized data (native python data type) and converting it to validated data that can be stored in a model
 #Serialization tests: test taking an existing model (we create it at the start of the function, reusing the functionality of the previous test, and serialize it into python native datatypes)
 
@@ -53,7 +55,7 @@ class ProductSerializerTest(TestCase):
         product = serializer.save()
         #verify the id matches that of our mock data
         self.assertEqual(product.refid, "example-product")
-        #use the team serializer to serialize the created product model, then we can verify the data is in the form of a dictionary and correct
+        #use the product serializer to serialize the created product model, then we can verify the data is in the form of a dictionary and correct
         serializer = serializers.ProductSerializer(product)
         dictionary = serializer.data
         self.assertEqual("example-product", dictionary['id'])
@@ -84,14 +86,15 @@ class ResourceSerializerTest(TestCase):
         self.assertEqual("example-resource", dictionary['metadata']['name'])
 
 class LocationSerializerTest(TestCase):
-    def test_deserialization(self):
-        #get the serializer class associated with resources, create serializer with mock data and check validity
-        serializer_class = serializers.serializer_class_lookup['locations']
-        data = copy.deepcopy(mocklocation)
-        serializer = serializer_class(data=data)
+    def setUp(self):
         #create associated model objects (referenced in mocklocation data)
         LocationStatus.objects.create(id="live", name="live")
         LocationRegion.objects.create(id="us", name="us")
+    def test_deserialization(self):
+        #get the serializer class associated with locations, create serializer with mock data and check validity
+        serializer_class = serializers.serializer_class_lookup['locations']
+        data = copy.deepcopy(mocklocation)
+        serializer = serializer_class(data=data)
         serializer.is_valid()
         #save the serializer, this returns the location model object that was created
         location = serializer.save()
@@ -102,9 +105,6 @@ class LocationSerializerTest(TestCase):
         serializer_class = serializers.serializer_class_lookup['locations']
         data = copy.deepcopy(mocklocation)
         serializer = serializer_class(data=data)
-        # create associated model objects (referenced in mocklocation data)
-        LocationStatus.objects.create(id="live", name="live")
-        LocationRegion.objects.create(id="us", name="us")
         serializer.is_valid()
         #save the serializer, this returns the location model object that was created
         location = serializer.save()
@@ -116,41 +116,36 @@ class LocationSerializerTest(TestCase):
 
 
 class AssetSerializerTest(TestCase):
-    def test_deserialization(self):
-        #get the serializer class associated with resources, create serializer with mock data and check validity
-        serializer_class = serializers.serializer_class_lookup['assets']
-        data = copy.deepcopy(mockasset)
-        #create associated model objects (referenced in mocklocation data)
+    def setUp(self):
+        #create associated model objects (referenced in mockasset data)
         Product.objects.create(refid="example-product", properties={"example": "test"})
         Team.objects.create(refid="team-example-team")
         AssetType.objects.create(id="svc", name="svc")
         AppLanguage.objects.create(id="python", name="python")
+    def test_deserialization(self):
+        #get the serializer class associated with assets, create serializer with mock data and check validity
+        serializer_class = serializers.serializer_class_lookup['assets']
+        data = copy.deepcopy(mockasset)
         serializer = serializer_class(data=data)
         serializer.is_valid()
-        #save the serializer, this returns the location model object that was created
+        #save the serializer, this returns the asset model object that was created
         asset = serializer.save()
         #verify the id matches that of our mock data
         self.assertEqual(asset.refid, "svc-example-test")
     def test_serialization(self):
-        #get the serializer class associated with resources, create serializer with mock data and check validity
+        #get the serializer class associated with assets, create serializer with mock data and check validity
         serializer_class = serializers.serializer_class_lookup['assets']
         data = copy.deepcopy(mockasset)
-        #create associated model objects (referenced in mocklocation data)
-        Product.objects.create(refid="example-product", properties={"example": "test"})
-        Team.objects.create(refid="team-example-team")
-        AssetType.objects.create(id="svc", name="svc")
-        AppLanguage.objects.create(id="python", name="python")
         serializer = serializer_class(data=data)
         serializer.is_valid()
-        #save the serializer, this returns the location model object that was created
+        #save the serializer, this returns the asset model object that was created
         asset = serializer.save()
         #verify the id matches that of our mock data
         self.assertEqual(asset.refid, "svc-example-test")
+        #use asset serializer and check validity of returned serialized data
         serializer = serializers.AssetSerializer(asset)
         dictionary = serializer.data
         self.assertEqual("svc-example-test", dictionary['id'])
-
-
 
 class ClusterSerializerTest(TestCase):
     def test_deserialization(self):
@@ -173,11 +168,12 @@ class ClusterSerializerTest(TestCase):
         cluster = serializer.save()
         #verify the id matches that of our mock data
         self.assertEqual(cluster.refid, "example_cluster_id")
+        #use the cluster serializer and check validity of returned serialized data
         serializer = serializers.ClusterSerializer(cluster)
         dictionary = serializer.data
         self.assertEqual("example_cluster_id", dictionary['id'])
 
-
+ #testing multiple serializers in this class: AssetEnvironment Serializer, AssetGetEnvironment Serializer
 class AssetAdditionalSerializersTest(TestCase):
     def setUp(self):
         #create team
@@ -196,47 +192,37 @@ class AssetAdditionalSerializersTest(TestCase):
         ProductEnvironment.objects.create(refid="prod-environment", product=product, location_id=location.id, type_id=env.id)
 
     def test_assetenvironment_serialization(self):
-
         assetdata = copy.deepcopy(mockasset)
         asset_serializer_class = serializers.serializer_class_lookup['assets']
         assetserializer = asset_serializer_class(data=assetdata)
         assetserializer.is_valid()
         #save the serializer, this returns the asset model object that was created
         asset = assetserializer.save()
-
         prodenv = ProductEnvironment.objects.get(refid="prod-environment")
-        
         #create assetenvironment
         AssetEnvironment.objects.create(refid="example-asset-environment", asset_id=asset.id, product_environment_id=prodenv.id)
         assetenvironment = AssetEnvironment.objects.get(refid="example-asset-environment")
-
         #use the serializer to take the created model and return serialized data
         serializer = serializers.AssetEnvironmentSerializer(assetenvironment)
         dictionary = serializer.data    
         self.assertEqual(dictionary['refid'], 'example-asset-environment')
-
 
     def test_assetgetenvironment_serialization(self):
-
         assetdata = copy.deepcopy(mockasset)
         asset_serializer_class = serializers.serializer_class_lookup['assets']
         assetserializer = asset_serializer_class(data=assetdata)
         assetserializer.is_valid()
         #save the serializer, this returns the asset model object that was created
         asset = assetserializer.save()
-
         #create product environment
         prodenv = ProductEnvironment.objects.get(refid="prod-environment")
-        
         #create assetenvironment
         AssetEnvironment.objects.create(refid="example-asset-environment", asset_id=asset.id, product_environment_id=prodenv.id)
         assetenvironment = AssetEnvironment.objects.get(refid="example-asset-environment")
-
         #use the serializer to take the created model and return serialized data
         serializer = serializers.AssetEnvironmentSerializer(assetenvironment)
         dictionary = serializer.data    
         self.assertEqual(dictionary['refid'], 'example-asset-environment')
-        
         #test get environment serializer
         getenvironmentserializer = serializers.AssetGetEnvironmentSerializer(asset)
         data = getenvironmentserializer.get_environments(asset)
