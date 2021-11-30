@@ -173,7 +173,7 @@ class ClusterSerializerTest(TestCase):
         dictionary = serializer.data
         self.assertEqual("example_cluster_id", dictionary['id'])
 
- #testing multiple serializers in this class: AssetEnvironment Serializer, AssetGetEnvironment Serializer
+ #testing multiple serializers in this class: AssetEnvironment Serializer, AssetGetEnvironment Serializer, AssetGetDetail Serializer
 class AssetAdditionalSerializersTest(TestCase):
     def setUp(self):
         #create team
@@ -227,4 +227,20 @@ class AssetAdditionalSerializersTest(TestCase):
         getenvironmentserializer = serializers.AssetGetEnvironmentSerializer(asset)
         data = getenvironmentserializer.get_environments(asset)
         self.assertEqual(data[0]['id'], 'prod-environment')
+    def test_assetgetdetail_serialization(self):
+        assetdata = copy.deepcopy(mockasset)
+        asset_serializer_class = serializers.serializer_class_lookup['assets']
+        assetserializer = asset_serializer_class(data=assetdata)
+        assetserializer.is_valid()
+        #save the serializer, this returns the asset model object that was created
+        asset = assetserializer.save()
+        #create product environment
+        prodenv = ProductEnvironment.objects.get(refid="prod-environment")
+        #create assetenvironment
+        AssetEnvironment.objects.create(refid="example-asset-environment", asset_id=asset.id, product_environment_id=prodenv.id)
+        #test asset get detail serializer
+        assetgetdetailserializer = serializers.AssetGetDetailSerializer(asset)
+        data = assetgetdetailserializer.data
+        self.assertEqual(data['team_name'], 'team-example-team')
+        self.assertEqual(data['product_name'], 'example-product')
  
