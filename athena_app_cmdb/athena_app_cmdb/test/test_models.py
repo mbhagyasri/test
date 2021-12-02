@@ -4,10 +4,20 @@
 # Copyright (c) 2021 =================================================
 
 from django.test import TestCase
-from athena_app_cmdb.models import Location, AppLanguage, AssetType, Cluster, DatabaseChangeLog, DatabaseChangeLogLock, EnvType, LocationRegion, LocationStatus, Team, Product, ProductEnvironment
+from athena_app_cmdb.models import *
 
+class ValidateJSONTest(TestCase):
+    def setUp(self):
+        self.mockcluster = {
+            "id": "athena_cli",
+            "uri": "http://example-cluster.com"
+        }
 
-class AppLanguageTests(TestCase):
+    def test_validate_json(self):
+        self.assertEquals(validate_json("clusters", self.mockcluster), (True, 'OK'))
+        self.assertEquals(validate_json("not a real filename mapping", self.mockcluster), (True, "Ignore"))
+
+class AppLanguageModelTests(TestCase):
     def setUp(self):
         AppLanguage.objects.create(id="java-8.1", name="Java")
     
@@ -19,7 +29,7 @@ class AppLanguageTests(TestCase):
         app_language = AppLanguage(id="java-8.1", name="Java")
         self.assertEqual(str(app_language), app_language.name)
 
-class AssetTypeTests(TestCase):
+class AssetTypeModelTests(TestCase):
     def setUp(self):
         AssetType.objects.create(id="athena-asset-2", name="Athena PCP")
     
@@ -37,7 +47,7 @@ class AssetTypeTests(TestCase):
         message = "Test value is not false."
         self.assertFalse(function_value, message)
 
-class ClusterTests(TestCase):
+class ClusterModelTests(TestCase):
     def setUp(self):
         Cluster.objects.create(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000", refid="cluster_2", uri="example-cluster-uri.com/api")
     
@@ -163,5 +173,94 @@ class ProductEnvironmentModelTests(TestCase):
         product_environment = ProductEnvironment.objects.get(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000")
         self.assertEqual(str(product_environment), product_environment.refid)
 
+class AssetModelTest(TestCase):
+    def setUp(self):
+        Product.objects.create(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000", refid="athena-pcp")
+        Team.objects.create(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000", refid="team-11", name="athena")
+        AssetType.objects.create(id="athena-asset-2", name="REST API")
+        Asset.objects.create(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000", refid="svc-devops-metrics", name="DevOps Metrics API", repo="http://stash.cdk.com/browse/svc-devops-metrics", product=Product.objects.get(refid="athena-pcp"), team=Team.objects.get(refid="team-11"), type=AssetType.objects.get(name="REST API"))
     
+    def test_asset_exists(self):
+        asset = Asset.objects.get(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000")
+        self.assertEquals(asset.refid, "svc-devops-metrics")
+    
+    def test_self_links(self):
+        asset = Asset.objects.get(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000")
+        links = "/assets/11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000"
+        self.assertEquals(asset.self_links, links)
+    
+    def test_string_representation(self):
+        asset = Asset.objects.get(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000")
+        self.assertEquals(str(asset), asset.name)
+
+class AssetEnvironmentModelTests(TestCase):
+    def setUp(self):
+        # Set up product environment object
+        Location.objects.create(refid="us-west-2", name="Oregon")
+        EnvType.objects.create(id=10, name="prod", deleted='f')
+        ProductEnvironment.objects.create(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000", refid="dev", location=Location.objects.get(refid="us-west-2"), type=EnvType.objects.get(id=10))
+
+        # Set up asset object
+        Product.objects.create(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000", refid="athena-pcp")
+        Team.objects.create(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000", refid="team-11", name="athena")
+        AssetType.objects.create(id="athena-asset-2", name="REST API")
+        Asset.objects.create(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000", refid="svc-devops-metrics", name="DevOps Metrics API", repo="http://stash.cdk.com/browse/svc-devops-metrics", product=Product.objects.get(refid="athena-pcp"), team=Team.objects.get(refid="team-11"), type=AssetType.objects.get(name="REST API"))
+        
+        AssetEnvironment.objects.create(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000", refid="stage", asset=Asset.objects.get(refid="svc-devops-metrics"), product_environment=ProductEnvironment.objects.get(refid="dev"))
+        
+    def test_asset_environment_exists(self):
+        asset_environment = AssetEnvironment.objects.get(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000")
+        self.assertEquals(asset_environment.refid, "stage")
+
+    def test_string_representation(self):
+        asset_environment = AssetEnvironment.objects.get(refid="stage")
+        self.assertEquals(str(asset_environment), asset_environment.refid)
+
+class ResourceModelTests(TestCase): 
+    def setUp(self):
+        # Set up product environment object
+        Location.objects.create(refid="us-west-2", name="Oregon")
+        EnvType.objects.create(id=10, name="prod", deleted='f')
+        ProductEnvironment.objects.create(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000", refid="dev", location=Location.objects.get(refid="us-west-2"), type=EnvType.objects.get(id=10))
+
+        # Set up asset object
+        Product.objects.create(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000", refid="athena-pcp")
+        Team.objects.create(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000", refid="team-11", name="athena")
+        AssetType.objects.create(id="athena-asset-2", name="REST API")
+        Asset.objects.create(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000", refid="svc-devops-metrics", name="DevOps Metrics API", repo="http://stash.cdk.com/browse/svc-devops-metrics", product=Product.objects.get(refid="athena-pcp"), team=Team.objects.get(refid="team-11"), type=AssetType.objects.get(name="REST API"))
+        Asset.objects.create(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc001", refid="bff-devops-metrics", name="DevOps Metrics BFF", repo="http://stash.cdk.com/browse/bff-devops-metrics", product=Product.objects.get(refid="athena-pcp"), team=Team.objects.get(refid="team-11"), type=AssetType.objects.get(name="REST API"))
+        
+        # Set up asset environment objects
+        stage_env = AssetEnvironment.objects.create(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000", refid="stage", asset=Asset.objects.get(refid="svc-devops-metrics"), product_environment=ProductEnvironment.objects.get(refid="dev"))
+        prod_env = AssetEnvironment.objects.create(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc001", refid="prod", asset=Asset.objects.get(refid="bff-devops-metrics"), product_environment=ProductEnvironment.objects.get(refid="dev"))
+
+        resource = Resource.objects.create(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000", refid="resource-35", location=Location.objects.get(refid="us-west-2"))
+        resource.assetEnvironments.add(stage_env)
+        resource.assetEnvironments.add(prod_env)
+    
+    def test_resource_exists(self):
+        resource = Resource.objects.get(id="11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000")
+        self.assertEquals(resource.refid, "resource-35")
+
+    def test_self_links(self):
+        resource = Resource.objects.get(refid="resource-35")
+        links = "/resources/11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000"
+        self.assertEquals(resource.self_links, links)
+    
+    def test_string_representation(self):
+        resource = Resource.objects.get(refid="resource-35")
+        self.assertEquals(str(resource), resource.refid)
+
+class SecurityProviderModelTests(TestCase):
+    def setUp(self):
+        SecurityProvider.objects.create(id="aws-security", schemes="scheme-21")
+    
+    def test_security_provider_exists(self):
+        security_provider = SecurityProvider.objects.get(id="aws-security")
+        self.assertEquals(security_provider.schemes, "scheme-21")
+
+
+
+
+
 
