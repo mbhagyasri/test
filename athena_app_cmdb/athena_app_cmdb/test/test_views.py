@@ -41,6 +41,9 @@ class TeamViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(force_text(response.content), '{"id":"test-team-2","name":"test-team-2","deleted":false,"ad-group":["test group"]}')
 
+    def test_team_not_found(self):
+        response = self.client.get("/teams/test-team-unknown")
+        self.assertEqual(response.status_code, 404)
 
 class AssetUrlsItemTestCase(TestCase):
     def setUp(self):
@@ -58,3 +61,6 @@ class AssetUrlsItemTestCase(TestCase):
         response = self.client.get('/assets/svc-example-test/urls')
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(force_text(response.content), '[{"environment_id":"test-product-env","type":"test","url":"https://us-dev-example-app.test.com","additionalUrls":[]}]')
+    def test_asset_not_found(self):
+        response = self.client.get('/assets/svc-example-unknown/urls')
+        self.assertEqual(response.status_code, 404)
