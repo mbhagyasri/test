@@ -232,6 +232,7 @@
         "java",
         "nodejs",
         "reactjs",
+        "reactjs-internal",
         "python"
       ],
       "type": "string"
@@ -592,6 +593,7 @@
         "java",
         "nodejs",
         "reactjs",
+        "reactjs-internal",
         "python"
       ],
       "type": "string"
@@ -950,6 +952,7 @@
         "java",
         "nodejs",
         "reactjs",
+        "reactjs-internal",
         "python"
       ],
       "type": "string"
