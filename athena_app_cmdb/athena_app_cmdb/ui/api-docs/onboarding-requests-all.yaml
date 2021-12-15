@@ -1,0 +1,53 @@
+get:
+  summary: Get all onboarding requests
+  operationId: listOnboardingRequests
+  tags:
+    - onboarding-requests
+  responses:
+    "200":
+      description: An array of onboarding requests
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/OnboardingRequests"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+post:
+  summary: Create new onboarding request
+  tags:
+    - onboarding-requests
+  operationId: createOnboardingRequest
+  consumes:
+    - application/json
+  produces:
+    - application/json
+  parameters:
+    - in: "body"
+      name: "body"
+      description: Create a new onboarding request entity within app-registry.
+      required: true
+      schema:
+        $ref: "./json-schemas/OnboardingRequest.json"
+  responses:
+    "200":
+      description: Onboarding Request record inserted
+    default:
+      description: Onboarding Request insert failed
+components:
+  schemas:
+    OnboardingRequests:
+      type: array
+      items:
+        $ref: "#/components/schemas/OnboardingRequest"
+    OnboardingRequest:
+      type: object
+      $ref: "./openapi-schemas/ServiceDefinition.json"
+    Error:
+      type: object
+      $ref: "Error.yaml"

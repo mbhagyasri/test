@@ -957,6 +957,43 @@ class AssetGetSerializer(serializers.ModelSerializer):
         lks = {'_self': instance.self_links}
         return lks
 
+class OnboardingRequestSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.OnboardingRequest
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        return OnboardingRequestGetSerializer(instance).data
+
+    def to_internal_value(self, data):
+        if 'refid' not in data:
+            data['refid'] = data['id']
+            del data['id']
+        fields = [f.name for f in models.OnboardingRequest._meta.fields + models.OnboardingRequest._meta.many_to_many]
+        properties = data.get('properties', {})
+        data_copy = deepcopy(data)
+        for key in data_copy:
+            if key not in fields:
+                properties[key] = data[key]
+                del data[key]
+        data['properties'] = properties
+        return super(OnboardingRequestSerializer, self).to_internal_value(data)
+
+
+class OnboardingRequestGetSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source='refid')
+
+    class Meta:
+        model = models.OnboardingRequest
+        fields = ('id', 'name', 'properties', 'deleted',)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        properties = data.pop('properties', None)
+        data.update(properties)
+        return data
+
 
 serializers_mapping = {
     'assets': AssetSerializer,
