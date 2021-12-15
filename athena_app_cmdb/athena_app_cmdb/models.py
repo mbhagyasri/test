@@ -27,7 +27,7 @@ def validate_json(objname, instance, raise_exception=True):
         "teams": 'Team.json',
         "assetsByEnvironment-bff": 'Bff.json', "assetsByEnvironment-app": "App.json",
         "assetsByEnvironment-svc": "Svc.json",
-        "clusters": 'Cluster.json'
+        "clusters": 'Cluster.json', "onboarding-requests": "OnboardingRequest.json"
     }
     if objname == 'assets' or objname == 'assetsByEnvironment':
         filename = mapping.get('{}-{}'.format(objname, instance.get('type')), None)
@@ -411,14 +411,38 @@ class SecurityProvider(models.Model):
         db_table = 'securityprovider'
         verbose_name = 'Security Provider'
 
+class OnboardingRequest(SoftDeleteModel):
+    id = models.UUIDField(db_column='id', primary_key=True, default=uuid.uuid4)
+    refid = models.CharField(db_column='onboarding_request_id', max_length=100, unique=True)
+    properties = models.JSONField(db_column='json', blank=True, null=True)
+    deleted = models.BooleanField(db_column='deleted', default='f')
+    created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
+    updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
+    created_by = models.CharField(db_column='created_by', max_length=100, blank=True, null=True)
+    updated_by = models.CharField(db_column='updated_by', max_length=100, blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'onboarding_request'
+        verbose_name = 'Onboarding Request'
+        ordering = ['-updated_at', '-created_at', ]
+
+    @property
+    def self_links(self):
+        links = '%s/onboarding_requests/%s' % (athena_app_cmdb_API_PATH, self.id)
+        return links
+
+    def __str__(self):
+        return self.refid
+
 
 models_mapping = {'locations': Location,  'teams': Team, 'securityProviders': SecurityProvider,
                   'clusters': Cluster, 'products': Product, 'assets': Asset, 'resources': Resource,
-                  'asset_types': AssetType, 'assetsByEnvironment': AssetEnvironment
+                  'asset_types': AssetType, 'assetsByEnvironment': AssetEnvironment, "onboarding-requests": OnboardingRequest
                   }
 models_name_mapping = {'locations': 'Location', 'teams': 'Team', 'securityProviders': SecurityProvider,
                        'clusters': 'Cluster', 'products': 'Product', 'assets': 'Asset', 'resources': 'Resource',
-                       'asset_types': AssetType, 'assetsByEnvironment': AssetEnvironment
+                       'asset_types': AssetType, 'assetsByEnvironment': AssetEnvironment, "onboarding-requests":'OnboardingRequest'
                        }
 
 models_class_lookup = CaseInsensitiveDict(models_mapping)
@@ -433,3 +457,4 @@ auditlog.register(Asset)
 auditlog.register(Resource)
 auditlog.register(AssetType)
 auditlog.register(AssetEnvironment)
+auditlog.register(OnboardingRequest)
