@@ -57,6 +57,9 @@
                 },
                 "responseTimeout": {
                   "type": "number"
+                },
+                "connectionAttempts": {
+                  "type": "number"
                 }
               },
               "additionalProperties": false,
@@ -415,6 +418,9 @@
                   "type": "string"
                 },
                 "responseTimeout": {
+                  "type": "number"
+                },
+                "connectionAttempts": {
                   "type": "number"
                 }
               },
@@ -778,6 +784,9 @@
                       "type": "string"
                     },
                     "responseTimeout": {
+                      "type": "number"
+                    },
+                    "connectionAttempts": {
                       "type": "number"
                     }
                   },
