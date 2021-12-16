@@ -47,6 +47,9 @@
                 },
                 "responseTimeout": {
                   "type": "number"
+                },
+                "connectionAttempts": {
+                  "type": "number"
                 }
               },
               "additionalProperties": false,
