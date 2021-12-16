@@ -29,7 +29,7 @@ AMIDURL = 'http://api-int.connectcdk.com/api/ari-assets-backend/v1/api/ari-asset
 #
 #
 #
-AUTH_LDAP_SERVER_URI = os.getenv('AUTH_LDAP_SERVER_URI', "ldap://global.cdk.com")
+AUTH_LDAP_SERVER_URI = os.getenv('AUTH_LDAP_SERVER_URI', "ldap://global.cdk.com:389")
 AUTH_LDAP_BIND_DN = os.getenv('AUTH_LDAP_BIND_DN', "CN=svc_athena_devops,OU=Service Accounts,OU=LDAP,OU=Security,OU=GIS,DC=global,DC=cdk,DC=com")
 AUTH_LDAP_BIND_PASSWORD = os.getenv('AUTH_LDAP_BIND_PASSWORD', os.getenv('bamboo_password'))
 # AUTH_LDAP_USER_SEARCH = LDAPSearch(
