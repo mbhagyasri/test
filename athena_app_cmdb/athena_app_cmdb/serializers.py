@@ -986,7 +986,7 @@ class OnboardingRequestGetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.OnboardingRequest
-        fields = '__all__'
+        fields = ('id', 'name', 'properties', 'deleted',)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -999,7 +999,7 @@ serializers_mapping = {
     'assets': AssetSerializer,
     'locations': LocationSerializer, 'asset_types': AssetTypeSerializer, 'resources': ResourceSerializer,
     'clusters': ClusterSerializer, 'teams': TeamSerializer, 'securityProviders': SecurityProviderSerializer,
-    'products': ProductSerializer, 'assetsByEnvironment': AssetByEnvironmentSerializer, "onboarding-requests": OnboardingRequestSerializer
+    'products': ProductSerializer, 'assetsByEnvironment': AssetByEnvironmentSerializer
     }
 
 serializers_mapping_read = {
@@ -1014,7 +1014,6 @@ serializers_mapping_read = {
     'assetsEnvironments': AssetGetEnvironmentSerializer,
     'assetsUrls': AssetGetUrlSerializer,
     'assetsByEnvironment': AssetByEnvironmentGetSerializer,
-    'onboarding-requests': OnboardingRequestGetSerializer
 }
 
 serializers_mapping_associations = {
