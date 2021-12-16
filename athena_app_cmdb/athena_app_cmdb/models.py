@@ -429,7 +429,7 @@ class OnboardingRequest(SoftDeleteModel):
 
     @property
     def self_links(self):
-        links = '%s/onboarding_requests/%s' % (athena_app_cmdb_API_PATH, self.id)
+        links = '%s/onboarding-requests/%s' % (athena_app_cmdb_API_PATH, self.id)
         return links
 
     def __str__(self):
