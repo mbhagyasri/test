@@ -32,6 +32,7 @@ RUN set -ex \
             cargo \
             openldap-dev \
             graphviz-dev \
+            openldap-clients \
     && pip install -U pip \
     && runDeps="$( \
             scanelf --needed --nobanner --recursive /venv \
