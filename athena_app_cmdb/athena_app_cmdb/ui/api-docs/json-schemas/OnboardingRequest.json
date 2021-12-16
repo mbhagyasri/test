@@ -1,0 +1,90 @@
+{
+    "description": "Onboarding Request",
+    "type": "object",
+    "properties": {
+        "id": {
+            "id": "#onboarding_request",
+            "type": "string"
+        },
+        "title" : {
+            "type": "string"
+        },
+        "description" : {
+            "type": "string"
+        },
+        "asset_master_id" : {
+            "type": "number"
+        },
+        "bamboo_project_key" : {
+            "type": "string"
+        },
+        "criticality": {
+            "type": "string",
+            "enum": ["critical", "essential", "normal"]
+        },
+        "dev_date_needed": {
+            "type": "string",
+            "format": "date"
+        },
+        "stage_date_needed": {
+            "type": "string",
+            "format": "date"
+        },
+        "service_name": {
+            "type": "string"
+        },
+        "platform": {
+            "type": "string",
+            "enum": ["CPAWS", "CPDC", "PCP", "UNKNOWN"]
+        },
+        "service_type": {
+            "type": "string",
+            "enum": ["app", "svc", "bff"]
+        },
+        "security": {
+            "type": "string",
+            "enum": ["IAM", "FORTELLIS", "CDK_SERVICE", "DMS_DEALBRIDGE", "NONE"]
+        },
+        "egress_required": {
+            "type": "boolean"
+        },
+        "egress_resources": {
+            "type": "string"
+        },
+        "friendly_url": {
+            "type": "string"
+        },
+        "max_cpus_per_pod": {
+            "type": "number"
+        },
+        "max_memory_per_pod": {
+            "type": "number"
+        },
+        "max_number_pods": {
+            "type": "number"
+        },
+        "pcp_rds_needed_size_gb": {
+            "type": "number"
+        },
+        "is_budgeted": {
+            "type": "boolean"
+        },
+        "is_iam_onboarded": {
+            "type": "boolean"
+        },
+        "comments": {
+            "type": "string"
+        },
+        "technical_contact": {
+            "type": "string"
+        },
+        "notification_group": {
+            "type": "string"
+        },
+        "architecture_diagram_url": {
+            "type": "string" 
+        }
+    },
+    "additionalProperties": true,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+  }
