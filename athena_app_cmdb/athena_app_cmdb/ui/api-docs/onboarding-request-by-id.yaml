@@ -1,0 +1,75 @@
+get:
+  summary: Info for a specific onboarding request
+  operationId: getOnboardingRequestById
+  tags:
+    - onboarding-requests
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the onboarding request to retrieve
+      schema:
+        type: string
+      example: "example-onboarding-request"
+  responses:
+    "200":
+      description: Expected response to a valid request
+      headers:
+        $ref: "./common-headers.yaml#/response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/OnboardingRequest"
+    default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+put:
+  summary: Update a specific onboarding request
+  operationId: updateOnboardingRequest
+  tags:
+    - onboarding-requests
+  parameters:
+    - name: body
+      in: body
+      required: true
+      description: The id determines the onboarding request to update
+      schema:
+        $ref: "./json-schemas/OnboardingRequest.json"
+  responses:
+    "200":
+      description: Onboarding request record updated
+    default:
+      description: Onboarding request update failed
+delete:
+  summary: Delete a specific onboarding request
+  operationId: deleteOnboardingRequest
+  tags:
+    - onboarding-requests
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the onboarding request to delete (caution)
+      schema:
+        type: string
+      example: "athena-example-onboarding-request"
+  responses:
+    "200":
+      description: Onboarding request record deleted
+    default:
+      description: Onboarding request delete failed
+components:
+  schemas:
+    OnboardingRequests:
+      type: array
+      items:
+        $ref: "#/components/schemas/OnboardingRequest"
+    OnboardingRequest:
+      type: object
+      $ref: "./openapi-schemas/OnboardingRequest.json"
+    Error:
+      type: object
+      $ref: "Error.yaml"
