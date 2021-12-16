@@ -15,7 +15,7 @@ WORKDIR /opt/athena_app_cmdb
 # These are packages that are needed during runtime
 # Install build deps, then run `pip install`, then remove unneeded build deps all in a single step. Correct the path to your production requirements file, if needed.
 RUN set -ex \
-    && apk add --update --no-cache python3 libpq bash expat-dev libffi curl py-pip ca-certificates postgresql-client graphviz ttf-freefont \
+    && apk add --update --no-cache python3 libpq bash expat-dev libffi curl py-pip ca-certificates postgresql-client graphviz ttf-freefont openldap-clients \
     && apk add --update --no-cache --virtual .build-deps \
             gcc \
             make \
