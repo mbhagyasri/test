@@ -4,7 +4,6 @@
     "java",
     "nodejs",
     "reactjs",
-    "reactjs-internal",
     "python"
   ],
   "type": "string",
