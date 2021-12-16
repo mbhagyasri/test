@@ -47,7 +47,7 @@ components:
         $ref: "#/components/schemas/OnboardingRequest"
     OnboardingRequest:
       type: object
-      $ref: "./openapi-schemas/ServiceDefinition.json"
+      $ref: "./openapi-schemas/OnboardingRequest.json"
     Error:
       type: object
       $ref: "Error.yaml"
