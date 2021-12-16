@@ -124,6 +124,8 @@ paths:
     $ref: "./api-docs/locations-all.yaml"
   /locations/{id}:
     $ref: "./api-docs/location-by-id.yaml"
+  /onboarding-requests/{id}:
+    $ref: "./api-docs/onboarding-request-by-id.yaml"
   /onboarding-requests:
     $ref: "./api-docs/onboarding-requests-all.yaml"
   /products:
