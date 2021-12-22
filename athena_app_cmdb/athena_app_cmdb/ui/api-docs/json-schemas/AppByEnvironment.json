@@ -204,7 +204,8 @@
         "java",
         "nodejs",
         "reactjs",
-        "python",
+        "reactjs-internal",
+        "python"
       ],
       "type": "string"
     },
