@@ -183,7 +183,8 @@
         "java",
         "nodejs",
         "reactjs",
-        "python"
+        "python",
+        "reactjs-internal"
       ],
       "type": "string"
     },
