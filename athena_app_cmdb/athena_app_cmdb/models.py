@@ -414,13 +414,21 @@ class SecurityProvider(models.Model):
 class OnboardingRequest(SoftDeleteModel):
     id = models.UUIDField(db_column='id', primary_key=True, default=uuid.uuid4)
     refid = models.CharField(db_column='onboarding_request_id', max_length=100, unique=True)
+    request_owner = models.CharField(db_column='request_owner', max_length=100)
+    request_status = models.CharField(db_column='request_status', max_length=100, default='New')
     properties = models.JSONField(db_column='json', blank=True, null=True)
     deleted = models.BooleanField(db_column='deleted', default='f')
     created_at = models.DateTimeField(db_column='created_at', blank=True, null=True, auto_now_add=True)
     updated_at = models.DateTimeField(db_column='updated_at', blank=True, null=True, auto_now=True)
     created_by = models.CharField(db_column='created_by', max_length=100, blank=True, null=True)
     updated_by = models.CharField(db_column='updated_by', max_length=100, blank=True, null=True)
-
+    deleted_by = models.CharField(db_column='deleted_by', max_length=100, blank=True, null=True)
+    datetime_approved = models.DateTimeField(db_column='datetime_approved', blank=True, null=True)
+    approved_by = models.CharField(db_column='approved_by', max_length=100, blank=True, null=True)
+    datetime_rejected = models.DateTimeField(db_column='datetime_rejected', blank=True, null=True)
+    rejected_by = models.CharField(db_column='rejected_by', max_length=100, blank=True, null=True)
+    datetime_completed = models.DateTimeField(db_column='datetime_completed', blank=True, null=True)
+    completed_by = models.CharField(db_column='completed_by', max_length=100, blank=True, null=True)
     class Meta:
         managed = True
         db_table = 'onboarding_request'
