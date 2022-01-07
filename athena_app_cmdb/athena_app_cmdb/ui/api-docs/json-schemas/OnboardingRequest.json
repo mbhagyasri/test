@@ -83,6 +83,13 @@
         },
         "architecture_diagram_url": {
             "type": "string" 
+        },
+        "request_status": {
+            "type": "string",
+            "enum": ["New", "In-Review", "Approved", "Rejected", "Completed"]
+        },
+        "request_owner":{
+            "type": "string"
         }
     },
     "additionalProperties": true,
