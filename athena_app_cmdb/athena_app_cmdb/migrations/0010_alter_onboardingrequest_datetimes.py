@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('athena_app_cmdb', '0009_auto_20220105_2148'),
+        ('athena_app_cmdb', '0009_alter_onboardingrequest'),
     ]
 
     operations = [

@@ -285,6 +285,17 @@ class athena_app_cmdbItem(APIView):
                 if checkid == False:
                     raise ViewException(FORMAT, 'Error Validating Asset Master Id {}'.format(amid), 400)
         serializer_class = serializers.serializer_class_lookup[objname]
+        if (objname == "onboarding-requests"):
+            serializer = serializer = serializers.OnboardingRequestSerializer(obj)
+            curdata = serializer.data
+            if ('request_status' in data and 'request_status' in curdata ):
+                if data['request_status'] != curdata['request_status']:
+                    if data['request_status'] == 'Completed':
+                        data['datetime_completed'] = timezone.now()
+                    if data['request_status'] == 'Approved':
+                        data['datetime_approved'] = timezone.now()
+                    if data['request_status'] == 'Rejected':
+                        data['datetime_rejected'] = timezone.now()
         if 'associations' in data:
             del data['associations']
         serializer = serializer_class(obj, data=data)
