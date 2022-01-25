@@ -30,6 +30,10 @@
             "type": "string",
             "format": "date"
         },
+        "prod_date_needed": {
+            "type": "string",
+            "format": "date"
+        },
         "service_name": {
             "type": "string"
         },
@@ -84,11 +88,18 @@
         "architecture_diagram_url": {
             "type": "string" 
         },
+        "request_type": {
+            "type": "string",
+            "enum": ["simple", "complex", "unknown"]
+        },
         "request_status": {
             "type": "string",
             "enum": ["New", "In-Review", "Approved", "Rejected", "Completed"]
         },
         "request_owner":{
+            "type": "string"
+        },
+        "jira_link": {
             "type": "string"
         }
     },
